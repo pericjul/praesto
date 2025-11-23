@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: praesto
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: Praesto
