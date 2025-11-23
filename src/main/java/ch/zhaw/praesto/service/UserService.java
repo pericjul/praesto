@@ -1,20 +1,34 @@
 package ch.zhaw.praesto.service;
 
-import ch.zhaw.praesto.model.User;
-import ch.zhaw.praesto.repository.UserRepository;
+import java.util.List;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 @Service
 public class UserService {
-
-    private final UserRepository repo;
-
-    public UserService(UserRepository repo) {
-        this.repo = repo;
+    public boolean userHasRole(String role) {
+        Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<String> userRoles = jwt.getClaimAsStringList("user_roles");
+        if (userRoles.contains(role)) {
+            return true;
+        }
+        return false;
     }
 
-    public Optional<User> findByAuth0Id(String auth0Id) {
-        return repo.findByAuth0Id(auth0Id);
+    public String getUserId() {
+        Jwt jwt = getJwt();
+        return jwt.getClaimAsString("sub");
+    }
+
+    private Jwt getJwt() {
+        return (Jwt) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+    }
+
+    public String getEmail() {
+        Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return jwt.getClaimAsString("email");
     }
 }

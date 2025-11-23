@@ -6,3 +6,9 @@ spring:
     mongodb:
       uri: ${MONGODB_URI}
       database: Praesto
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${AUTH0_DOMAIN}/
