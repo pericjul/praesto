@@ -6,15 +6,14 @@ export async function load({ locals }) {
     throw redirect(302, "/login");
   }
 
-  // Rollen aus dem JWT (wie bei dir: user.user_roles)
   const roles = locals.user?.user_roles ?? [];
 
   if (roles.includes("STUDENT")) {
-    throw redirect(302, "/dashboard/student");
+    throw redirect(302, "/student/dashboard");
   }
 
   if (roles.includes("TEACHER")) {
-    throw redirect(302, "/dashboard/teacher");
+    throw redirect(302, "/teacher/dashboard");
   }
 
   // Falls jemand keine passende Rolle hat

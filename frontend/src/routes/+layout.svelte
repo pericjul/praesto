@@ -23,7 +23,7 @@
         <nav class="nav-main">
           {#if isStudent}
             <a href="/dashboard" class="nav-link">Dashboard</a>
-            <a href="/assignments" class="nav-link">Aufgaben</a>
+            <a href="/student/assignments" class="nav-link">Aufgaben</a>
             <a href="/interview" class="nav-link">KI Training</a>
             <a href="/notes" class="nav-link">Notizen</a>
             <a href="/badges" class="nav-link">Badges</a>

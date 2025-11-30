@@ -43,6 +43,7 @@
         Aufgaben, KI-Trainings und persönliche Notizen – übersichtlich an einem Ort.
       </p>
 
+
       <!-- NEU: klare Actions -->
       <div class="hero-actions">
         <a href="/assignments" class="btn btn-primary">Zu den Aufgaben</a>
