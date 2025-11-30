@@ -1,0 +1,97 @@
+:root {
+  --color-primary: #2F124D;
+  --color-primary-hover: #4A1C74;
+
+  --color-accent: #F2A43B;
+  --color-accent-hover: #D88924;
+
+  --color-bg: #F8F3EB;
+  --color-muted-bg: #FBF7F1;
+
+  --color-card-bg: #FFFFFF;
+  --color-card-border: #E6D9CC;
+
+  --color-text: #2F124D;
+  --color-text-muted: #5E4C6F;
+
+  --color-error: #C0392B;
+
+  --radius: 16px;
+  --shadow: 0 14px 30px rgba(0, 0, 0, 0.06);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* ---------- Generic UI Kit ---------- */
+
+.app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1;
+  padding: 1.5rem clamp(1rem, 3vw, 3rem);
+}
+
+/* Buttons */
+
+.btn {
+  border-radius: 999px;
+  border: none;
+  padding: 0.55rem 1.3rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text);
+}
+
+/* Cards / Tiles */
+
+.card {
+  background: var(--color-card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--color-card-border);
+  padding: 1.1rem 1.3rem;
+}
+
+/* Simple grid */
+
+.grid {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
