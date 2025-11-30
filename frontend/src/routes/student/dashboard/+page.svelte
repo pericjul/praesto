@@ -46,7 +46,7 @@
 
       <!-- NEU: klare Actions -->
       <div class="hero-actions">
-        <a href="/assignments" class="btn btn-primary">Zu den Aufgaben</a>
+        <a href="/student/assignments" class="btn btn-primary">Zu den Aufgaben</a>
         <a href="/training" class="btn btn-ghost">KI-Training starten</a>
       </div>
     </div>
@@ -103,7 +103,7 @@
       </div>
 
       <footer class="card-footer">
-        <a href="/assignments" class="btn btn-inline">Aufgaben öffnen</a>
+        <a href="/student/assignments" class="btn btn-inline">Aufgaben öffnen</a>
       </footer>
     </article>
 
