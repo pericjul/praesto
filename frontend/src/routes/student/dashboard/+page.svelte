@@ -47,7 +47,7 @@
       <!-- NEU: klare Actions -->
       <div class="hero-actions">
         <a href="/student/assignments" class="btn btn-primary">Zu den Aufgaben</a>
-        <a href="/training" class="btn btn-ghost">KI-Training starten</a>
+        <a href="/student/training" class="btn btn-ghost">KI-Training starten</a>
       </div>
     </div>
 
@@ -142,7 +142,7 @@
       </div>
 
       <footer class="card-footer">
-        <a href="/training" class="btn btn-inline">Training starten</a>
+        <a href="/student/training" class="btn btn-inline">Training starten</a>
       </footer>
     </article>
 

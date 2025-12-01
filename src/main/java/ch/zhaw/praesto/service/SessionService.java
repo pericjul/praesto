@@ -25,6 +25,8 @@ public class SessionService {
 
     /**
      * Neue Session fuer einen Schueler starten.
+     * Wenn assignmentId null ist → freies Training.
+     * Wenn assignmentId gesetzt ist → Aufgabe der Lehrperson als Kontext.
      */
     public Session startSession(StartSessionRequest req) {
 
@@ -36,11 +38,18 @@ public class SessionService {
 
         Session session = Session.builder()
                 .studentId(studentId)
-                .assignmentId(req.getAssignmentId())
+                .assignmentId(req.getAssignmentId()) // kann null sein
                 .status(SessionStatus.OPEN)
                 .startedAt(Instant.now())
                 .messages(new ArrayList<>())
                 .build();
+
+        // zuerst speichern, damit eine ID existiert
+        session = sessionRepository.save(session);
+
+        // Intro Nachricht von der KI erzeugen
+        SessionMessage intro = interviewAiService.buildIntroMessage(session);
+        session.getMessages().add(intro);
 
         return sessionRepository.save(session);
     }
@@ -80,7 +89,7 @@ public class SessionService {
                 .build();
         session.getMessages().add(userMsg);
 
-        // KI Antwort erzeugen
+        // KI Antwort erzeugen (erweiterte Logik)
         String aiText = interviewAiService.answer(
                 session.getMessages(),
                 req.getMessage()
@@ -93,8 +102,7 @@ public class SessionService {
                 .build();
         session.getMessages().add(aiMsg);
 
-        // Optional: hier koenntest du spaeter eine Logik einbauen,
-        // um die Session zu schliessen (z B nach X Fragen)
+        // spaeter koenntest du hier Session ggf. schliessen (Score etc.)
 
         return sessionRepository.save(session);
     }

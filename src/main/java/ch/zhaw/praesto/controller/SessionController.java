@@ -2,7 +2,9 @@ package ch.zhaw.praesto.controller;
 
 import ch.zhaw.praesto.exception.ForbiddenException;
 import ch.zhaw.praesto.exception.NotFoundException;
-import ch.zhaw.praesto.model.*;
+import ch.zhaw.praesto.model.ChatMessageRequest;
+import ch.zhaw.praesto.model.Session;
+import ch.zhaw.praesto.model.StartSessionRequest;
 import ch.zhaw.praesto.repository.AssignmentRepository;
 import ch.zhaw.praesto.service.SessionService;
 import ch.zhaw.praesto.service.UserService;

@@ -1,10 +1,14 @@
 package ch.zhaw.praesto.service;
 
+import ch.zhaw.praesto.model.Assignment;
+import ch.zhaw.praesto.model.Session;
 import ch.zhaw.praesto.model.SessionMessage;
+import ch.zhaw.praesto.repository.AssignmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -12,22 +16,85 @@ import java.util.List;
 public class InterviewAiService {
 
     private final ChatClient chatClient;
+    private final AssignmentRepository assignmentRepository;
+    private final UserService userService;
 
     /**
-     * Erzeugt eine KI Antwort fuer ein Bewerbungsinterview.
+     * Intro Nachricht fuer eine neue Session.
+     * - Fall A: freies Training (keine assignmentId)
+     * - Fall B: Uebung wurde als Aufgabe gestartet (assignmentId gesetzt)
+     */
+    public SessionMessage buildIntroMessage(Session session) {
+
+        String studentName = userService.getEmail();
+        String namePart = (studentName != null && !studentName.isBlank())
+                ? "Hi " + studentName + " 👋"
+                : "Hi 👋";
+
+        String content;
+
+        if (session.getAssignmentId() == null) {
+            // Freies Training
+            content = """
+                    %s
+
+                    Heute simulieren wir gemeinsam ein Bewerbungsgespraech.
+                    Ich stelle dir nacheinander realistische Fragen und gebe dir jeweils Feedback zu deiner Antwort.
+
+                    Lass uns starten:
+
+                    1️⃣ Fuer welchen Beruf interessierst du dich im Moment am meisten?
+                    2️⃣ Und falls du schon eine Firma im Kopf hast: Fuer welches Unternehmen moechtest du dich bewerben?
+
+                    Schreibe einfach in ganzen Saetzen – so wie du es in einem echten Gespraech sagen wuerdest.
+                    """.formatted(namePart);
+        } else {
+            // Training aus Assignment gestartet
+            Assignment assignment = assignmentRepository.findById(session.getAssignmentId())
+                    .orElse(null);
+
+            String assignmentTitle = assignment != null
+                    ? assignment.getTitle()
+                    : "deine Uebungsaufgabe";
+
+            content = """
+                    %s
+
+                    Deine Lehrperson hat dir die Aufgabe "%s" gegeben.
+                    Heute kannst du entscheiden, ob du diese Aufgabe jetzt gezielt abschliessen oder einfach frei ueben moechtest.
+
+                    Antworte bitte zunaechst:
+
+                    👉 "Aufgabe machen"  – wenn du die Uebung "%s" jetzt erledigen willst
+                    👉 "Einfach ueben"   – wenn du ohne Bezug zur Aufgabe trainieren moechtest
+
+                    Danach stelle ich dir passende Fragen und gebe dir jeweils Feedback.
+                    """
+                    .formatted(namePart, assignmentTitle, assignmentTitle);
+        }
+
+        return SessionMessage.builder()
+                .role("ASSISTANT")
+                .content(content)
+                .createdAt(Instant.now())
+                .build();
+    }
+
+    /**
+     * Erzeugt eine KI Antwort fuer ein Bewerbungsinterview (erweiterte Logik).
      *
-     * @param history         bisheriger Verlauf der Session (Student + KI)
-     * @param lastUserMessage letzte Antwort des Schuelers
-     * @return Text der KI Antwort (Feedback + Tipp + naechste Frage)
+     * - Nutzt bisherigen Verlauf (history)
+     * - Gibt immer: Feedback, Tipp, naechste Frage
      */
     public String answer(List<SessionMessage> history, String lastUserMessage) {
 
-        // Verlauf kurz zusammenfassen (optional, nur Kontext)
         StringBuilder verlaufKurz = new StringBuilder();
-        if (history != null) {
+        if (history != null && !history.isEmpty()) {
             history.forEach(m -> verlaufKurz
-                    .append(m.getRole()).append(": ")
-                    .append(m.getContent()).append("\n"));
+                    .append(m.getRole())
+                    .append(": ")
+                    .append(m.getContent())
+                    .append("\n"));
         }
 
         String systemPrompt = """
@@ -35,15 +102,15 @@ public class InterviewAiService {
                 Du simulierst ein echtes Bewerbungsgespraech.
 
                 WICHTIG:
-                - Stelle Fragen wie in einem realen Bewerbungsgespraech (Lehrstelle / Einstieg ins Berufsleben).
+                - Stelle Fragen passend zur Situation (z B Branche, Lehrstelle, Firma).
                 - Sprich in einfachem, klaren Deutsch.
-                - Sei wertschätzend, motivierend und konstruktiv, nicht streng oder abwertend.
-                - Nach jeder Antwort des Schuelers machst du IMMER:
-                  1) Kurzes Feedback (2 bis 3 Saetze): Was war gut?
-                  2) Konkreten Verbesserungsvorschlag mit Beispielsaetzen.
-                  3) Dann genau EINE neue passende Interviewfrage.
+                - Sei wertschaetzend, motivierend und konstruktiv.
+                - Nach jeder Antwort des Schuelers:
+                  1) Kurzes Feedback (2 bis 3 Saetze)
+                  2) Konkreter Verbesserungstipp mit Beispielsaetzen
+                  3) Genau EINE neue Interviewfrage.
 
-                Antworte IMMER genau in diesem Format:
+                Antworte IMMER exakt in diesem Format:
 
                 Feedback:
                 <dein Feedback>
@@ -63,8 +130,10 @@ public class InterviewAiService {
                 "%s"
 
                 Bitte gib jetzt Feedback, Tipp und stelle eine neue Frage im vereinbarten Format.
-                """.formatted(verlaufKurz.toString(), lastUserMessage);
+                """
+                .formatted(verlaufKurz.toString(), lastUserMessage);
 
+        // WICHTIG: neuer Spring AI Aufruf (kein call(String) mehr)
         return chatClient
                 .prompt()
                 .system(systemPrompt)
@@ -74,7 +143,7 @@ public class InterviewAiService {
     }
 
     /**
-     * Optionales Overload, falls du spaeter noch Kontext aus Assignment / Beruf mitgeben willst.
+     * Variante mit zusaetzlichem Aufgaben-Kontext (falls du spaeter brauchst).
      */
     public String answerWithContext(List<SessionMessage> history,
                                     String lastUserMessage,
@@ -87,26 +156,28 @@ public class InterviewAiService {
         }
 
         StringBuilder verlaufKurz = new StringBuilder();
-        if (history != null) {
+        if (history != null && !history.isEmpty()) {
             history.forEach(m -> verlaufKurz
-                    .append(m.getRole()).append(": ")
-                    .append(m.getContent()).append("\n"));
+                    .append(m.getRole())
+                    .append(": ")
+                    .append(m.getContent())
+                    .append("\n"));
         }
 
         String systemPrompt = """
                 Du bist ein freundlicher Bewerbungscoach fuer Jugendliche in der Schweiz (15 bis 20 Jahre).
-                Du simulierst ein echtes Bewerbungsgespraech und passt deine Fragen an den Kontext der Aufgabe an.
+                Du simulierst ein echtes Bewerbungsgespraech und beruecksichtigst den Kontext der Aufgabe.
 
                 WICHTIG:
-                - Stelle Fragen passend zur Situation (z.B. Branche, Lehrstelle, Firma).
+                - Stelle Fragen passend zur Situation (z B Branche, Lehrstelle, Firma, Aufgabe).
                 - Sprich in einfachem, klaren Deutsch.
-                - Sei wertschätzend, motivierend und konstruktiv.
+                - Sei wertschaetzend, motivierend und konstruktiv.
                 - Nach jeder Antwort des Schuelers:
                   1) Kurzes Feedback (2 bis 3 Saetze)
                   2) Konkreter Verbesserungstipp mit Beispielsaetzen
                   3) Genau EINE neue Interviewfrage.
 
-                Format:
+                Antworte IMMER exakt in diesem Format:
 
                 Feedback:
                 <dein Feedback>
@@ -127,7 +198,8 @@ public class InterviewAiService {
                 "%s"
 
                 Bitte gib jetzt Feedback, Tipp und stelle eine neue Frage im vereinbarten Format.
-                """.formatted(contextPrefix, verlaufKurz.toString(), lastUserMessage);
+                """
+                .formatted(contextPrefix, verlaufKurz.toString(), lastUserMessage);
 
         return chatClient
                 .prompt()
