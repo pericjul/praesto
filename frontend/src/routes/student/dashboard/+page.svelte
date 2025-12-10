@@ -11,7 +11,8 @@
     lastSessionStartedAt,
     totalSessionsCount = 0,
     badgesCount = 0,
-    notesCount = 0
+    notesCount = 0,
+    applicationsCount = 0
   } = dashboard;
 
   function formatDate(date) {
@@ -209,6 +210,39 @@
 
       <footer class="card-footer">
         <a href="/student/notes" class="btn btn-inline">Notizen öffnen</a>
+      </footer>
+    </article>
+
+    <!-- Bewerbungen -->
+    <article class="card">
+      <header class="card-header">
+        <div class="card-title-row">
+          <span class="card-icon">📊</span>
+          <div>
+            <h2 class="card-title">Bewerbungen</h2>
+            <p class="card-subtitle">Dein Bewerbungs-Tracker.</p>
+          </div>
+        </div>
+        <span class="card-tag">
+          {applicationsCount} Bewerbungen
+        </span>
+      </header>
+
+      <div class="card-body">
+        {#if applicationsCount === 0}
+          <p class="card-empty">
+            Behalte den Überblick über deine Bewerbungen. Tracke Status, 
+            Gesprächstermine und Rückmeldungen an einem Ort.
+          </p>
+        {:else}
+          <p class="card-empty">
+            Du trackst {applicationsCount} Bewerbungen. Weiter so! 💪
+          </p>
+        {/if}
+      </div>
+
+      <footer class="card-footer">
+        <a href="/student/applications" class="btn btn-inline">Bewerbungen öffnen</a>
       </footer>
     </article>
   </section>
