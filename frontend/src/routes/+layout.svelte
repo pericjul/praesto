@@ -56,16 +56,24 @@
 
 <style>
   .app-header {
-    position: sticky;
+    position: fixed;
     top: 0;
-    z-index: 10;
+    left: 0;
+    right: 0;
+    z-index: 100;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem clamp(1rem, 3vw, 3rem);
-    background: rgba(248, 243, 235, 0.92);
+    background: rgba(248, 243, 235, 0.97);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--color-card-border);
+    height: 54px;
+    box-sizing: border-box;
+  }
+
+  .app-main {
+    padding-top: 54px; /* Platz für fixierte Navbar */
   }
 
   .app-header-left {

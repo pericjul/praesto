@@ -3,13 +3,17 @@ package ch.zhaw.praesto.service;
 import ch.zhaw.praesto.exception.BadRequestException;
 import ch.zhaw.praesto.exception.ForbiddenException;
 import ch.zhaw.praesto.exception.NotFoundException;
-import ch.zhaw.praesto.model.ChatMessageRequest;
 import ch.zhaw.praesto.model.Session;
 import ch.zhaw.praesto.model.SessionMessage;
 import ch.zhaw.praesto.model.SessionStatus;
-import ch.zhaw.praesto.model.StartSessionRequest;
 import ch.zhaw.praesto.repository.SessionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -23,48 +27,61 @@ public class SessionService {
 
     private final SessionRepository sessionRepository;
     private final UserService userService;
-    private final InterviewAiService interviewAiService;
+    private final ChatClient chatClient;
+
+    private static final String SYSTEM_PROMPT = """
+            Du bist ein freundlicher Bewerbungscoach fuer Jugendliche in der Schweiz (14 bis 20 Jahre).
+            Du hilfst ihnen, sich auf Bewerbungsgespraeche vorzubereiten.
+            
+            Deine Aufgaben:
+            - Stelle typische Interviewfragen (z.B. "Erzaehl mir etwas ueber dich", "Warum moechtest du diese Lehrstelle?")
+            - Gib kurzes, konstruktives Feedback auf Antworten
+            - Gib konkrete Tipps zur Verbesserung
+            - Sei ermutigend und positiv
+            
+            Wichtig:
+            - Sprich einfaches, klares Deutsch
+            - Halte Antworten kurz (max 3-4 Saetze)
+            - Stelle immer nur EINE Frage auf einmal
+            - Sei wertschaetzend und motivierend
+            
+            Beginne das Gespraech mit einer freundlichen Begruessung und frage, fuer welchen Beruf sich die Person interessiert.
+            """;
 
     /**
      * Neue Session fuer einen Schueler starten.
-     * Wenn assignmentId null ist → freies Training.
-     * Wenn assignmentId gesetzt ist → Aufgabe der Lehrperson als Kontext.
      */
-    public Session startSession(StartSessionRequest req) {
-
+    public Session startSession() {
         if (!userService.userHasRole("STUDENT")) {
             throw new ForbiddenException("Nur Schueler duerfen Sessions starten");
         }
 
         String studentId = userService.getUserId();
 
+        // Erste KI-Nachricht generieren
+        String initialMessage = getInitialAIMessage();
+
+        List<SessionMessage> messages = new ArrayList<>();
+        messages.add(SessionMessage.builder()
+                .role("ASSISTANT")
+                .content(initialMessage)
+                .createdAt(Instant.now())
+                .build());
+
         Session session = Session.builder()
                 .studentId(studentId)
-                .assignmentId(req.getAssignmentId()) // kann null sein
                 .status(SessionStatus.OPEN)
                 .startedAt(Instant.now())
-                .messages(new ArrayList<>())
+                .messages(messages)
                 .build();
-
-        // zuerst speichern, damit eine ID existiert
-        session = sessionRepository.save(session);
-
-        // Intro Nachricht von der KI erzeugen
-        SessionMessage intro = interviewAiService.buildIntroMessage(session);
-        session.getMessages().add(intro);
 
         return sessionRepository.save(session);
     }
 
     /**
-     * Nachricht senden und KI Antwort holen.
+     * Nachricht hinzufuegen und KI-Antwort erhalten.
      */
-    public Session sendMessage(String sessionId, ChatMessageRequest req) {
-
-        if (!userService.userHasRole("STUDENT")) {
-            throw new ForbiddenException("Nur Schueler duerfen Nachrichten senden");
-        }
-
+    public Session addMessageAndGetAIResponse(String sessionId, String userMessage) {
         String studentId = userService.getUserId();
 
         Session session = sessionRepository.findById(sessionId)
@@ -74,37 +91,67 @@ public class SessionService {
             throw new ForbiddenException("Keine Berechtigung fuer diese Session");
         }
 
-        if (session.getStatus() != SessionStatus.OPEN) {
-            throw new ForbiddenException("Session ist geschlossen");
+        if (session.getStatus() == SessionStatus.CLOSED) {
+            throw new BadRequestException("Session ist bereits geschlossen");
         }
 
-        // Liste initialisieren, falls noch leer
-        if (session.getMessages() == null) {
-            session.setMessages(new ArrayList<>());
-        }
-
-        // Schueler Nachricht
-        SessionMessage userMsg = SessionMessage.builder()
+        // User-Nachricht hinzufuegen
+        session.getMessages().add(SessionMessage.builder()
                 .role("USER")
-                .content(req.getMessage())
+                .content(userMessage)
                 .createdAt(Instant.now())
-                .build();
-        session.getMessages().add(userMsg);
+                .build());
 
-        // KI Antwort erzeugen (erweiterte Logik)
-        String aiText = interviewAiService.answer(
-                session.getMessages(),
-                req.getMessage()
-        );
+        // KI-Antwort generieren
+        String aiResponse = getAIResponse(session.getMessages());
 
-        SessionMessage aiMsg = SessionMessage.builder()
+        // KI-Antwort hinzufuegen
+        session.getMessages().add(SessionMessage.builder()
                 .role("ASSISTANT")
-                .content(aiText)
+                .content(aiResponse)
                 .createdAt(Instant.now())
-                .build();
-        session.getMessages().add(aiMsg);
+                .build());
 
         return sessionRepository.save(session);
+    }
+
+    /**
+     * Initiale KI-Begruessung generieren.
+     */
+    private String getInitialAIMessage() {
+        try {
+            return chatClient
+                    .prompt(SYSTEM_PROMPT + "\n\nBitte begruesse den Schueler freundlich und beginne das Bewerbungstraining.")
+                    .call()
+                    .content();
+        } catch (Exception e) {
+            return "Hallo! 👋 Ich bin dein Bewerbungscoach. Ich helfe dir, dich auf Vorstellungsgespraeche vorzubereiten. Fuer welchen Beruf interessierst du dich?";
+        }
+    }
+
+    /**
+     * KI-Antwort basierend auf Konversationshistorie generieren.
+     */
+    private String getAIResponse(List<SessionMessage> messages) {
+        try {
+            // Konversation aufbauen
+            List<Message> chatMessages = new ArrayList<>();
+            chatMessages.add(new SystemMessage(SYSTEM_PROMPT));
+
+            for (SessionMessage msg : messages) {
+                if ("USER".equals(msg.getRole())) {
+                    chatMessages.add(new UserMessage(msg.getContent()));
+                } else if ("ASSISTANT".equals(msg.getRole())) {
+                    chatMessages.add(new AssistantMessage(msg.getContent()));
+                }
+            }
+
+            Prompt prompt = new Prompt(chatMessages);
+            return chatClient.prompt(prompt).call().content();
+        } catch (Exception e) {
+            System.err.println("KI-Fehler: " + e.getMessage());
+            return "Entschuldigung, es gab einen Fehler. Kannst du das bitte nochmal versuchen?";
+        }
     }
 
     /**
@@ -135,7 +182,7 @@ public class SessionService {
     }
 
     /**
-     * Eine einzelne Session holen (mit Ownership-Check fuer Students).
+     * Eine einzelne Session holen.
      */
     public Session getSessionById(String sessionId) {
         String userId = userService.getUserId();
@@ -145,12 +192,10 @@ public class SessionService {
         Session session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new NotFoundException("Session nicht gefunden"));
 
-        // Students duerfen nur eigene Sessions sehen
         if (isStudent && !userId.equals(session.getStudentId())) {
             throw new ForbiddenException("Keine Berechtigung fuer diese Session");
         }
 
-        // Teacher duerfen alle Sessions sehen (spaeter ggf. einschraenken auf eigene Klassen)
         if (!isStudent && !isTeacher) {
             throw new ForbiddenException("Keine Berechtigung");
         }
@@ -159,19 +204,11 @@ public class SessionService {
     }
 
     /**
-     * Alle Sessions fuer einen Schueler (sortiert nach Datum, neueste zuerst).
+     * Alle Sessions fuer einen Schueler.
      */
     public List<Session> getSessionsForStudent(String studentId) {
         List<Session> sessions = sessionRepository.findByStudentId(studentId);
-        // Sortieren: neueste zuerst
         sessions.sort(Comparator.comparing(Session::getStartedAt).reversed());
         return sessions;
-    }
-
-    /**
-     * Alle Sessions fuer ein Assignment (z B fuer Lehrer Uebersicht).
-     */
-    public List<Session> getSessionsForAssignment(String assignmentId) {
-        return sessionRepository.findByAssignmentId(assignmentId);
     }
 }

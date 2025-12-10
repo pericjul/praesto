@@ -1,16 +1,27 @@
 package ch.zhaw.praesto.config;
 
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.ai.chat.client.ChatClient;
 
 @Configuration
 public class OpenAiConfig {
 
+    @Autowired
+    OpenAiChatModel chatModel;
+
     @Bean
-    public ChatClient chatClient(OpenAiChatModel chatModel) {
-        // OpenAiChatModel kommt vom Spring AI Starter
-        return ChatClient.builder(chatModel).build();
+    public ChatClient chatClient() {
+        MessageChatMemoryAdvisor chatMemoryAdvisor = MessageChatMemoryAdvisor
+                .builder(MessageWindowChatMemory.builder().build())
+                .build();
+        return ChatClient.builder(chatModel)
+                .defaultAdvisors(chatMemoryAdvisor, new SimpleLoggerAdvisor())
+                .build();
     }
 }
