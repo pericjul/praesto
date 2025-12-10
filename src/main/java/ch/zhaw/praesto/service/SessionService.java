@@ -1,5 +1,6 @@
 package ch.zhaw.praesto.service;
 
+import ch.zhaw.praesto.exception.BadRequestException;
 import ch.zhaw.praesto.exception.ForbiddenException;
 import ch.zhaw.praesto.exception.NotFoundException;
 import ch.zhaw.praesto.model.ChatMessageRequest;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -102,16 +104,68 @@ public class SessionService {
                 .build();
         session.getMessages().add(aiMsg);
 
-        // spaeter koenntest du hier Session ggf. schliessen (Score etc.)
+        return sessionRepository.save(session);
+    }
+
+    /**
+     * Session schliessen.
+     */
+    public Session closeSession(String sessionId) {
+        if (!userService.userHasRole("STUDENT")) {
+            throw new ForbiddenException("Nur Schueler duerfen Sessions schliessen");
+        }
+
+        String studentId = userService.getUserId();
+
+        Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new NotFoundException("Session nicht gefunden"));
+
+        if (!studentId.equals(session.getStudentId())) {
+            throw new ForbiddenException("Keine Berechtigung fuer diese Session");
+        }
+
+        if (session.getStatus() == SessionStatus.CLOSED) {
+            throw new BadRequestException("Session ist bereits geschlossen");
+        }
+
+        session.setStatus(SessionStatus.CLOSED);
+        session.setClosedAt(Instant.now());
 
         return sessionRepository.save(session);
     }
 
     /**
-     * Alle Sessions fuer einen Schueler.
+     * Eine einzelne Session holen (mit Ownership-Check fuer Students).
+     */
+    public Session getSessionById(String sessionId) {
+        String userId = userService.getUserId();
+        boolean isStudent = userService.userHasRole("STUDENT");
+        boolean isTeacher = userService.userHasRole("TEACHER");
+
+        Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new NotFoundException("Session nicht gefunden"));
+
+        // Students duerfen nur eigene Sessions sehen
+        if (isStudent && !userId.equals(session.getStudentId())) {
+            throw new ForbiddenException("Keine Berechtigung fuer diese Session");
+        }
+
+        // Teacher duerfen alle Sessions sehen (spaeter ggf. einschraenken auf eigene Klassen)
+        if (!isStudent && !isTeacher) {
+            throw new ForbiddenException("Keine Berechtigung");
+        }
+
+        return session;
+    }
+
+    /**
+     * Alle Sessions fuer einen Schueler (sortiert nach Datum, neueste zuerst).
      */
     public List<Session> getSessionsForStudent(String studentId) {
-        return sessionRepository.findByStudentId(studentId);
+        List<Session> sessions = sessionRepository.findByStudentId(studentId);
+        // Sortieren: neueste zuerst
+        sessions.sort(Comparator.comparing(Session::getStartedAt).reversed());
+        return sessions;
     }
 
     /**

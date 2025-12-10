@@ -1,0 +1,96 @@
+import { redirect } from "@sveltejs/kit";
+
+const API_BASE = "http://localhost:8080/api";
+
+export async function load({ locals, fetch }) {
+    if (!locals.isAuthenticated) {
+        throw redirect(302, "/login");
+    }
+
+    const token = locals.jwt_token;
+    const headers = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+    };
+
+    try {
+        const res = await fetch(`${API_BASE}/sessions`, {
+            method: "GET",
+            headers
+        });
+
+        if (!res.ok) {
+            console.error("Fehler beim Laden der Sessions", await res.text());
+            return { sessions: [], error: "Sessions konnten nicht geladen werden" };
+        }
+
+        const sessions = await res.json();
+
+        return {
+            sessions
+        };
+    } catch (err) {
+        console.error("Netzwerkfehler", err);
+        return { sessions: [], error: "Verbindungsfehler" };
+    }
+}
+
+export const actions = {
+    // Neue Session starten
+    start: async ({ locals, fetch, request }) => {
+        if (!locals.isAuthenticated) {
+            throw redirect(302, "/login");
+        }
+
+        const token = locals.jwt_token;
+        const headers = {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+        };
+
+        const formData = await request.formData();
+        const assignmentId = formData.get("assignmentId") || null;
+
+        const res = await fetch(`${API_BASE}/sessions`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ assignmentId })
+        });
+
+        if (!res.ok) {
+            return { error: "Session konnte nicht gestartet werden" };
+        }
+
+        const session = await res.json();
+        
+        // Redirect zur neuen Session
+        throw redirect(302, `/student/sessions/${session.id}`);
+    },
+
+    // Session schliessen
+    close: async ({ locals, fetch, request }) => {
+        if (!locals.isAuthenticated) {
+            throw redirect(302, "/login");
+        }
+
+        const token = locals.jwt_token;
+        const headers = {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+        };
+
+        const formData = await request.formData();
+        const sessionId = formData.get("sessionId");
+
+        const res = await fetch(`${API_BASE}/sessions/${sessionId}/close`, {
+            method: "PUT",
+            headers
+        });
+
+        if (!res.ok) {
+            return { error: "Session konnte nicht geschlossen werden" };
+        }
+
+        return { success: true };
+    }
+};

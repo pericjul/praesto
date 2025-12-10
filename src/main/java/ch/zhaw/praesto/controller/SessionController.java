@@ -35,6 +35,13 @@ public class SessionController {
         return ResponseEntity.ok(session);
     }
 
+    // Einzelne Session holen
+    @GetMapping("/{id}")
+    public ResponseEntity<Session> getSessionById(@PathVariable String id) {
+        Session session = sessionService.getSessionById(id);
+        return ResponseEntity.ok(session);
+    }
+
     // Nachricht senden (nur Student)
     @PostMapping("/{id}/messages")
     public ResponseEntity<Session> sendMessage(
@@ -48,6 +55,13 @@ public class SessionController {
 
         Session updated = sessionService.sendMessage(id, req);
         return ResponseEntity.ok(updated);
+    }
+
+    // Session schliessen (nur Student, nur eigene)
+    @PutMapping("/{id}/close")
+    public ResponseEntity<Session> closeSession(@PathVariable String id) {
+        Session closed = sessionService.closeSession(id);
+        return ResponseEntity.ok(closed);
     }
 
     // eigene Sessions ansehen (nur Student)

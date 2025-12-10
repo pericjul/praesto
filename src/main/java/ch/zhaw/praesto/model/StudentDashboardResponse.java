@@ -21,10 +21,16 @@ public class StudentDashboardResponse {
     private String lastSessionId;
     private Instant lastSessionStartedAt;
     private int totalSessionsCount;
+    
+    // Offene Session zum Fortsetzen (falls vorhanden)
+    private String openSessionId;
 
     // Badges (vorerst Platzhalter)
     private int badgesCount;
 
     // Notizen (vorerst Platzhalter)
     private int notesCount;
+    
+    // Bewerbungen (vorerst Platzhalter)
+    private int applicationsCount;
 }

@@ -22,16 +22,14 @@
       {#if isAuthenticated}
         <nav class="nav-main">
           {#if isStudent}
-            <a href="/dashboard" class="nav-link">Dashboard</a>
+            <a href="/student/dashboard" class="nav-link">Dashboard</a>
             <a href="/student/assignments" class="nav-link">Aufgaben</a>
-            <a href="/interview" class="nav-link">KI Training</a>
-            <a href="/notes" class="nav-link">Notizen</a>
-            <a href="/badges" class="nav-link">Badges</a>
+            <a href="/student/sessions" class="nav-link">Training</a>
           {:else if isTeacher}
-            <a href="/dashboard" class="nav-link">Dashboard</a>
-            <a href="/classes" class="nav-link">Klassen</a>
-            <a href="/assignments" class="nav-link">Aufgaben</a>
-            <a href="/sessions" class="nav-link">Sessions</a>
+            <a href="/teacher/dashboard" class="nav-link">Dashboard</a>
+            <a href="/teacher/classes" class="nav-link">Klassen</a>
+            <a href="/teacher/assignments" class="nav-link">Aufgaben</a>
+            <a href="/teacher/sessions" class="nav-link">Sessions</a>
           {/if}
         </nav>
       {/if}
