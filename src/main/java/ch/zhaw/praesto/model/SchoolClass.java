@@ -23,43 +23,44 @@ public class SchoolClass {
     private String teacherId;       // Auth0-ID des Lehrers
 
     @Builder.Default
-    private List<String> studentIds = new ArrayList<>();  // Auth0-IDs der Schüler
+    private List<String> studentEmails = new ArrayList<>();  // Emails der Schüler
 
     private Instant createdAt;
     private Instant updatedAt;
 
     /**
-     * Schüler zur Klasse hinzufügen.
+     * Schüler zur Klasse hinzufügen (per Email).
      */
-    public void addStudent(String studentId) {
-        if (studentIds == null) {
-            studentIds = new ArrayList<>();
+    public void addStudent(String email) {
+        if (studentEmails == null) {
+            studentEmails = new ArrayList<>();
         }
-        if (!studentIds.contains(studentId)) {
-            studentIds.add(studentId);
+        String normalizedEmail = email.toLowerCase().trim();
+        if (!studentEmails.contains(normalizedEmail)) {
+            studentEmails.add(normalizedEmail);
         }
     }
 
     /**
      * Schüler aus Klasse entfernen.
      */
-    public void removeStudent(String studentId) {
-        if (studentIds != null) {
-            studentIds.remove(studentId);
+    public void removeStudent(String email) {
+        if (studentEmails != null) {
+            studentEmails.remove(email.toLowerCase().trim());
         }
     }
 
     /**
      * Prüfen ob Schüler in Klasse ist.
      */
-    public boolean hasStudent(String studentId) {
-        return studentIds != null && studentIds.contains(studentId);
+    public boolean hasStudent(String email) {
+        return studentEmails != null && studentEmails.contains(email.toLowerCase().trim());
     }
 
     /**
      * Anzahl Schüler.
      */
     public int getStudentCount() {
-        return studentIds != null ? studentIds.size() : 0;
+        return studentEmails != null ? studentEmails.size() : 0;
     }
 }

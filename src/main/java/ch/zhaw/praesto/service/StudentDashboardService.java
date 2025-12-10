@@ -20,6 +20,7 @@ import java.util.List;
 public class StudentDashboardService {
 
     private final UserService userService;
+    private final SchoolClassService schoolClassService;
     private final AssignmentRepository assignmentRepository;
     private final SessionRepository sessionRepository;
     private final NoteRepository noteRepository;
@@ -28,7 +29,9 @@ public class StudentDashboardService {
     public StudentDashboardResponse getDashboardForCurrentStudent() {
         String studentId = userService.getUserId();
         String studentName = userService.getUserName();
-        String classId = userService.getClassId();
+        
+        // ClassId über SchoolClassService holen (sucht per Email)
+        String classId = schoolClassService.getMyClassId();
 
         // Assignments der Klasse holen (oder alle wenn keine Klasse zugeordnet)
         List<Assignment> allAssignments;

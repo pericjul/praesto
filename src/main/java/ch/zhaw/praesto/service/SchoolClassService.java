@@ -42,7 +42,7 @@ public class SchoolClassService {
         SchoolClass schoolClass = SchoolClass.builder()
                 .name(dto.getName().trim())
                 .teacherId(teacherId)
-                .studentIds(dto.getStudentIds() != null ? dto.getStudentIds() : new ArrayList<>())
+                .studentEmails(new ArrayList<>())
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
@@ -63,24 +63,14 @@ public class SchoolClassService {
     }
 
     /**
-     * Alle Klassen (für Admin oder Übersicht).
-     */
-    public List<SchoolClass> getAllClasses() {
-        if (!userService.userHasRole("TEACHER")) {
-            throw new ForbiddenException("Keine Berechtigung");
-        }
-        return schoolClassRepository.findAll();
-    }
-
-    /**
      * Eine Klasse nach ID holen.
      */
     public SchoolClass getClassById(String classId) {
         SchoolClass schoolClass = schoolClassRepository.findById(classId)
                 .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
 
-        // Lehrer darf nur eigene Klassen sehen, Schüler nur ihre Klasse
         String userId = userService.getUserId();
+        String userEmail = userService.getEmail();
         boolean isTeacher = userService.userHasRole("TEACHER");
         boolean isStudent = userService.userHasRole("STUDENT");
 
@@ -88,7 +78,7 @@ public class SchoolClassService {
             throw new ForbiddenException("Keine Berechtigung fuer diese Klasse");
         }
 
-        if (isStudent && !schoolClass.hasStudent(userId)) {
+        if (isStudent && !schoolClass.hasStudent(userEmail)) {
             throw new ForbiddenException("Du bist nicht in dieser Klasse");
         }
 
@@ -96,16 +86,28 @@ public class SchoolClassService {
     }
 
     /**
-     * Klasse des aktuellen Schülers holen.
+     * Klasse des aktuellen Schülers holen (per Email aus JWT).
      */
     public SchoolClass getMyClass() {
         if (!userService.userHasRole("STUDENT")) {
             throw new ForbiddenException("Nur Schueler haben eine Klasse");
         }
 
-        String studentId = userService.getUserId();
-        return schoolClassRepository.findFirstByStudentIdsContaining(studentId)
+        String email = userService.getEmail();
+        return schoolClassRepository.findFirstByStudentEmailsContaining(email.toLowerCase())
                 .orElseThrow(() -> new NotFoundException("Du bist keiner Klasse zugeordnet"));
+    }
+
+    /**
+     * ClassId des aktuellen Schülers holen (für Dashboard etc.).
+     */
+    public String getMyClassId() {
+        String email = userService.getEmail();
+        if (email == null) return null;
+        
+        return schoolClassRepository.findFirstByStudentEmailsContaining(email.toLowerCase())
+                .map(SchoolClass::getId)
+                .orElse(null);
     }
 
     /**
@@ -125,7 +127,6 @@ public class SchoolClassService {
         }
 
         if (dto.getName() != null && !dto.getName().isBlank()) {
-            // Prüfen ob neuer Name bereits vergeben (ausser bei gleicher Klasse)
             if (!schoolClass.getName().equals(dto.getName().trim()) &&
                     schoolClassRepository.existsByName(dto.getName().trim())) {
                 throw new BadRequestException("Eine Klasse mit diesem Namen existiert bereits");
@@ -133,20 +134,25 @@ public class SchoolClassService {
             schoolClass.setName(dto.getName().trim());
         }
 
-        if (dto.getStudentIds() != null) {
-            schoolClass.setStudentIds(dto.getStudentIds());
-        }
-
         schoolClass.setUpdatedAt(Instant.now());
         return schoolClassRepository.save(schoolClass);
     }
 
     /**
-     * Schüler zur Klasse hinzufügen.
+     * Schüler zur Klasse hinzufügen (per Email).
      */
-    public SchoolClass addStudentToClass(String classId, String studentId) {
+    public SchoolClass addStudentToClass(String classId, String studentEmail) {
         if (!userService.userHasRole("TEACHER")) {
             throw new ForbiddenException("Nur Lehrer duerfen Schueler hinzufuegen");
+        }
+
+        if (studentEmail == null || studentEmail.isBlank()) {
+            throw new BadRequestException("Email ist erforderlich");
+        }
+
+        // Einfache Email-Validierung
+        if (!studentEmail.contains("@")) {
+            throw new BadRequestException("Ungueltige Email-Adresse");
         }
 
         SchoolClass schoolClass = schoolClassRepository.findById(classId)
@@ -157,7 +163,14 @@ public class SchoolClassService {
             throw new ForbiddenException("Keine Berechtigung fuer diese Klasse");
         }
 
-        schoolClass.addStudent(studentId);
+        String normalizedEmail = studentEmail.toLowerCase().trim();
+        
+        // Prüfen ob Email schon in dieser Klasse ist
+        if (schoolClass.hasStudent(normalizedEmail)) {
+            throw new BadRequestException("Dieser Schueler ist bereits in der Klasse");
+        }
+
+        schoolClass.addStudent(normalizedEmail);
         schoolClass.setUpdatedAt(Instant.now());
         return schoolClassRepository.save(schoolClass);
     }
@@ -165,7 +178,7 @@ public class SchoolClassService {
     /**
      * Schüler aus Klasse entfernen.
      */
-    public SchoolClass removeStudentFromClass(String classId, String studentId) {
+    public SchoolClass removeStudentFromClass(String classId, String studentEmail) {
         if (!userService.userHasRole("TEACHER")) {
             throw new ForbiddenException("Nur Lehrer duerfen Schueler entfernen");
         }
@@ -178,7 +191,7 @@ public class SchoolClassService {
             throw new ForbiddenException("Keine Berechtigung fuer diese Klasse");
         }
 
-        schoolClass.removeStudent(studentId);
+        schoolClass.removeStudent(studentEmail);
         schoolClass.setUpdatedAt(Instant.now());
         return schoolClassRepository.save(schoolClass);
     }

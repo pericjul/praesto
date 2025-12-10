@@ -14,14 +14,14 @@ public interface SchoolClassRepository extends MongoRepository<SchoolClass, Stri
     List<SchoolClass> findByTeacherId(String teacherId);
 
     /**
-     * Klasse finden in der ein bestimmter Schüler ist.
+     * Klasse finden in der ein bestimmter Schüler ist (per Email).
      */
-    List<SchoolClass> findByStudentIdsContaining(String studentId);
+    List<SchoolClass> findByStudentEmailsContaining(String email);
 
     /**
-     * Erste Klasse eines Schülers finden (normalerweise ist ein Schüler nur in einer Klasse).
+     * Erste Klasse eines Schülers finden.
      */
-    Optional<SchoolClass> findFirstByStudentIdsContaining(String studentId);
+    Optional<SchoolClass> findFirstByStudentEmailsContaining(String email);
 
     /**
      * Klasse nach Name finden.
