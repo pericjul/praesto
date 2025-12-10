@@ -7,4 +7,8 @@ import java.util.List;
 
 public interface AssignmentRepository extends MongoRepository<Assignment, String> {
     List<Assignment> findByClassId(String classId);
+    
+    List<Assignment> findByCreatedByTeacherId(String teacherId);
+    
+    List<Assignment> findByCreatedByTeacherIdOrderByCreatedAtDesc(String teacherId);
 }

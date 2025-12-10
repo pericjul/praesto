@@ -47,6 +47,9 @@ public class AssignmentController {
         if (dto.getClassId() == null) {
             throw new BadRequestException("classId fehlt");
         }
+        if (dto.getType() == null) {
+            throw new BadRequestException("Aufgabentyp fehlt");
+        }
 
         Assignment assignment = Assignment.builder()
                 .title(dto.getTitle())
@@ -54,6 +57,7 @@ public class AssignmentController {
                 .durationMin(dto.getDurationMin())
                 .dueDate(Instant.parse(dto.getDueDate()))
                 .classId(dto.getClassId())
+                .type(dto.getType())
                 .status(AssignmentStatus.ASSIGNED)
                 .createdByTeacherId(userService.getUserId())
                 .createdAt(Instant.now())
@@ -89,8 +93,20 @@ public class AssignmentController {
         return ResponseEntity.ok(updated);
     }
 
+    // GET Alle Assignments des aktuellen Lehrers (MUSS VOR /{classId} kommen!)
+    @GetMapping("/assignments/teacher")
+    public ResponseEntity<List<Assignment>> getMyAssignments() {
+        if (!userService.userHasRole("TEACHER")) {
+            throw new ForbiddenException("Nur Lehrer duerfen ihre Assignments sehen");
+        }
+
+        String teacherId = userService.getUserId();
+        List<Assignment> assignments = assignmentRepository.findByCreatedByTeacherIdOrderByCreatedAtDesc(teacherId);
+        return ResponseEntity.ok(assignments);
+    }
+
     // GET Assignments fuer eine Klasse Teacher und Student duerfen lesen
-    @GetMapping("/assignments/{classId}")
+    @GetMapping("/assignments/class/{classId}")
     public ResponseEntity<List<Assignment>> getAssignmentsForClass(
             @PathVariable String classId) {
         // Rollen Check: nur Teacher oder Student duerfen lesen
@@ -100,5 +116,77 @@ public class AssignmentController {
 
         List<Assignment> assignments = assignmentRepository.findByClassId(classId);
         return ResponseEntity.ok(assignments);
+    }
+
+    // GET Eine einzelne Assignment (Teacher nur eigene)
+    @GetMapping("/assignments/{id}")
+    public ResponseEntity<Assignment> getAssignmentById(@PathVariable String id) {
+        Assignment assignment = assignmentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Assignment nicht gefunden"));
+
+        // Teacher darf nur eigene sehen
+        if (userService.userHasRole("TEACHER")) {
+            if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
+                throw new ForbiddenException("Keine Berechtigung fuer dieses Assignment");
+            }
+        }
+
+        return ResponseEntity.ok(assignment);
+    }
+
+    // DELETE Assignment (nur Teacher)
+    @DeleteMapping("/assignments/{id}")
+    public ResponseEntity<Void> deleteAssignment(@PathVariable String id) {
+        if (!userService.userHasRole("TEACHER")) {
+            throw new ForbiddenException("Nur Lehrer duerfen Assignments loeschen");
+        }
+
+        Assignment assignment = assignmentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Assignment nicht gefunden"));
+
+        // Nur eigene Assignments löschen
+        if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
+            throw new ForbiddenException("Keine Berechtigung fuer dieses Assignment");
+        }
+
+        assignmentRepository.delete(assignment);
+        return ResponseEntity.noContent().build();
+    }
+
+    // PUT Assignment bearbeiten (nur Teacher)
+    @PutMapping("/assignments/{id}")
+    public ResponseEntity<Assignment> updateAssignment(
+            @PathVariable String id,
+            @RequestBody AssignmentCreateDTO dto) {
+        
+        if (!userService.userHasRole("TEACHER")) {
+            throw new ForbiddenException("Nur Lehrer duerfen Assignments bearbeiten");
+        }
+
+        Assignment assignment = assignmentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Assignment nicht gefunden"));
+
+        // Nur eigene Assignments bearbeiten
+        if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
+            throw new ForbiddenException("Keine Berechtigung fuer dieses Assignment");
+        }
+
+        // Validierung
+        if (dto.getTitle() == null || dto.getTitle().isBlank()) {
+            throw new BadRequestException("Titel darf nicht leer sein");
+        }
+
+        // Update
+        assignment.setTitle(dto.getTitle());
+        assignment.setDescription(dto.getDescription());
+        assignment.setType(dto.getType());
+        assignment.setClassId(dto.getClassId());
+        assignment.setDurationMin(dto.getDurationMin());
+        if (dto.getDueDate() != null) {
+            assignment.setDueDate(Instant.parse(dto.getDueDate()));
+        }
+
+        Assignment updated = assignmentRepository.save(assignment);
+        return ResponseEntity.ok(updated);
     }
 }

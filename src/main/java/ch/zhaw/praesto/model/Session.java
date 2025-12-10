@@ -20,7 +20,12 @@ public class Session {
     private String id;
 
     private String studentId;     // aus JWT
-    private String assignmentId;  // optional
+    private String studentEmail;  // für Submission
+    private String assignmentId;  // optional - wenn für Aufgabe
+
+    // Assignment-Infos (wenn vorhanden)
+    private String assignmentTitle;
+    private Integer targetDurationMin;  // Soll-Dauer von der Aufgabe
 
     @Builder.Default
     private List<SessionMessage> messages = new ArrayList<>();
@@ -31,4 +36,7 @@ public class Session {
 
     private Instant startedAt;
     private Instant closedAt;
+    
+    // Wurde diese Session als Abgabe eingereicht?
+    private boolean submittedAsAssignment;
 }
