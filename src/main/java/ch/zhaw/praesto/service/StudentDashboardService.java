@@ -6,6 +6,7 @@ import ch.zhaw.praesto.model.Session;
 import ch.zhaw.praesto.model.SessionStatus;
 import ch.zhaw.praesto.model.StudentDashboardResponse;
 import ch.zhaw.praesto.repository.AssignmentRepository;
+import ch.zhaw.praesto.repository.NoteRepository;
 import ch.zhaw.praesto.repository.SessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class StudentDashboardService {
     private final UserService userService;
     private final AssignmentRepository assignmentRepository;
     private final SessionRepository sessionRepository;
+    private final NoteRepository noteRepository;
 
     public StudentDashboardResponse getDashboardForCurrentStudent() {
         String studentId = userService.getUserId();
@@ -64,6 +66,9 @@ public class StudentDashboardService {
                 .max(Comparator.comparing(Session::getStartedAt))
                 .orElse(null);
 
+        // Notizen des Students zaehlen
+        int notesCount = noteRepository.findByStudentId(studentId).size();
+
         return StudentDashboardResponse.builder()
                 .studentName(studentName)
                 .openAssignmentsCount(openAssignmentsCount)
@@ -73,9 +78,10 @@ public class StudentDashboardService {
                 .lastSessionStartedAt(lastSession != null ? lastSession.getStartedAt() : null)
                 .totalSessionsCount(totalSessionsCount)
                 .openSessionId(openSession != null ? openSession.getId() : null)
-                // Platzhalter fuer spaeter (werden in Issue #4 implementiert)
+                // Notizen-Count aus DB
+                .notesCount(notesCount)
+                // Platzhalter fuer spaeter
                 .badgesCount(0)
-                .notesCount(0)
                 .applicationsCount(0)
                 .build();
     }
