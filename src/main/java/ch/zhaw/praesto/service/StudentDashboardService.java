@@ -5,6 +5,7 @@ import ch.zhaw.praesto.model.AssignmentStatus;
 import ch.zhaw.praesto.model.Session;
 import ch.zhaw.praesto.model.SessionStatus;
 import ch.zhaw.praesto.model.StudentDashboardResponse;
+import ch.zhaw.praesto.repository.ApplicationRepository;
 import ch.zhaw.praesto.repository.AssignmentRepository;
 import ch.zhaw.praesto.repository.NoteRepository;
 import ch.zhaw.praesto.repository.SessionRepository;
@@ -22,6 +23,7 @@ public class StudentDashboardService {
     private final AssignmentRepository assignmentRepository;
     private final SessionRepository sessionRepository;
     private final NoteRepository noteRepository;
+    private final ApplicationRepository applicationRepository;
 
     public StudentDashboardResponse getDashboardForCurrentStudent() {
         String studentId = userService.getUserId();
@@ -69,6 +71,9 @@ public class StudentDashboardService {
         // Notizen des Students zaehlen
         int notesCount = noteRepository.findByStudentId(studentId).size();
 
+        // Bewerbungen des Students zaehlen
+        int applicationsCount = applicationRepository.findByStudentId(studentId).size();
+
         return StudentDashboardResponse.builder()
                 .studentName(studentName)
                 .openAssignmentsCount(openAssignmentsCount)
@@ -78,11 +83,11 @@ public class StudentDashboardService {
                 .lastSessionStartedAt(lastSession != null ? lastSession.getStartedAt() : null)
                 .totalSessionsCount(totalSessionsCount)
                 .openSessionId(openSession != null ? openSession.getId() : null)
-                // Notizen-Count aus DB
+                // Notizen und Bewerbungen aus DB
                 .notesCount(notesCount)
+                .applicationsCount(applicationsCount)
                 // Platzhalter fuer spaeter
                 .badgesCount(0)
-                .applicationsCount(0)
                 .build();
     }
 }
