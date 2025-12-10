@@ -93,7 +93,7 @@ export const actions = {
                 headers,
                 body: JSON.stringify({
                     feedback: feedback || null,
-                    grade: grade ? parseInt(grade) : null
+                    grade: grade ? parseFloat(grade) : null
                 })
             });
 

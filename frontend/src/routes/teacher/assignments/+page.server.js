@@ -28,7 +28,68 @@ export async function load({ locals, fetch }) {
         const assignments = assignmentsRes.ok ? await assignmentsRes.json() : [];
         const classes = classesRes.ok ? await classesRes.json() : [];
 
-        return { assignments, classes };
+        // Für jede Aufgabe: Submissions laden und Stats berechnen
+        const assignmentsWithStats = await Promise.all(
+            assignments.map(async (assignment) => {
+                // Klasse finden für Schüleranzahl
+                const schoolClass = classes.find(c => c.id === assignment.classId);
+                const totalStudents = schoolClass?.studentEmails?.length ?? 0;
+
+                // Submissions für diese Aufgabe laden
+                let submissionCount = 0;
+                let reviewedCount = 0;
+                let pendingFeedback = 0;
+
+                try {
+                    const subsRes = await fetch(`${API_BASE}/submissions/assignment/${assignment.id}`, {
+                        method: "GET",
+                        headers
+                    });
+
+                    if (subsRes.ok) {
+                        const submissions = await subsRes.json();
+                        submissionCount = submissions.length;
+                        reviewedCount = submissions.filter(s => s.status === "REVIEWED").length;
+                        pendingFeedback = submissions.filter(s => s.status === "SUBMITTED").length;
+                    }
+                } catch (err) {
+                    console.error("Fehler beim Laden der Submissions:", err);
+                }
+
+                // Status berechnen
+                const now = new Date();
+                const dueDate = new Date(assignment.dueDate);
+                const isOverdue = dueDate < now;
+                const isComplete = submissionCount === totalStudents && totalStudents > 0;
+
+                return {
+                    ...assignment,
+                    totalStudents,
+                    submissionCount,
+                    reviewedCount,
+                    pendingFeedback,
+                    missingCount: totalStudents - submissionCount,
+                    isOverdue,
+                    isComplete,
+                    className: schoolClass?.name ?? "Unbekannt"
+                };
+            })
+        );
+
+        // Sortieren: Offene zuerst, dann nach Deadline
+        assignmentsWithStats.sort((a, b) => {
+            // Priorität: Offene mit ausstehenden Abgaben/Feedback zuerst
+            if (a.pendingFeedback > 0 && b.pendingFeedback === 0) return -1;
+            if (b.pendingFeedback > 0 && a.pendingFeedback === 0) return 1;
+            
+            // Dann nach Deadline (bald fällige zuerst)
+            return new Date(a.dueDate) - new Date(b.dueDate);
+        });
+
+        return { 
+            assignments: assignmentsWithStats, 
+            classes 
+        };
     } catch (err) {
         console.error("Netzwerkfehler", err);
         return { assignments: [], classes: [], error: "Verbindungsfehler" };
@@ -57,21 +118,11 @@ export const actions = {
         const classId = formData.get("classId")?.toString();
         const type = formData.get("type")?.toString();
 
-        // Validierung
-        if (!title) {
-            return { error: "Titel ist erforderlich" };
-        }
-        if (!classId) {
-            return { error: "Bitte wähle eine Klasse aus" };
-        }
-        if (!type) {
-            return { error: "Bitte wähle einen Aufgabentyp aus" };
-        }
-        if (!dueDate) {
-            return { error: "Deadline ist erforderlich" };
-        }
+        if (!title) return { error: "Titel ist erforderlich" };
+        if (!classId) return { error: "Bitte wähle eine Klasse aus" };
+        if (!type) return { error: "Bitte wähle einen Aufgabentyp aus" };
+        if (!dueDate) return { error: "Deadline ist erforderlich" };
 
-        // Deadline in Zukunft prüfen
         const deadlineDate = new Date(dueDate);
         if (deadlineDate <= new Date()) {
             return { error: "Deadline muss in der Zukunft liegen" };
@@ -150,19 +201,10 @@ export const actions = {
         const classId = formData.get("classId")?.toString();
         const type = formData.get("type")?.toString();
 
-        // Validierung
-        if (!title) {
-            return { error: "Titel ist erforderlich" };
-        }
-        if (!classId) {
-            return { error: "Bitte wähle eine Klasse aus" };
-        }
-        if (!type) {
-            return { error: "Bitte wähle einen Aufgabentyp aus" };
-        }
-        if (!dueDate) {
-            return { error: "Deadline ist erforderlich" };
-        }
+        if (!title) return { error: "Titel ist erforderlich" };
+        if (!classId) return { error: "Bitte wähle eine Klasse aus" };
+        if (!type) return { error: "Bitte wähle einen Aufgabentyp aus" };
+        if (!dueDate) return { error: "Deadline ist erforderlich" };
 
         const deadlineDate = new Date(dueDate);
 

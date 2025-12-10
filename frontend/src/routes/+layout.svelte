@@ -1,6 +1,6 @@
 <script>
   import "../styles/theme.css";
-  import logo from "../lib/assets/praesto-logo.png"; // Pfad/Endung bei dir anpassen
+  import logo from "../lib/assets/praesto-logo.png";
 
   export let data;
   const user = data?.user ?? {};
@@ -31,7 +31,6 @@
             <a href="/teacher/dashboard" class="nav-link">Dashboard</a>
             <a href="/teacher/classes" class="nav-link">Klassen</a>
             <a href="/teacher/assignments" class="nav-link">Aufgaben</a>
-            <a href="/teacher/sessions" class="nav-link">Sessions</a>
           {/if}
         </nav>
       {/if}
@@ -75,7 +74,7 @@
   }
 
   .app-main {
-    padding-top: 54px; /* Platz für fixierte Navbar */
+    padding-top: 54px;
   }
 
   .app-header-left {
@@ -138,7 +137,7 @@
 
   @media (max-width: 750px) {
     .nav-main {
-      display: none; /* für mobile kannst du später ein Burger-Menü machen */
+      display: none;
     }
     .brand-text {
       display: none;

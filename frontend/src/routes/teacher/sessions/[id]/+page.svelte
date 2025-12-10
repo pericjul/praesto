@@ -1,17 +1,31 @@
 <script>
     let { data } = $props();
 
-    let session = $derived(data?.session ?? null);
-    let error = $derived(data?.error ?? null);
-    let messages = $derived(session?.messages ?? []);
+    let sessions = $derived(data?.sessions ?? []);
+    let assignments = $derived(data?.assignments ?? []);
 
-    function formatTime(date) {
-        if (!date) return "";
-        return new Date(date).toLocaleTimeString("de-CH", {
-            hour: "2-digit",
-            minute: "2-digit"
-        });
-    }
+    // Filter State
+    let filterAssignment = $state("all");
+    let filterStatus = $state("all");
+
+    // Gefilterte Sessions
+    let filteredSessions = $derived(() => {
+        let result = sessions;
+
+        if (filterAssignment !== "all") {
+            result = result.filter(s => s.assignmentId === filterAssignment);
+        }
+
+        if (filterStatus === "completed") {
+            result = result.filter(s => s.submittedAsAssignment);
+        } else if (filterStatus === "in_progress") {
+            result = result.filter(s => !s.submittedAsAssignment);
+        } else if (filterStatus === "feedback_pending") {
+            result = result.filter(s => s.submittedAsAssignment && !s.hasFeedback);
+        }
+
+        return result;
+    });
 
     function formatDate(date) {
         if (!date) return "-";
@@ -24,304 +38,364 @@
         });
     }
 
-    function calculateDuration() {
-        if (!session?.startedAt) return "-";
-        const start = new Date(session.startedAt);
-        const end = session.closedAt ? new Date(session.closedAt) : new Date();
-        const diffMin = Math.round((end - start) / 60000);
-        return `${diffMin} Minuten`;
+    function formatDuration(seconds) {
+        if (!seconds) return "-";
+        const min = Math.floor(seconds / 60);
+        const sec = seconds % 60;
+        return `${min}:${sec.toString().padStart(2, "0")}`;
+    }
+
+    function shortenEmail(email) {
+        return email?.split("@")[0] ?? "";
+    }
+
+    function getStatusInfo(session) {
+        if (!session.submittedAsAssignment) {
+            return { label: "In Bearbeitung", color: "#f59e0b", bg: "#fef3c7" };
+        }
+        if (!session.hasFeedback) {
+            return { label: "Feedback ausstehend", color: "#3b82f6", bg: "#dbeafe" };
+        }
+        return { label: "Bewertet", color: "#10b981", bg: "#d1fae5" };
     }
 </script>
 
 <svelte:head>
-    <title>Chat-Verlauf – Praesto</title>
+    <title>Chat-Sessions – Praesto</title>
 </svelte:head>
 
 <div class="page-wrapper">
-    <div class="page-content">
-        {#if error}
-            <div class="alert alert-danger">{error}</div>
-            <a href="/teacher/assignments" class="back-link">← Zurück zu Aufgaben</a>
-        {:else if session}
-            <!-- Header -->
-            <header class="page-header">
-                <a href="javascript:history.back()" class="back-link">← Zurück</a>
-                <div class="header-content">
-                    <h1>🤖 Chat-Verlauf</h1>
-                    {#if session.assignmentTitle}
-                        <p class="assignment-info">Aufgabe: {session.assignmentTitle}</p>
-                    {/if}
-                </div>
-            </header>
+    <header class="page-header">
+        <div>
+            <h1 class="title">💬 KI-Interview Sessions</h1>
+            <p class="subtitle">Übersicht aller Bewerbungsgespräch-Trainings deiner Schüler</p>
+        </div>
+    </header>
 
-            <!-- Meta Info -->
-            <div class="meta-bar">
-                <div class="meta-item">
-                    <span class="meta-label">Schüler</span>
-                    <span class="meta-value">{session.studentEmail ?? session.studentId}</span>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Gestartet</span>
-                    <span class="meta-value">{formatDate(session.startedAt)}</span>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Dauer</span>
-                    <span class="meta-value">{calculateDuration()}</span>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Status</span>
-                    <span class="meta-value status-badge" class:open={session.status === "OPEN"}>
-                        {session.status === "OPEN" ? "Offen" : "Abgeschlossen"}
-                    </span>
-                </div>
-                {#if session.submittedAsAssignment}
-                    <div class="meta-item">
-                        <span class="meta-value submitted-badge">✓ Abgegeben</span>
-                    </div>
-                {/if}
-            </div>
-
-            <!-- Chat Messages - NUR DIESER SCROLLT -->
-            <div class="chat-container">
-                {#if messages.length === 0}
-                    <p class="empty">Keine Nachrichten in dieser Session.</p>
-                {:else}
-                    {#each messages as msg}
-                        <div class="message {msg.role === 'USER' ? 'user' : 'bot'}">
-                            <div class="message-header">
-                                <span class="message-sender">
-                                    {msg.role === 'USER' ? '👤 Schüler' : '🤖 KI-Coach'}
-                                </span>
-                                {#if msg.createdAt}
-                                    <span class="message-time">{formatTime(msg.createdAt)}</span>
-                                {/if}
-                            </div>
-                            <div class="message-bubble">
-                                {msg.content}
-                            </div>
-                        </div>
-                    {/each}
-                {/if}
-            </div>
-
-            <!-- Summary -->
-            <div class="summary-box">
-                <h3>📊 Zusammenfassung</h3>
-                <p><strong>Nachrichten:</strong> {messages.length} ({messages.filter(m => m.role === 'USER').length} vom Schüler)
-                {#if session.targetDurationMin}
-                    · <strong>Ziel:</strong> {session.targetDurationMin} Min
-                {/if}
-                </p>
-            </div>
-        {/if}
+    <!-- Stats -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-value">{sessions.length}</span>
+            <span class="stat-label">Sessions total</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">{sessions.filter(s => s.submittedAsAssignment).length}</span>
+            <span class="stat-label">Abgeschlossen</span>
+        </div>
+        <div class="stat-item highlight">
+            <span class="stat-value">{sessions.filter(s => s.submittedAsAssignment && !s.hasFeedback).length}</span>
+            <span class="stat-label">Feedback nötig</span>
+        </div>
     </div>
+
+    <!-- Filter -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label for="filterAssignment">Aufgabe:</label>
+            <select id="filterAssignment" bind:value={filterAssignment}>
+                <option value="all">Alle Aufgaben</option>
+                {#each assignments as assignment}
+                    <option value={assignment.id}>{assignment.title}</option>
+                {/each}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="filterStatus">Status:</label>
+            <select id="filterStatus" bind:value={filterStatus}>
+                <option value="all">Alle</option>
+                <option value="completed">Abgeschlossen</option>
+                <option value="in_progress">In Bearbeitung</option>
+                <option value="feedback_pending">Feedback ausstehend</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Sessions Liste -->
+    {#if sessions.length === 0}
+        <div class="empty-state">
+            <div class="empty-icon">💬</div>
+            <h2>Keine Sessions vorhanden</h2>
+            <p>Sobald Schüler KI-Interview Aufgaben bearbeiten, erscheinen ihre Sessions hier.</p>
+        </div>
+    {:else if filteredSessions().length === 0}
+        <div class="empty-state">
+            <p>Keine Sessions entsprechen den Filterkriterien.</p>
+        </div>
+    {:else}
+        <div class="sessions-list">
+            {#each filteredSessions() as session}
+                {@const statusInfo = getStatusInfo(session)}
+                <a href="/teacher/sessions/{session.id}" class="session-card">
+                    <div class="session-main">
+                        <div class="session-student">
+                            <span class="student-name">{shortenEmail(session.studentEmail)}</span>
+                            <span class="student-email">{session.studentEmail}</span>
+                        </div>
+                        <div class="session-assignment">{session.assignmentTitle}</div>
+                    </div>
+
+                    <div class="session-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Gestartet</span>
+                            <span class="meta-value">{formatDate(session.startedAt)}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Dauer</span>
+                            <span class="meta-value">{formatDuration(session.durationSeconds)}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Nachrichten</span>
+                            <span class="meta-value">{session.messages?.length ?? 0}</span>
+                        </div>
+                    </div>
+
+                    <div class="session-status">
+                        <span class="status-badge" style="background: {statusInfo.bg}; color: {statusInfo.color}">
+                            {statusInfo.label}
+                        </span>
+                        {#if session.grade != null}
+                            <span class="grade-badge">Note: {session.grade}</span>
+                        {/if}
+                    </div>
+
+                    <div class="session-action">
+                        <span class="view-link">Chat ansehen →</span>
+                    </div>
+                </a>
+            {/each}
+        </div>
+    {/if}
 </div>
 
 <style>
     .page-wrapper {
-        position: fixed;
-        top: 54px; /* Navbar Höhe */
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    .page-content {
-        max-width: 800px;
-        width: 100%;
+        max-width: 1000px;
         margin: 0 auto;
-        padding: 1.5rem 1rem;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        overflow: hidden;
-    }
-
-    .back-link {
-        display: inline-block;
-        margin-bottom: 1rem;
-        color: #7c6b80;
-        text-decoration: none;
-        font-size: 0.9rem;
-        flex-shrink: 0;
-    }
-
-    .back-link:hover {
-        color: #3b134f;
+        padding: 1.5rem 1rem 3rem;
     }
 
     .page-header {
-        margin-bottom: 1rem;
-        flex-shrink: 0;
+        margin-bottom: 1.5rem;
     }
 
-    .header-content h1 {
-        margin: 0 0 0.25rem;
-        font-size: 1.5rem;
+    .title {
+        font-size: 1.7rem;
+        font-weight: 700;
+        margin: 0;
         color: #2d2141;
     }
 
-    .assignment-info {
-        margin: 0;
-        color: #7c6b80;
-        font-size: 0.9rem;
+    .subtitle {
+        margin: 0.3rem 0 0;
+        color: #6b647a;
+        font-size: 0.95rem;
     }
 
-    .alert {
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1rem;
-        flex-shrink: 0;
-    }
-
-    .alert-danger {
-        background: #fef2f2;
-        color: #dc2626;
-        border: 1px solid #fecaca;
-    }
-
-    /* Meta Bar */
-    .meta-bar {
+    .stats-bar {
         display: flex;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-        padding: 1rem 1.25rem;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem 1.5rem;
         background: #fff;
         border: 1px solid #e8e0f0;
         border-radius: 0.75rem;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stat-item.highlight .stat-value {
+        color: #dc2626;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #3b134f;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: #7c6b80;
+    }
+
+    .filter-bar {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: #faf8fc;
+        border-radius: 0.5rem;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-group label {
+        font-size: 0.9rem;
+        color: #6b647a;
+    }
+
+    .filter-group select {
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #e8e0f0;
+        border-radius: 0.4rem;
+        font-size: 0.9rem;
+        background: #fff;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: #faf8fc;
+        border: 2px dashed #e8e0f0;
+        border-radius: 1rem;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
         margin-bottom: 1rem;
-        flex-shrink: 0;
+    }
+
+    .empty-state h2 {
+        margin: 0 0 0.5rem;
+        color: #2d2141;
+    }
+
+    .empty-state p {
+        margin: 0;
+        color: #6b647a;
+    }
+
+    .sessions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .session-card {
+        display: grid;
+        grid-template-columns: 1fr auto auto auto;
+        gap: 1.5rem;
+        align-items: center;
+        padding: 1.25rem;
+        background: #fff;
+        border: 1px solid #e8e0f0;
+        border-radius: 0.75rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .session-card:hover {
+        border-color: #3b134f;
+        box-shadow: 0 4px 12px rgba(59, 19, 79, 0.08);
+    }
+
+    .session-main {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .session-student {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: #2d2141;
+    }
+
+    .student-email {
+        font-size: 0.8rem;
+        color: #9ca3af;
+    }
+
+    .session-assignment {
+        font-size: 0.9rem;
+        color: #6b647a;
+    }
+
+    .session-meta {
+        display: flex;
+        gap: 1.5rem;
     }
 
     .meta-item {
         display: flex;
         flex-direction: column;
-        gap: 0.2rem;
+        align-items: center;
     }
 
     .meta-label {
-        font-size: 0.75rem;
-        color: #7c6b80;
+        font-size: 0.7rem;
+        color: #9ca3af;
         text-transform: uppercase;
     }
 
     .meta-value {
-        font-weight: 600;
+        font-size: 0.9rem;
         color: #2d2141;
+        font-weight: 500;
+    }
+
+    .session-status {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .status-badge {
-        padding: 0.2rem 0.6rem;
+        padding: 0.3rem 0.75rem;
         border-radius: 1rem;
-        font-size: 0.85rem;
-        background: #e5e7eb;
-    }
-
-    .status-badge.open {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .submitted-badge {
-        background: #d1fae5;
-        color: #065f46;
-        padding: 0.2rem 0.6rem;
-        border-radius: 1rem;
-        font-size: 0.85rem;
-    }
-
-    /* Chat Container - NUR dieser scrollt */
-    .chat-container {
-        background: #fff;
-        border: 1px solid #e8e0f0;
-        border-radius: 0.75rem;
-        padding: 1.5rem;
-        flex: 1;
-        min-height: 0; /* Wichtig für Flex-Scroll */
-        overflow-y: auto;
-    }
-
-    .empty {
-        text-align: center;
-        color: #7c6b80;
-        padding: 2rem;
-    }
-
-    .message {
-        margin-bottom: 1.25rem;
-    }
-
-    .message:last-child {
-        margin-bottom: 0;
-    }
-
-    .message-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.4rem;
         font-size: 0.8rem;
+        font-weight: 500;
     }
 
-    .message-sender {
+    .grade-badge {
+        padding: 0.2rem 0.5rem;
+        background: #7c3aed;
+        color: #fff;
+        border-radius: 0.4rem;
+        font-size: 0.75rem;
         font-weight: 600;
-        color: #2d2141;
     }
 
-    .message.bot .message-sender {
+    .session-action {
         color: #7c3aed;
     }
 
-    .message-time {
-        color: #9ca3af;
+    .view-link {
+        font-size: 0.9rem;
+        font-weight: 500;
     }
 
-    .message-bubble {
-        padding: 0.75rem 1rem;
-        border-radius: 0.75rem;
-        line-height: 1.5;
-        white-space: pre-wrap;
-    }
+    @media (max-width: 800px) {
+        .session-card {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
 
-    .message.user .message-bubble {
-        background: #f3e8ff;
-        color: #2d2141;
-        border-bottom-right-radius: 0.25rem;
-    }
+        .session-meta {
+            justify-content: flex-start;
+        }
 
-    .message.bot .message-bubble {
-        background: #f9fafb;
-        color: #374151;
-        border: 1px solid #e5e7eb;
-        border-bottom-left-radius: 0.25rem;
-    }
+        .session-status {
+            flex-direction: row;
+            justify-content: flex-start;
+        }
 
-    /* Summary Box */
-    .summary-box {
-        background: #faf5ff;
-        border: 1px solid #e9d5ff;
-        border-radius: 0.75rem;
-        padding: 1rem 1.25rem;
-        margin-top: 1rem;
-        flex-shrink: 0;
-    }
-
-    .summary-box h3 {
-        margin: 0 0 0.5rem;
-        font-size: 0.95rem;
-        color: #7c3aed;
-    }
-
-    .summary-box p {
-        margin: 0 0 0.25rem;
-        color: #4c1d95;
-        font-size: 0.85rem;
-    }
-
-    .summary-box p:last-child {
-        margin-bottom: 0;
+        .filter-bar {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
     }
 </style>
