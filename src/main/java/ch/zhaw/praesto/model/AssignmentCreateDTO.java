@@ -9,4 +9,5 @@ public class AssignmentCreateDTO {
     private Integer durationMin;
     private String dueDate;   
     private String classId;
+    private AssignmentType type;  // NEU
 }

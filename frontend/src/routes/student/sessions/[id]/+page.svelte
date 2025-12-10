@@ -1,7 +1,8 @@
 <script>
     import { enhance } from "$app/forms";
     import { invalidateAll } from "$app/navigation";
-    import { onMount } from "svelte";
+    import { onMount, onDestroy } from "svelte";
+    import { goto } from "$app/navigation";
 
     // Svelte 5: $props()
     let { data, form } = $props();
@@ -11,14 +12,37 @@
     let isSubmitting = $state(false);
     let chatContainer = $state(null);
     let optimisticMessages = $state([]); // Für sofortige Anzeige
+    let elapsedSeconds = $state(0);
+    let timerInterval = $state(null);
+    let showTimeUpModal = $state(false);
+    let isSubmittingAssignment = $state(false);
 
     // Derived state
     let session = $derived(data?.session ?? null);
     let serverMessages = $derived(data?.session?.messages ?? []);
     let isOpen = $derived(data?.session?.status === "OPEN");
+    
+    // Assignment-Info
+    let isAssignment = $derived(!!session?.assignmentId);
+    let assignmentTitle = $derived(session?.assignmentTitle ?? "");
+    let targetDurationMin = $derived(session?.targetDurationMin ?? 0);
+    let targetDurationSec = $derived(targetDurationMin * 60);
+    let isSubmittedAsAssignment = $derived(session?.submittedAsAssignment ?? false);
+
+    // Zeit-Berechnung
+    let remainingSeconds = $derived(Math.max(0, targetDurationSec - elapsedSeconds));
+    let isTimeUp = $derived(targetDurationSec > 0 && elapsedSeconds >= targetDurationSec);
+    let progressPercent = $derived(targetDurationSec > 0 ? Math.min(100, (elapsedSeconds / targetDurationSec) * 100) : 0);
 
     // Kombinierte Messages: Server + Optimistic
     let messages = $derived([...serverMessages, ...optimisticMessages]);
+
+    // Timer formatieren (MM:SS)
+    function formatTimer(totalSeconds) {
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
 
     // Scroll nach unten
     function scrollToBottom() {
@@ -31,6 +55,31 @@
 
     onMount(() => {
         scrollToBottom();
+        
+        // Timer starten wenn Session offen und Assignment
+        if (isOpen && isAssignment && !isSubmittedAsAssignment) {
+            // Berechne bereits verstrichene Zeit
+            if (session?.startedAt) {
+                const startTime = new Date(session.startedAt).getTime();
+                const now = Date.now();
+                elapsedSeconds = Math.floor((now - startTime) / 1000);
+            }
+            
+            timerInterval = setInterval(() => {
+                elapsedSeconds += 1;
+                
+                // Zeit abgelaufen? Modal zeigen (nur einmal)
+                if (isTimeUp && !showTimeUpModal) {
+                    showTimeUpModal = true;
+                }
+            }, 1000);
+        }
+    });
+
+    onDestroy(() => {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+        }
     });
 
     // Nach Messages-Änderung scrollen
@@ -62,31 +111,97 @@
             return "";
         }
     }
+
+    // Session als Aufgabe abgeben
+    async function submitAsAssignment() {
+        if (isSubmittingAssignment) return;
+        isSubmittingAssignment = true;
+        
+        try {
+            const response = await fetch(`/api/sessions/${session.id}/submit`, {
+                method: "PUT"
+            });
+            
+            if (response.ok) {
+                showTimeUpModal = false;
+                goto("/student/assignments");
+            } else {
+                const error = await response.text();
+                alert("Fehler beim Abgeben: " + error);
+            }
+        } catch (err) {
+            console.error("Fehler:", err);
+            alert("Verbindungsfehler");
+        } finally {
+            isSubmittingAssignment = false;
+        }
+    }
+
+    function continueTraining() {
+        showTimeUpModal = false;
+    }
 </script>
 
 <svelte:head>
-    <title>KI-Training – Praesto</title>
+    <title>{isAssignment ? assignmentTitle : "KI-Training"} – Praesto</title>
 </svelte:head>
 
 <div class="chat-wrapper">
     <div class="chat-page">
         <!-- Header -->
         <header class="chat-header">
-            <a href="/student/sessions" class="back-link">← Zurück</a>
+            <a href={isAssignment ? "/student/assignments" : "/student/sessions"} class="back-link">← Zurück</a>
             <div class="header-content">
-                <h1>🤖 KI-Bewerbungstraining</h1>
-                <p>Übe Vorstellungsgespräche mit deinem persönlichen KI-Coach</p>
+                <h1>🤖 {isAssignment ? assignmentTitle : "KI-Bewerbungstraining"}</h1>
+                {#if isAssignment}
+                    <p>Aufgabe von deiner Lehrperson</p>
+                {:else}
+                    <p>Übe Vorstellungsgespräche mit deinem persönlichen KI-Coach</p>
+                {/if}
             </div>
-            {#if isOpen}
-                <form method="POST" action="?/close" use:enhance class="close-form">
-                    <button type="submit" class="btn-close">
-                        Beenden
+            
+            {#if isOpen && !isSubmittedAsAssignment}
+                {#if isAssignment}
+                    <button 
+                        type="button" 
+                        class="btn-submit"
+                        onclick={submitAsAssignment}
+                        disabled={isSubmittingAssignment}
+                    >
+                        {isSubmittingAssignment ? "..." : "✓ Abgeben"}
                     </button>
-                </form>
+                {:else}
+                    <form method="POST" action="?/close" use:enhance class="close-form">
+                        <button type="submit" class="btn-close">
+                            Beenden
+                        </button>
+                    </form>
+                {/if}
+            {:else if isSubmittedAsAssignment}
+                <span class="status-badge submitted">✓ Abgegeben</span>
             {:else}
                 <span class="status-badge closed">Abgeschlossen</span>
             {/if}
         </header>
+
+        <!-- Timer Bar (nur bei Assignments) -->
+        {#if isAssignment && targetDurationMin > 0 && isOpen && !isSubmittedAsAssignment}
+            <div class="timer-bar" class:time-up={isTimeUp}>
+                <div class="timer-progress" style="width: {progressPercent}%"></div>
+                <div class="timer-content">
+                    <span class="timer-label">
+                        {#if isTimeUp}
+                            ⏰ Zeit abgelaufen!
+                        {:else}
+                            ⏱️ Noch {formatTimer(remainingSeconds)}
+                        {/if}
+                    </span>
+                    <span class="timer-info">
+                        Ziel: {targetDurationMin} Min
+                    </span>
+                </div>
+            </div>
+        {/if}
 
         {#if form?.error}
             <div class="alert alert-danger">
@@ -125,7 +240,7 @@
         </div>
 
         <!-- Input Area -->
-        {#if isOpen}
+        {#if isOpen && !isSubmittedAsAssignment}
             <div class="chat-input-area">
                 <form
                     method="POST"
@@ -177,12 +292,42 @@
             </div>
         {:else}
             <div class="closed-notice">
-                <p>📋 Diese Session wurde abgeschlossen. Du kannst den Verlauf ansehen.</p>
-                <a href="/student/sessions" class="btn-back">← Zurück zur Übersicht</a>
+                {#if isSubmittedAsAssignment}
+                    <p>✅ Diese Aufgabe wurde abgegeben. Deine Lehrperson kann sie nun bewerten.</p>
+                {:else}
+                    <p>📋 Diese Session wurde abgeschlossen. Du kannst den Verlauf ansehen.</p>
+                {/if}
+                <a href={isAssignment ? "/student/assignments" : "/student/sessions"} class="btn-back">
+                    ← {isAssignment ? "Zu den Aufgaben" : "Zur Übersicht"}
+                </a>
             </div>
         {/if}
     </div>
 </div>
+
+<!-- Time Up Modal -->
+{#if showTimeUpModal}
+    <div class="modal-backdrop"></div>
+    <div class="time-up-modal">
+        <div class="modal-icon">⏰</div>
+        <h2>Zeit abgelaufen!</h2>
+        <p>Die vorgegebene Zeit von <strong>{targetDurationMin} Minuten</strong> ist um.</p>
+        <p>Möchtest du das Training abschliessen und abgeben, oder weitermachen?</p>
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick={continueTraining}>
+                Weitermachen
+            </button>
+            <button 
+                type="button" 
+                class="btn-primary"
+                onclick={submitAsAssignment}
+                disabled={isSubmittingAssignment}
+            >
+                {isSubmittingAssignment ? "Wird abgegeben..." : "✓ Jetzt abgeben"}
+            </button>
+        </div>
+    </div>
+{/if}
 
 <style>
     /* Wrapper verhindert Page-Scroll */
@@ -262,44 +407,55 @@
         align-items: center;
     }
 
-    /* Glassy "Beenden"-Button, etwas größer */
+    /* Glassy "Beenden"-Button */
     .btn-close {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-
         padding: 0.4rem 2.5rem;
         border-radius: 999px;
-
         background: rgba(255, 255, 255, 0.14);
         border: 1px solid rgba(255, 255, 255, 0.35);
         backdrop-filter: blur(10px);
-
         color: #FDF9FF;
         font-size: 0.85rem;
         font-weight: 500;
         line-height: 1;
         white-space: nowrap;
-
         cursor: pointer;
-        transition:
-            border-color 0.15s ease,
-            box-shadow 0.15s ease,
-            transform 0.15s ease;
-
+        transition: all 0.15s ease;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
     }
 
     .btn-close:hover {
         background: rgba(255, 255, 255, 0.22);
         border-color: rgba(255, 255, 255, 0.6);
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+    }
+
+    /* Abgeben Button */
+    .btn-submit {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1.5rem;
+        border-radius: 999px;
+        background: #10b981;
+        border: none;
+        color: white;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+        background: #059669;
         transform: translateY(-1px);
     }
 
-    .btn-close:active {
-        transform: translateY(0);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    .btn-submit:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
     }
 
     .status-badge {
@@ -317,6 +473,62 @@
         border: 1px solid rgba(255,255,255,0.3);
     }
 
+    .status-badge.submitted {
+        background: #10b981;
+        color: white;
+    }
+
+    /* Timer Bar */
+    .timer-bar {
+        position: relative;
+        padding: 0.75rem 1rem;
+        background: #f0fdf4;
+        border-bottom: 1px solid #bbf7d0;
+        overflow: hidden;
+    }
+
+    .timer-bar.time-up {
+        background: #fef2f2;
+        border-color: #fecaca;
+    }
+
+    .timer-progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        background: #10b981;
+        opacity: 0.15;
+        transition: width 1s linear;
+    }
+
+    .timer-bar.time-up .timer-progress {
+        background: #dc2626;
+    }
+
+    .timer-content {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1;
+    }
+
+    .timer-label {
+        font-weight: 600;
+        color: #059669;
+        font-size: 0.95rem;
+    }
+
+    .timer-bar.time-up .timer-label {
+        color: #dc2626;
+    }
+
+    .timer-info {
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
     /* Alert */
     .alert {
         margin: 0;
@@ -331,7 +543,7 @@
         border-left: 3px solid #dc2626;
     }
 
-    /* Chat Container - scrollbar nur hier */
+    /* Chat Container */
     .chat-container {
         flex: 1;
         overflow-y: auto;
@@ -340,7 +552,7 @@
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
-        min-height: 0; /* Wichtig für Flex-Scroll */
+        min-height: 0;
     }
 
     /* Messages */
@@ -508,5 +720,91 @@
 
     .btn-back:hover {
         background: #4A1C74;
+    }
+
+    /* Time Up Modal */
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+    }
+
+    .time-up-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        z-index: 1001;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .time-up-modal h2 {
+        margin: 0 0 0.75rem;
+        color: #2d2141;
+    }
+
+    .time-up-modal p {
+        margin: 0 0 0.5rem;
+        color: #6b647a;
+        font-size: 0.95rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+    }
+
+    .btn-primary {
+        padding: 0.75rem 1.5rem;
+        background: #10b981;
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        background: #059669;
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        padding: 0.75rem 1.5rem;
+        background: #f3f4f6;
+        color: #374151;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
     }
 </style>

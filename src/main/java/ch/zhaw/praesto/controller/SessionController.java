@@ -3,6 +3,7 @@ package ch.zhaw.praesto.controller;
 import ch.zhaw.praesto.exception.ForbiddenException;
 import ch.zhaw.praesto.model.ChatMessageRequest;
 import ch.zhaw.praesto.model.Session;
+import ch.zhaw.praesto.model.StartSessionRequest;
 import ch.zhaw.praesto.service.SessionService;
 import ch.zhaw.praesto.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,13 +20,14 @@ public class SessionController {
     private final SessionService sessionService;
     private final UserService userService;
 
-    // Session starten (nur Student)
+    // Session starten (nur Student) - mit optionalem assignmentId
     @PostMapping("")
-    public ResponseEntity<Session> startSession() {
+    public ResponseEntity<Session> startSession(@RequestBody(required = false) StartSessionRequest request) {
         if (!userService.userHasRole("STUDENT")) {
             throw new ForbiddenException("Nur Schueler duerfen Sessions starten");
         }
-        Session session = sessionService.startSession();
+        String assignmentId = (request != null) ? request.getAssignmentId() : null;
+        Session session = sessionService.startSession(assignmentId);
         return ResponseEntity.ok(session);
     }
 
@@ -55,6 +57,16 @@ public class SessionController {
     public ResponseEntity<Session> closeSession(@PathVariable String id) {
         Session closed = sessionService.closeSession(id);
         return ResponseEntity.ok(closed);
+    }
+
+    // Session schliessen UND als Aufgabe abgeben
+    @PutMapping("/{id}/submit")
+    public ResponseEntity<Session> closeAndSubmitSession(@PathVariable String id) {
+        if (!userService.userHasRole("STUDENT")) {
+            throw new ForbiddenException("Nur Schueler duerfen Sessions abgeben");
+        }
+        Session submitted = sessionService.closeAndSubmitAsAssignment(id);
+        return ResponseEntity.ok(submitted);
     }
 
     // eigene Sessions ansehen (nur Student)
