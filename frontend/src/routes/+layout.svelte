@@ -25,6 +25,7 @@
             <a href="/student/dashboard" class="nav-link">Dashboard</a>
             <a href="/student/assignments" class="nav-link">Aufgaben</a>
             <a href="/student/sessions" class="nav-link">Training</a>
+            <a href="/student/notes" class="nav-link">Notizen</a>
           {:else if isTeacher}
             <a href="/teacher/dashboard" class="nav-link">Dashboard</a>
             <a href="/teacher/classes" class="nav-link">Klassen</a>

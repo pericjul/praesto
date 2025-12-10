@@ -21,8 +21,8 @@
     // Unique companies für Dropdown
     let uniqueCompanies = $derived(() => {
         const companies = allNotes
-            .map((n) => n.companyName)
-            .filter((c) => c && c.trim() !== "");
+            .map(n => n.companyName)
+            .filter(c => c && c.trim() !== "");
         return [...new Set(companies)].sort();
     });
 
@@ -30,70 +30,63 @@
     let notes = $derived(() => {
         let filtered = [...allNotes];
 
+        // Textsuche
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(
-                (note) =>
-                    note.text?.toLowerCase().includes(query) ||
-                    note.companyName?.toLowerCase().includes(query) ||
-                    note.position?.toLowerCase().includes(query)
+            filtered = filtered.filter(note => 
+                note.text?.toLowerCase().includes(query) ||
+                note.companyName?.toLowerCase().includes(query) ||
+                note.position?.toLowerCase().includes(query)
             );
         }
 
+        // Firmen-Filter
         if (filterCompany === "none") {
-            filtered = filtered.filter(
-                (note) => !note.companyName || note.companyName.trim() === ""
-            );
+            filtered = filtered.filter(note => !note.companyName || note.companyName.trim() === "");
         } else if (filterCompany !== "all") {
-            filtered = filtered.filter(
-                (note) => note.companyName === filterCompany
-            );
+            filtered = filtered.filter(note => note.companyName === filterCompany);
         }
 
+        // Sortierung
         if (sortBy === "newest") {
-            filtered.sort(
-                (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-            );
+            filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         } else if (sortBy === "oldest") {
-            filtered.sort(
-                (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-            );
+            filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         } else if (sortBy === "company") {
-            filtered.sort((a, b) =>
-                (a.companyName || "zzz").localeCompare(b.companyName || "zzz")
-            );
+            filtered.sort((a, b) => (a.companyName || "zzz").localeCompare(b.companyName || "zzz"));
         } else if (sortBy === "updated") {
-            filtered.sort(
-                (a, b) =>
-                    new Date(b.lastUpdated || b.createdAt) -
-                    new Date(a.lastUpdated || a.createdAt)
-            );
+            filtered.sort((a, b) => new Date(b.lastUpdated || b.createdAt) - new Date(a.lastUpdated || a.createdAt));
         }
 
         return filtered;
     });
 
+    // Filter zurücksetzen
     function resetFilters() {
         searchQuery = "";
         filterCompany = "all";
         sortBy = "newest";
     }
 
+    // Modal öffnen für neue Notiz
     function openNewModal() {
         editingNote = null;
         showModal = true;
     }
 
+    // Modal öffnen zum Bearbeiten
     function openEditModal(note) {
         editingNote = note;
         showModal = true;
     }
 
+    // Modal schliessen
     function closeModal() {
         showModal = false;
         editingNote = null;
     }
 
+    // Löschen bestätigen
     function confirmDelete(noteId) {
         deleteConfirmId = noteId;
     }
@@ -102,6 +95,7 @@
         deleteConfirmId = null;
     }
 
+    // Datum formatieren
     function formatDate(date) {
         if (!date) return "";
         return new Date(date).toLocaleDateString("de-CH", {
@@ -113,6 +107,7 @@
         });
     }
 
+    // Text kürzen für Vorschau
     function truncateText(text, maxLength = 150) {
         if (!text || text.length <= maxLength) return text;
         return text.substring(0, maxLength) + "...";
@@ -128,8 +123,7 @@
         <div>
             <h1 class="title">📝 Meine Notizen</h1>
             <p class="subtitle">
-                Halte wichtige Informationen zu Unternehmen und deinem
-                Bewerbungsprozess fest.
+                Halte wichtige Informationen zu Unternehmen und deinem Bewerbungsprozess fest.
             </p>
         </div>
         <button type="button" class="btn btn-primary" onclick={openNewModal}>
@@ -153,76 +147,66 @@
         </div>
     {/if}
 
-    <!-- Stats -->
-    <div class="stats-row">
-        <div class="stat-card">
-            <span class="stat-value">{allNotes.length}</span>
-            <span class="stat-label">Total</span>
-        </div>
-        {#if notes().length !== allNotes.length}
-            <div class="stat-card stat-filtered">
-                <span class="stat-value">{notes().length}</span>
-                <span class="stat-label">Gefiltert</span>
-            </div>
-        {/if}
-    </div>
-
     <!-- Filter -->
-    {#if allNotes.length > 0}
-        <div class="filter-bar">
-            <div class="filter-group">
-                <input
-                    type="text"
-                    placeholder="🔍 Suchen..."
-                    bind:value={searchQuery}
-                    class="filter-input"
-                />
+{#if allNotes.length > 0}
+    <div class="filter-bar">
+        <!-- Stats links in der Filterzeile -->
+        <div class="filter-stats">
+            <div class="stat-pill">
+                <span class="stat-value">{allNotes.length}</span>
+                <span class="stat-label">Total</span>
             </div>
-
-            <div class="filter-group">
-                <select bind:value={filterCompany} class="filter-select">
-                    <option value="all">Alle Firmen</option>
-                    <option value="none">Ohne Firma</option>
-                    {#each uniqueCompanies() as company}
-                        <option value={company}>{company}</option>
-                    {/each}
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <select bind:value={sortBy} class="filter-select">
-                    <option value="newest">Neueste zuerst</option>
-                    <option value="oldest">Älteste zuerst</option>
-                    <option value="updated">Zuletzt bearbeitet</option>
-                    <option value="company">Nach Firma</option>
-                </select>
-            </div>
-
-            {#if searchQuery || filterCompany !== "all" || sortBy !== "newest"}
-                <button
-                    type="button"
-                    class="btn-reset"
-                    onclick={resetFilters}
-                >
-                    ✕ Filter zurücksetzen
-                </button>
+            {#if notes().length !== allNotes.length}
+                <div class="stat-pill stat-pill-filtered">
+                    <span class="stat-value">{notes().length}</span>
+                    <span class="stat-label">Gefiltert</span>
+                </div>
             {/if}
         </div>
-    {/if}
+
+        <!-- Filter rechts daneben -->
+        <div class="filter-group">
+            <input 
+                type="text" 
+                placeholder="🔍 Suchen..." 
+                bind:value={searchQuery}
+                class="filter-input"
+            />
+        </div>
+
+        <div class="filter-group">
+            <select bind:value={filterCompany} class="filter-select">
+                <option value="all">Alle Firmen</option>
+                <option value="none">Ohne Firma</option>
+                {#each uniqueCompanies() as company}
+                    <option value={company}>{company}</option>
+                {/each}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <select bind:value={sortBy} class="filter-select">
+                <option value="newest">Neueste zuerst</option>
+                <option value="oldest">Älteste zuerst</option>
+                <option value="updated">Zuletzt bearbeitet</option>
+                <option value="company">Nach Firma</option>
+            </select>
+        </div>
+
+        {#if searchQuery || filterCompany !== "all" || sortBy !== "newest"}
+            <button type="button" class="btn-reset" onclick={resetFilters}>
+                ✕ Filter zurücksetzen
+            </button>
+        {/if}
+    </div>
+{/if}
 
     {#if allNotes.length === 0}
         <div class="empty-state">
             <div class="empty-icon">📋</div>
             <h2>Noch keine Notizen</h2>
-            <p>
-                Erstelle deine erste Notiz, um wichtige Informationen
-                festzuhalten!
-            </p>
-            <button
-                type="button"
-                class="btn btn-primary"
-                onclick={openNewModal}
-            >
+            <p>Erstelle deine erste Notiz, um wichtige Informationen festzuhalten!</p>
+            <button type="button" class="btn btn-primary" onclick={openNewModal}>
                 Erste Notiz erstellen
             </button>
         </div>
@@ -231,11 +215,7 @@
             <div class="empty-icon">🔍</div>
             <h2>Keine Notizen gefunden</h2>
             <p>Passe deine Filter an oder erstelle eine neue Notiz.</p>
-            <button
-                type="button"
-                class="btn btn-secondary"
-                onclick={resetFilters}
-            >
+            <button type="button" class="btn btn-secondary" onclick={resetFilters}>
                 Filter zurücksetzen
             </button>
         </div>
@@ -245,26 +225,18 @@
                 <article class="note-card">
                     <div class="note-header">
                         {#if note.companyName}
-                            <span class="note-company">
-                                {note.companyName}
-                            </span>
+                            <span class="note-company">🏢 {note.companyName}</span>
                         {/if}
                         {#if note.position}
-                            <span class="note-position">
-                                {note.position}
-                            </span>
+                            <span class="note-position">💼 {note.position}</span>
                         {/if}
                         {#if !note.companyName && !note.position}
-                            <span class="note-general">
-                                Allgemeine Notiz
-                            </span>
+                            <span class="note-general">📌 Allgemeine Notiz</span>
                         {/if}
                     </div>
 
                     <div class="note-body">
-                        <p class="note-text">
-                            {truncateText(note.text)}
-                        </p>
+                        <p class="note-text">{truncateText(note.text)}</p>
                     </div>
 
                     <div class="note-footer">
@@ -272,60 +244,32 @@
                             {formatDate(note.lastUpdated || note.createdAt)}
                         </span>
                         <div class="note-actions">
-                            <button
-                                type="button"
-                                class="btn-icon"
-                                onclick={() => openEditModal(note)}
-                                title="Bearbeiten"
-                            >
+                            <button type="button" class="btn-icon" onclick={() => openEditModal(note)} title="Bearbeiten">
                                 ✏️
                             </button>
-                            <button
-                                type="button"
-                                class="btn-icon btn-danger"
-                                onclick={() => confirmDelete(note.id)}
-                                title="Löschen"
-                            >
+                            <button type="button" class="btn-icon btn-danger" onclick={() => confirmDelete(note.id)} title="Löschen">
                                 🗑️
                             </button>
                         </div>
                     </div>
 
+                    <!-- Delete Confirmation -->
                     {#if deleteConfirmId === note.id}
                         <div class="delete-confirm">
                             <p>Wirklich löschen?</p>
                             <div class="delete-actions">
-                                <form
-                                    method="POST"
-                                    action="?/delete"
-                                    use:enhance={() => {
-                                        return async ({ result }) => {
-                                            deleteConfirmId = null;
-                                            if (result.type === "success") {
-                                                await invalidateAll();
-                                            }
-                                        };
-                                    }}
-                                >
-                                    <input
-                                        type="hidden"
-                                        name="noteId"
-                                        value={note.id}
-                                    />
-                                    <button
-                                        type="submit"
-                                        class="btn btn-danger-solid"
-                                    >
-                                        Ja, löschen
-                                    </button>
+                                <form method="POST" action="?/delete" use:enhance={() => {
+                                    return async ({ result }) => {
+                                        deleteConfirmId = null;
+                                        if (result.type === 'success') {
+                                            await invalidateAll();
+                                        }
+                                    };
+                                }}>
+                                    <input type="hidden" name="noteId" value={note.id} />
+                                    <button type="submit" class="btn btn-danger-solid">Ja, löschen</button>
                                 </form>
-                                <button
-                                    type="button"
-                                    class="btn btn-secondary"
-                                    onclick={cancelDelete}
-                                >
-                                    Abbrechen
-                                </button>
+                                <button type="button" class="btn btn-secondary" onclick={cancelDelete}>Abbrechen</button>
                             </div>
                         </div>
                     {/if}
@@ -335,33 +279,22 @@
     {/if}
 </div>
 
+<!-- Modal -->
 {#if showModal}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <button
-        type="button"
-        class="modal-backdrop"
-        onclick={closeModal}
-        aria-label="Modal schliessen"
-    ></button>
+    <button type="button" class="modal-backdrop" onclick={closeModal} aria-label="Modal schliessen"></button>
     <div class="modal" role="dialog" aria-modal="true">
         <div class="modal-header">
             <h2>{editingNote ? "Notiz bearbeiten" : "Neue Notiz"}</h2>
-            <button
-                type="button"
-                class="btn-close-modal"
-                onclick={closeModal}
-                aria-label="Schliessen"
-            >
-                ✕
-            </button>
+            <button type="button" class="btn-close-modal" onclick={closeModal} aria-label="Schliessen">✕</button>
         </div>
-        <form
-            method="POST"
+        <form 
+            method="POST" 
             action={editingNote ? "?/update" : "?/create"}
             use:enhance={() => {
                 return async ({ result }) => {
-                    if (result.type === "success") {
+                    if (result.type === 'success') {
                         closeModal();
                         await invalidateAll();
                     }
@@ -369,40 +302,36 @@
             }}
         >
             {#if editingNote}
-                <input
-                    type="hidden"
-                    name="noteId"
-                    value={editingNote.id}
-                />
+                <input type="hidden" name="noteId" value={editingNote.id} />
             {/if}
 
             <div class="form-group">
                 <label for="companyName">Firma (optional)</label>
-                <input
-                    type="text"
-                    id="companyName"
-                    name="companyName"
-                    placeholder="z.B. ZKB, Swisscom ..."
+                <input 
+                    type="text" 
+                    id="companyName" 
+                    name="companyName" 
+                    placeholder="z.B. Swisscom, ABB, ..."
                     value={editingNote?.companyName ?? ""}
                 />
             </div>
 
             <div class="form-group">
                 <label for="position">Position (optional)</label>
-                <input
-                    type="text"
-                    id="position"
-                    name="position"
-                    placeholder="z.B. Informatikerin EFZ ..."
+                <input 
+                    type="text" 
+                    id="position" 
+                    name="position" 
+                    placeholder="z.B. Informatiker EFZ, KV, ..."
                     value={editingNote?.position ?? ""}
                 />
             </div>
 
             <div class="form-group">
                 <label for="text">Notiz *</label>
-                <textarea
-                    id="text"
-                    name="text"
+                <textarea 
+                    id="text" 
+                    name="text" 
                     rows="6"
                     placeholder="Deine Notizen..."
                     required
@@ -410,11 +339,7 @@
             </div>
 
             <div class="modal-actions">
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    onclick={closeModal}
-                >
+                <button type="button" class="btn btn-secondary" onclick={closeModal}>
                     Abbrechen
                 </button>
                 <button type="submit" class="btn btn-primary">
@@ -426,11 +351,10 @@
 {/if}
 
 <style>
-    /* Grundlayout */
     .page-wrapper {
-        max-width: 1100px;
+        max-width: 1000px;
         margin: 0 auto;
-        padding: 1.75rem 1rem 3rem;
+        padding: 1.5rem 1rem 3rem;
     }
 
     .page-header {
@@ -438,94 +362,89 @@
         justify-content: space-between;
         align-items: flex-start;
         gap: 1rem;
-        margin-bottom: 1.75rem;
-        flex-wrap: wrap;
-    }
-
-    .title {
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin: 0;
-        color: #2f124d;
-    }
-
-    .subtitle {
-        margin: 0.35rem 0 0;
-        color: #756177;
-        font-size: 0.95rem;
-    }
-
-    /* Stats */
-    .stats-row {
-        display: flex;
-        gap: 0.75rem;
         margin-bottom: 1.5rem;
         flex-wrap: wrap;
     }
 
+    .title {
+        font-size: 1.7rem;
+        font-weight: 700;
+        margin: 0;
+        color: #2d2141;
+    }
+
+    .subtitle {
+        margin: 0.3rem 0 0;
+        color: #6b647a;
+        font-size: 0.95rem;
+    }
+
+    .stats-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
     .stat-card {
-        background: #ffffff;
-        border: 1px solid #e6d9cc;
-        border-radius: 0.9rem;
+        background: #fff;
+        border: 1px solid #e8e0f0;
+        border-radius: 0.75rem;
         padding: 0.75rem 1.25rem;
-        text-align: left;
-        min-width: 110px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+        text-align: center;
+        min-width: 80px;
     }
 
     .stat-filtered {
-        background: #f7f0ff;
-        border-color: #ddcff9;
+        background: #f0e8ff;
+        border-color: #d4c4f0;
     }
 
     .stat-value {
         display: block;
         font-size: 1.5rem;
         font-weight: 700;
-        color: #2f124d;
+        color: #3b134f;
     }
 
     .stat-label {
         font-size: 0.8rem;
-        color: #8a7a8c;
+        color: #7c6b80;
     }
 
-    /* Filter-Bar */
+    /* Filter Bar */
     .filter-bar {
         display: flex;
         flex-wrap: wrap;
         gap: 0.75rem;
         align-items: center;
-        padding: 0.9rem;
-        background: #ffffff;
-        border: 1px solid #e6d9cc;
-        border-radius: 0.9rem;
+        padding: 1rem;
+        background: #fff;
+        border: 1px solid #e8e0f0;
+        border-radius: 0.75rem;
         margin-bottom: 1.5rem;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
     }
 
     .filter-group {
         flex: 1;
-        min-width: 160px;
+        min-width: 150px;
     }
 
     .filter-input,
     .filter-select {
         width: 100%;
         padding: 0.6rem 0.75rem;
-        border: 1px solid #e6d9cc;
-        border-radius: 0.6rem;
+        border: 1px solid #e8e0f0;
+        border-radius: 0.5rem;
         font-size: 0.9rem;
-        background: #fbf7f1;
+        background: #faf8fc;
         font-family: inherit;
-        box-sizing: border-box;
     }
 
     .filter-input:focus,
     .filter-select:focus {
         outline: none;
-        border-color: #4a1c74;
-        background: #ffffff;
+        border-color: #7c3aed;
+        background: #fff;
     }
 
     .filter-select {
@@ -534,9 +453,9 @@
 
     .btn-reset {
         background: none;
-        border: 1px solid #e6d9cc;
-        padding: 0.55rem 1rem;
-        border-radius: 999px;
+        border: 1px solid #e8e0f0;
+        padding: 0.6rem 1rem;
+        border-radius: 0.5rem;
         font-size: 0.85rem;
         color: #6b647a;
         cursor: pointer;
@@ -545,42 +464,40 @@
 
     .btn-reset:hover {
         background: #fef2f2;
-        border-color: #fca5a5;
-        color: #b91c1c;
+        border-color: #fecaca;
+        color: #dc2626;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 600px) {
         .filter-bar {
             flex-direction: column;
-            align-items: stretch;
         }
         .filter-group {
             width: 100%;
         }
     }
 
-    /* Empty States */
     .empty-state {
         text-align: center;
         padding: 3rem 1rem;
-        background: #fbf7f1;
-        border: 2px dashed #e6d9cc;
-        border-radius: 1.1rem;
+        background: #faf6ff;
+        border: 2px dashed #e0d4ff;
+        border-radius: 1rem;
     }
 
     .empty-icon {
-        font-size: 2.75rem;
+        font-size: 3rem;
         margin-bottom: 0.5rem;
     }
 
     .empty-state h2 {
         margin: 0 0 0.5rem;
-        color: #2f124d;
+        color: #3b134f;
     }
 
     .empty-state p {
         margin: 0 0 1.5rem;
-        color: #756177;
+        color: #6b647a;
     }
 
     /* Notes Grid */
@@ -589,65 +506,56 @@
         gap: 1rem;
     }
 
-    @media (min-width: 720px) {
+    @media (min-width: 640px) {
         .notes-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(2, 1fr);
         }
     }
 
-    @media (min-width: 1040px) {
+    @media (min-width: 900px) {
         .notes-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(3, 1fr);
         }
     }
 
     .note-card {
-        background: #ffffff;
-        border: 1px solid #e6d9cc;
+        background: #fff;
+        border: 1px solid #e8e0f0;
         border-radius: 1rem;
         padding: 1rem;
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
         position: relative;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        transition: box-shadow 0.2s;
     }
 
     .note-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
     .note-header {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.4rem;
+        gap: 0.5rem;
     }
 
-    .note-company,
-    .note-position,
-    .note-general {
-        font-size: 0.78rem;
-        padding: 0.25rem 0.55rem;
-        border-radius: 999px;
-        background: #f3edf7;
-        color: #4a1c74;
+    .note-company, .note-position, .note-general {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.5rem;
+        background: #f3f0f7;
+        color: #5e4a6d;
     }
 
     .note-company {
-        background: #e8f2ff;
-        color: #1d4f91;
+        background: #e8f4f8;
+        color: #1a5f7a;
     }
 
     .note-position {
-        background: #fff3e0;
-        color: #8a5800;
-    }
-
-    .note-general {
-        background: #f3edf7;
-        color: #4a1c74;
+        background: #fef3e2;
+        color: #8b5a00;
     }
 
     .note-body {
@@ -658,7 +566,7 @@
         margin: 0;
         font-size: 0.9rem;
         color: #3b2d4a;
-        line-height: 1.45;
+        line-height: 1.5;
         white-space: pre-wrap;
     }
 
@@ -667,7 +575,7 @@
         justify-content: space-between;
         align-items: center;
         padding-top: 0.5rem;
-        border-top: 1px solid #f1e5d7;
+        border-top: 1px solid #f0e8f8;
     }
 
     .note-date {
@@ -683,15 +591,15 @@
     .btn-icon {
         background: none;
         border: none;
-        padding: 0.2rem 0.45rem;
+        padding: 0.25rem 0.5rem;
         font-size: 1rem;
         cursor: pointer;
         border-radius: 0.5rem;
-        transition: background 0.15s ease;
+        transition: background 0.2s;
     }
 
     .btn-icon:hover {
-        background: #f3edf7;
+        background: #f3f0f7;
     }
 
     .btn-icon.btn-danger:hover {
@@ -702,7 +610,7 @@
     .delete-confirm {
         position: absolute;
         inset: 0;
-        background: rgba(255, 255, 255, 0.96);
+        background: rgba(255,255,255,0.95);
         border-radius: 1rem;
         display: flex;
         flex-direction: column;
@@ -715,44 +623,37 @@
     .delete-confirm p {
         margin: 0;
         font-weight: 600;
-        color: #2f124d;
+        color: #3b134f;
     }
 
     .delete-actions {
         display: flex;
         gap: 0.5rem;
-        flex-wrap: wrap;
-        justify-content: center;
     }
 
     /* Buttons */
     .btn {
-        padding: 0.5rem 1.1rem;
-        border-radius: 999px;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
         font-size: 0.9rem;
         font-weight: 500;
         text-decoration: none;
         border: none;
         cursor: pointer;
-        transition: background 0.15s ease, transform 0.1s ease,
-            box-shadow 0.15s ease;
-        font-family: inherit;
+        transition: all 0.15s ease;
     }
 
     .btn-primary {
-        background: #4a1c74;
-        color: #ffffff;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+        background: #2F124D;
+        color: #fff;
     }
 
     .btn-primary:hover {
-        background: #5a258d;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+        background: rgb(56, 16, 121);
     }
 
     .btn-secondary {
-        background: #f4f4f5;
+        background: #f3f4f6;
         color: #374151;
         border: 1px solid #e5e7eb;
     }
@@ -763,7 +664,7 @@
 
     .btn-danger-solid {
         background: #dc2626;
-        color: #ffffff;
+        color: #fff;
     }
 
     .btn-danger-solid:hover {
@@ -773,32 +674,37 @@
     /* Alerts */
     .alert {
         padding: 0.75rem 1rem;
-        border-radius: 0.75rem;
+        border-radius: 0.5rem;
         margin-bottom: 1rem;
-        border: 1px solid transparent;
-        background: #ffffff;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
     }
 
     .alert-danger {
         background: #fef2f2;
-        color: #b91c1c;
-        border-color: #fecaca;
+        color: #dc2626;
+        border: 1px solid #fecaca;
     }
 
     .alert-success {
         background: #f0fdf4;
-        color: #15803d;
-        border-color: #bbf7d0;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
     }
 
     /* Modal */
     .modal-backdrop {
         position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.45);
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
         z-index: 998;
         border: none;
+        cursor: default;
+        padding: 0;
+        margin: 0;
     }
 
     .modal {
@@ -807,28 +713,30 @@
         left: 50%;
         transform: translate(-50%, -50%);
         background-color: #ffffff !important;
-        border-radius: 1.1rem;
-        padding: 1.5rem 1.5rem 1.25rem;
+        border-radius: 1rem;
+        padding: 1.5rem;
         width: 90%;
-        max-width: 520px;
+        max-width: 500px;
         max-height: 90vh;
         overflow-y: auto;
         z-index: 999;
-        box-shadow: 0 24px 40px rgba(0, 0, 0, 0.28);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         display: block;
+        visibility: visible;
+        opacity: 1;
     }
 
     .modal-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.25rem;
+        margin-bottom: 1.5rem;
     }
 
     .modal-header h2 {
         margin: 0;
         font-size: 1.25rem;
-        color: #2f124d;
+        color: #2d2141;
     }
 
     .btn-close-modal {
@@ -836,14 +744,12 @@
         border: none;
         font-size: 1.25rem;
         cursor: pointer;
-        color: #756177;
+        color: #6b647a;
         padding: 0.25rem;
-        border-radius: 999px;
     }
 
     .btn-close-modal:hover {
-        background: #f4f4f5;
-        color: #2f124d;
+        color: #2d2141;
     }
 
     .form-group {
@@ -852,7 +758,7 @@
 
     .form-group label {
         display: block;
-        margin-bottom: 0.45rem;
+        margin-bottom: 0.5rem;
         font-size: 0.9rem;
         font-weight: 500;
         color: #3b2d4a;
@@ -862,19 +768,19 @@
     .form-group textarea {
         width: 100%;
         padding: 0.75rem;
-        border: 1px solid #e6d9cc;
-        border-radius: 0.6rem;
+        border: 1px solid #e8e0f0;
+        border-radius: 0.5rem;
         font-size: 0.95rem;
         font-family: inherit;
-        background: #fbf7f1;
+        background: #faf8fc;
         box-sizing: border-box;
     }
 
     .form-group input:focus,
     .form-group textarea:focus {
         outline: none;
-        border-color: #4a1c74;
-        background: #ffffff;
+        border-color: #7c3aed;
+        background: #fff;
     }
 
     .form-group textarea {
@@ -886,7 +792,54 @@
         display: flex;
         justify-content: flex-end;
         gap: 0.75rem;
-        margin-top: 1.25rem;
-        flex-wrap: wrap;
+        margin-top: 1.5rem;
     }
+
+    .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.9rem;
+    background: #ffffff;
+    border: 1px solid #e6d9cc;
+    border-radius: 0.9rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+/* Neuer Bereich links für die Zahlen */
+.filter-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* Kompaktere Pill-Version der bisherigen Stat-Cards */
+.stat-pill {
+    background: #fbf7f1;
+    border: 1px solid #e6d9cc;
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+}
+
+.stat-pill-filtered {
+    background: #f7f0ff;
+    border-color: #ddcff9;
+}
+
+.stat-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2f124d;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #8a7a8c;
+}
 </style>
