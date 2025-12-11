@@ -61,10 +61,10 @@
         <span class="hero-stat-label">KI-Trainings</span>
         <span class="hero-stat-value">{totalSessionsCount}</span>
       </div>
-      <div class="hero-stat">
-        <span class="hero-stat-label">Badges</span>
+      <a href="/student/badges" class="hero-stat hero-stat-link">
+        <span class="hero-stat-label">🏅 Badges</span>
         <span class="hero-stat-value">{badgesCount}</span>
-      </div>
+      </a>
     </div>
   </section>
 
@@ -158,25 +158,31 @@
           </div>
         </div>
         <span class="card-tag">
-          {badgesCount} Badges
+          {badgesCount} verdient
         </span>
       </header>
 
       <div class="card-body">
         {#if badgesCount === 0}
           <p class="card-empty">
-            Sammle Badges, indem du Aufgaben erledigst und Interviews übst.
+            Sammle Badges, indem du Aufgaben erledigst, Notizen schreibst und Bewerbungen trackst.
             So siehst du deinen Fortschritt auf einen Blick.
           </p>
         {:else}
-          <p class="card-empty">
-            Du hast bereits {badgesCount} Badges gesammelt. 🎉
-          </p>
+          <div class="card-highlight">
+            <p class="highlight-label">Gut gemacht! 🎉</p>
+            <p class="highlight-title">
+              Du hast bereits {badgesCount} Badges gesammelt.
+            </p>
+            <p class="highlight-meta">
+              Schau dir alle deine Erfolge an!
+            </p>
+          </div>
         {/if}
       </div>
 
-      <footer class="card-footer card-footer--disabled">
-        <span class="btn btn-inline disabled">Badges bald verfügbar</span>
+      <footer class="card-footer">
+        <a href="/student/badges" class="btn btn-inline">Badges ansehen</a>
       </footer>
     </article>
 
@@ -327,6 +333,18 @@
     padding: 0.6rem 0.9rem;
     min-width: 90px;
     text-align: left;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .hero-stat-link {
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .hero-stat-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
   }
 
   .hero-stat-label {
@@ -392,11 +410,6 @@
 
   .btn-inline:hover {
     background: #ffe9cc;
-  }
-
-  .btn-inline.disabled {
-    opacity: 0.6;
-    cursor: default;
   }
 
   .btn:focus-visible {
@@ -470,6 +483,7 @@
     padding: 0.9rem 1.1rem 0.6rem;
     font-size: 0.9rem;
     color: #4c3a3a;
+    flex: 1;
   }
 
   .card-footer {
@@ -477,10 +491,6 @@
     border-top: 1px solid #f4ead6;
     display: flex;
     justify-content: flex-end;
-  }
-
-  .card-footer--disabled {
-    justify-content: flex-start;
   }
 
   .card-empty {

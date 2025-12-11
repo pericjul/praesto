@@ -30,6 +30,7 @@ public class SessionService {
     private final SubmissionRepository submissionRepository;
     private final UserService userService;
     private final ChatClient chatClient;
+    private final BadgeService badgeService;  // NEU: BadgeService injiziert
 
     private static final String SYSTEM_PROMPT = """
             Du bist ein freundlicher Bewerbungscoach fuer Jugendliche in der Schweiz (14 bis 20 Jahre).
@@ -256,7 +257,12 @@ public class SessionService {
         session.setStatus(SessionStatus.CLOSED);
         session.setClosedAt(Instant.now());
 
-        return sessionRepository.save(session);
+        Session saved = sessionRepository.save(session);
+
+        // Badge-Check NACH dem Speichern
+        badgeService.checkAndAwardBadges(studentId);
+
+        return saved;
     }
 
     /**
@@ -307,7 +313,12 @@ public class SessionService {
 
         submissionRepository.save(submission);
 
-        return sessionRepository.save(session);
+        Session saved = sessionRepository.save(session);
+
+        // Badge-Check NACH dem Speichern
+        badgeService.checkAndAwardBadges(studentId);
+
+        return saved;
     }
 
     /**

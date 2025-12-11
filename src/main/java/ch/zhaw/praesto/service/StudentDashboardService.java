@@ -25,6 +25,7 @@ public class StudentDashboardService {
     private final SessionRepository sessionRepository;
     private final NoteRepository noteRepository;
     private final ApplicationRepository applicationRepository;
+    private final BadgeService badgeService;
 
     public StudentDashboardResponse getDashboardForCurrentStudent() {
         String studentId = userService.getUserId();
@@ -77,6 +78,8 @@ public class StudentDashboardService {
         // Bewerbungen des Students zaehlen
         int applicationsCount = applicationRepository.findByStudentId(studentId).size();
 
+        long badgesCount = badgeService.getEarnedBadgeCount(studentId);
+
         return StudentDashboardResponse.builder()
                 .studentName(studentName)
                 .openAssignmentsCount(openAssignmentsCount)
@@ -86,11 +89,9 @@ public class StudentDashboardService {
                 .lastSessionStartedAt(lastSession != null ? lastSession.getStartedAt() : null)
                 .totalSessionsCount(totalSessionsCount)
                 .openSessionId(openSession != null ? openSession.getId() : null)
-                // Notizen und Bewerbungen aus DB
                 .notesCount(notesCount)
                 .applicationsCount(applicationsCount)
-                // Platzhalter fuer spaeter
-                .badgesCount(0)
+                .badgesCount((int) badgeService.getEarnedBadgeCount(studentId))                
                 .build();
     }
 }

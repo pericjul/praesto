@@ -6,8 +6,10 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface NoteRepository extends MongoRepository<Note, String> {
-    
+
     List<Note> findByStudentId(String studentId);
-    
+
     List<Note> findByStudentIdOrderByCreatedAtDesc(String studentId);
+
+    long countByStudentId(String studentId);
 }
