@@ -1,17 +1,5 @@
 <script>
-    import { enhance } from "$app/forms";
-    import { invalidateAll } from "$app/navigation";
-    import { goto } from "$app/navigation";
-
     let { data, form } = $props();
-
-    // State
-    let selectedAssignment = $state(null);
-    let showModal = $state(false);
-    let reflectionText = $state("");
-    let researchText = $state("");
-    let researchLinks = $state("");
-    let isStartingSession = $state(false);
 
     // Derived
     let assignments = $derived(data?.assignments ?? []);
@@ -91,44 +79,6 @@
             default: return "#6b7280";
         }
     }
-
-    async function startAssignment(assignment) {
-        selectedAssignment = assignment;
-        reflectionText = "";
-        researchText = "";
-        researchLinks = "";
-
-        if (assignment.type === "AI_INTERVIEW") {
-            isStartingSession = true;
-            try {
-                const response = await fetch("/api/sessions/start", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ assignmentId: assignment.id })
-                });
-                
-                if (response.ok) {
-                    const session = await response.json();
-                    goto(`/student/sessions/${session.id}`);
-                } else {
-                    const error = await response.text();
-                    alert("Fehler beim Starten: " + error);
-                }
-            } catch (err) {
-                console.error("Fehler:", err);
-                alert("Verbindungsfehler. Bitte versuche es erneut.");
-            } finally {
-                isStartingSession = false;
-            }
-        } else {
-            showModal = true;
-        }
-    }
-
-    function closeModal() {
-        showModal = false;
-        selectedAssignment = null;
-    }
 </script>
 
 <svelte:head>
@@ -195,7 +145,7 @@
                 {@const submission = getSubmissionForAssignment(assignment.id)}
                 {@const submitted = !!submission}
                 
-                <div class="assignment-card" class:overdue={deadlineStatus === "overdue" && !submitted} class:submitted={submitted}>
+                <a href="/student/assignments/{assignment.id}" class="assignment-card" class:overdue={deadlineStatus === "overdue" && !submitted} class:submitted={submitted}>
                     <div class="assignment-content">
                         <div class="assignment-header">
                             <span class="type-badge" style="background: {typeInfo.color}15; color: {typeInfo.color}">
@@ -250,196 +200,16 @@
                     
                     <div class="assignment-action">
                         {#if submitted}
-                            <span class="completed-badge">✓ Abgegeben</span>
+                            <span class="view-hint">Details ansehen →</span>
                         {:else}
-                            <button 
-                                type="button" 
-                                class="btn btn-primary"
-                                style="background: {typeInfo.color}"
-                                onclick={() => startAssignment(assignment)}
-                            >
-                                {typeInfo.action}
-                            </button>
+                            <span class="btn btn-primary">{typeInfo.action}</span>
                         {/if}
                     </div>
-                </div>
+                </a>
             {/each}
         </div>
     {/if}
 </div>
-
-<!-- MODAL MIT INLINE STYLES -->
-{#if showModal && selectedAssignment}
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div 
-        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(45, 33, 65, 0.6); backdrop-filter: blur(4px); z-index: 9998; cursor: pointer;"
-        onclick={closeModal}
-    ></div>
-    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 1rem; width: 90%; max-width: 550px; max-height: 90vh; overflow: hidden; z-index: 9999; box-shadow: 0 25px 50px rgba(0,0,0,0.25);">
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: linear-gradient(135deg, {getTypeInfo(selectedAssignment.type).color} 0%, {getTypeInfo(selectedAssignment.type).color}dd 100%); color: #fff;">
-            <h2 style="margin: 0; font-size: 1.1rem;">{getTypeInfo(selectedAssignment.type).label}</h2>
-            <button 
-                type="button" 
-                style="background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 0.3rem 0.6rem; border-radius: 0.4rem; cursor: pointer;"
-                onclick={closeModal}
-            >✕</button>
-        </div>
-        
-        <div style="padding: 1.5rem; max-height: calc(90vh - 70px); overflow-y: auto;">
-            <h3 style="margin: 0 0 0.5rem; font-size: 1.2rem; color: #2d2141;">{selectedAssignment.title}</h3>
-            {#if selectedAssignment.description}
-                <p style="margin: 0 0 0.5rem; color: #6b647a; font-size: 0.9rem;">{selectedAssignment.description}</p>
-            {/if}
-            <p style="margin: 0 0 1.5rem; color: #7c6b80; font-size: 0.85rem; padding-bottom: 1rem; border-bottom: 1px solid #e8e0f0;">📅 Deadline: {formatDate(selectedAssignment.dueDate)}</p>
-
-            <!-- DOCUMENT_UPLOAD -->
-            {#if selectedAssignment.type === "DOCUMENT_UPLOAD"}
-                <form method="POST" action="?/submitDocument" enctype="multipart/form-data" use:enhance={() => {
-                    return async ({ result }) => {
-                        if (result.type === 'success') {
-                            closeModal();
-                            await invalidateAll();
-                        }
-                    };
-                }}>
-                    <input type="hidden" name="assignmentId" value={selectedAssignment.id} />
-                    
-                    <div style="margin-bottom: 1.25rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #3b134f;">Dokument auswählen</label>
-                        <input type="file" name="document" accept=".pdf,.doc,.docx" required style="width: 100%; padding: 0.75rem; border: 2px dashed #e8e0f0; border-radius: 0.5rem; background: #faf8fc; box-sizing: border-box;" />
-                        <small style="display: block; margin-top: 0.4rem; font-size: 0.8rem; color: #7c6b80;">Erlaubte Formate: PDF, Word (.doc, .docx)</small>
-                    </div>
-
-                    <div style="margin-bottom: 1.25rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #3b134f;">Kommentar (optional)</label>
-                        <textarea name="comment" rows="2" placeholder="Optionaler Kommentar zu deiner Abgabe..." style="width: 100%; padding: 0.75rem; border: 1px solid #e8e0f0; border-radius: 0.5rem; font-family: inherit; font-size: 1rem; resize: vertical; box-sizing: border-box;"></textarea>
-                    </div>
-
-                    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e8e0f0;">
-                        <button type="button" onclick={closeModal} style="padding: 0.6rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 500; border: none; cursor: pointer; background: #f3f4f6; color: #374151;">Abbrechen</button>
-                        <button type="submit" style="padding: 0.6rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 500; border: none; cursor: pointer; background: {getTypeInfo(selectedAssignment.type).color}; color: #fff;">📤 Abgeben</button>
-                    </div>
-                </form>
-
-            <!-- SELF_REFLECTION -->
-            {:else if selectedAssignment.type === "SELF_REFLECTION"}
-                <form method="POST" action="?/submitReflection" use:enhance={() => {
-                    return async ({ result, update }) => {
-                        console.log("Form result:", result);
-                        if (result.type === 'success') {
-                            closeModal();
-                            await invalidateAll();
-                        } else if (result.type === 'failure') {
-                            // Zeige Fehler an
-                            alert("Fehler: " + (result.data?.error || "Unbekannter Fehler"));
-                            await update();
-                        } else {
-                            await update();
-                        }
-                    };
-                }}>
-                    <input type="hidden" name="assignmentId" value={selectedAssignment.id} />
-                    
-                    <div style="margin-bottom: 1.25rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #3b134f;">Deine Reflexion</label>
-                        <textarea 
-                            name="reflection" 
-                            rows="8"
-                            placeholder="Schreibe hier deine Gedanken und Reflexion..."
-                            bind:value={reflectionText}
-                            required
-                            style="width: 100%; padding: 0.75rem; border: 1px solid #e8e0f0; border-radius: 0.5rem; font-family: inherit; font-size: 1rem; resize: vertical; box-sizing: border-box;"
-                        ></textarea>
-                        <small style="display: block; margin-top: 0.4rem; font-size: 0.8rem; color: {reflectionText.length < 50 ? '#dc2626' : '#10b981'};">
-                            {reflectionText.length} / 50 Zeichen (min.)
-                            {#if reflectionText.length < 50}
-                                — noch {50 - reflectionText.length} Zeichen nötig
-                            {:else}
-                                ✓
-                            {/if}
-                        </small>
-                    </div>
-
-                    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e8e0f0;">
-                        <button type="button" onclick={closeModal} style="padding: 0.6rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 500; border: none; cursor: pointer; background: #f3f4f6; color: #374151;">Abbrechen</button>
-                        <button 
-                            type="submit" 
-                            disabled={reflectionText.length < 50}
-                            style="padding: 0.6rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 500; border: none; cursor: {reflectionText.length < 50 ? 'not-allowed' : 'pointer'}; background: {reflectionText.length < 50 ? '#ccc' : getTypeInfo(selectedAssignment.type).color}; color: #fff; opacity: {reflectionText.length < 50 ? '0.6' : '1'};"
-                        >✓ Abgeben</button>
-                    </div>
-                </form>
-
-            <!-- VIDEO_PITCH -->
-            {:else if selectedAssignment.type === "VIDEO_PITCH"}
-                <form method="POST" action="?/submitVideo" enctype="multipart/form-data" use:enhance={() => {
-                    return async ({ result }) => {
-                        if (result.type === 'success') {
-                            closeModal();
-                            await invalidateAll();
-                        }
-                    };
-                }}>
-                    <input type="hidden" name="assignmentId" value={selectedAssignment.id} />
-                    
-                    <div style="margin-bottom: 1.25rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #3b134f;">Video auswählen</label>
-                        <input type="file" name="video" accept="video/*" required style="width: 100%; padding: 0.75rem; border: 2px dashed #e8e0f0; border-radius: 0.5rem; background: #faf8fc; box-sizing: border-box;" />
-                        <small style="display: block; margin-top: 0.4rem; font-size: 0.8rem; color: #7c6b80;">Erlaubte Formate: MP4, MOV, WebM (max. 100MB)</small>
-                    </div>
-
-                    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e8e0f0;">
-                        <button type="button" onclick={closeModal} style="padding: 0.6rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 500; border: none; cursor: pointer; background: #f3f4f6; color: #374151;">Abbrechen</button>
-                        <button type="submit" style="padding: 0.6rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 500; border: none; cursor: pointer; background: {getTypeInfo(selectedAssignment.type).color}; color: #fff;">🎥 Hochladen</button>
-                    </div>
-                </form>
-
-            <!-- RESEARCH -->
-            {:else if selectedAssignment.type === "RESEARCH"}
-                <form method="POST" action="?/submitResearch" use:enhance={() => {
-                    return async ({ result }) => {
-                        if (result.type === 'success') {
-                            closeModal();
-                            await invalidateAll();
-                        }
-                    };
-                }}>
-                    <input type="hidden" name="assignmentId" value={selectedAssignment.id} />
-                    
-                    <div style="margin-bottom: 1.25rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #3b134f;">Deine Recherche-Ergebnisse</label>
-                        <textarea 
-                            name="researchText" 
-                            rows="6"
-                            placeholder="Fasse deine Recherche zusammen..."
-                            bind:value={researchText}
-                            required
-                            style="width: 100%; padding: 0.75rem; border: 1px solid #e8e0f0; border-radius: 0.5rem; font-family: inherit; font-size: 1rem; resize: vertical; box-sizing: border-box;"
-                        ></textarea>
-                    </div>
-
-                    <div style="margin-bottom: 1.25rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #3b134f;">Quellen / Links (optional)</label>
-                        <textarea 
-                            name="links" 
-                            rows="3"
-                            placeholder="https://beispiel.ch&#10;https://quelle2.ch"
-                            bind:value={researchLinks}
-                            style="width: 100%; padding: 0.75rem; border: 1px solid #e8e0f0; border-radius: 0.5rem; font-family: inherit; font-size: 1rem; resize: vertical; box-sizing: border-box;"
-                        ></textarea>
-                        <small style="display: block; margin-top: 0.4rem; font-size: 0.8rem; color: #7c6b80;">Ein Link pro Zeile</small>
-                    </div>
-
-                    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e8e0f0;">
-                        <button type="button" onclick={closeModal} style="padding: 0.6rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 500; border: none; cursor: pointer; background: #f3f4f6; color: #374151;">Abbrechen</button>
-                        <button type="submit" style="padding: 0.6rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 500; border: none; cursor: pointer; background: {getTypeInfo(selectedAssignment.type).color}; color: #fff;">✓ Abgeben</button>
-                    </div>
-                </form>
-            {/if}
-        </div>
-    </div>
-{/if}
 
 <style>
     .page-wrapper {
@@ -549,6 +319,8 @@
         border: 1px solid #e8e0f0;
         border-radius: 0.75rem;
         transition: all 0.2s ease;
+        text-decoration: none;
+        cursor: pointer;
     }
 
     .assignment-card:hover {
@@ -639,6 +411,7 @@
 
     .meta-item.deadline-warning { color: #d97706; font-weight: 500; }
     .meta-item.deadline-overdue { color: #dc2626; font-weight: 500; }
+    .meta-item.has-feedback { color: #7c3aed; font-weight: 500; }
 
     .deadline-label {
         margin-left: 0.5rem;
@@ -650,6 +423,12 @@
     }
 
     .assignment-action { flex-shrink: 0; }
+
+    .view-hint {
+        color: #7c3aed;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
 
     .btn {
         padding: 0.6rem 1.25rem;
@@ -663,23 +442,13 @@
     .btn-primary { background: #3b134f; color: #fff; }
     .btn-primary:hover { filter: brightness(1.1); }
 
-    .completed-badge {
-        display: inline-block;
-        padding: 0.5rem 1rem;
-        background: #d1fae5;
-        color: #059669;
-        border-radius: 0.5rem;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-
     @media (max-width: 600px) {
         .assignment-card {
             flex-direction: column;
             align-items: stretch;
         }
         .assignment-action { margin-top: 1rem; }
-        .btn { width: 100%; }
+        .btn { width: 100%; text-align: center; }
         .stats-bar { flex-wrap: wrap; }
     }
 </style>

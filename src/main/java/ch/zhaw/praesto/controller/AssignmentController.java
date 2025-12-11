@@ -2,12 +2,14 @@ package ch.zhaw.praesto.controller;
 
 import ch.zhaw.praesto.model.UpdateAssignmentStatusRequest;
 import ch.zhaw.praesto.repository.AssignmentRepository;
+import ch.zhaw.praesto.repository.SchoolClassRepository;
 import ch.zhaw.praesto.exception.BadRequestException;
 import ch.zhaw.praesto.exception.ForbiddenException;
 import ch.zhaw.praesto.exception.NotFoundException;
 import ch.zhaw.praesto.model.Assignment;
 import ch.zhaw.praesto.model.AssignmentCreateDTO;
 import ch.zhaw.praesto.model.AssignmentStatus;
+import ch.zhaw.praesto.model.SchoolClass;
 import ch.zhaw.praesto.service.AssignmentService;
 import ch.zhaw.praesto.service.UserService;
 
@@ -23,13 +25,17 @@ import java.util.List;
 public class AssignmentController {
 
     private final AssignmentService assignmentService;
-
     private final AssignmentRepository assignmentRepository;
+    private final SchoolClassRepository schoolClassRepository;
     private final UserService userService;
 
-    public AssignmentController(AssignmentRepository assignmentRepository, UserService userService,
+    public AssignmentController(
+            AssignmentRepository assignmentRepository, 
+            SchoolClassRepository schoolClassRepository,
+            UserService userService,
             AssignmentService assignmentService) {
         this.assignmentRepository = assignmentRepository;
+        this.schoolClassRepository = schoolClassRepository;
         this.userService = userService;
         this.assignmentService = assignmentService;
     }
@@ -55,7 +61,7 @@ public class AssignmentController {
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .durationMin(dto.getDurationMin())
-                .dueDate(Instant.parse(dto.getDueDate()))
+                .dueDate(dto.getDueDate() != null ? Instant.parse(dto.getDueDate()) : null)
                 .classId(dto.getClassId())
                 .type(dto.getType())
                 .status(AssignmentStatus.ASSIGNED)
@@ -118,17 +124,36 @@ public class AssignmentController {
         return ResponseEntity.ok(assignments);
     }
 
-    // GET Eine einzelne Assignment (Teacher nur eigene)
+    // GET Eine einzelne Assignment (Teacher und Student)
     @GetMapping("/assignments/{id}")
     public ResponseEntity<Assignment> getAssignmentById(@PathVariable String id) {
         Assignment assignment = assignmentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Assignment nicht gefunden"));
 
+        boolean isTeacher = userService.userHasRole("TEACHER");
+        boolean isStudent = userService.userHasRole("STUDENT");
+
         // Teacher darf nur eigene sehen
-        if (userService.userHasRole("TEACHER")) {
+        if (isTeacher) {
             if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
                 throw new ForbiddenException("Keine Berechtigung fuer dieses Assignment");
             }
+        }
+        // Student darf Assignments seiner Klasse sehen
+        else if (isStudent) {
+            String studentEmail = userService.getEmail().toLowerCase();
+            
+            // Klasse des Assignments laden
+            SchoolClass schoolClass = schoolClassRepository.findById(assignment.getClassId())
+                    .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
+            
+            // Prüfen ob Student in der Klasse ist
+            if (!schoolClass.hasStudent(studentEmail)) {
+                throw new ForbiddenException("Du bist nicht in dieser Klasse");
+            }
+        }
+        else {
+            throw new ForbiddenException("Keine Berechtigung");
         }
 
         return ResponseEntity.ok(assignment);

@@ -22,6 +22,8 @@ public class BadgeService {
     private final SessionRepository sessionRepository;
     private final NoteRepository noteRepository;
     private final ApplicationRepository applicationRepository;
+    private final SubmissionRepository submissionRepository;  // NEU: für Submission-basierte Badges
+    private final UserService userService;  // NEU: für Email-Lookup
 
     /**
      * Alle verfügbaren Badges abrufen
@@ -61,6 +63,9 @@ public class BadgeService {
         // Alle Badges prüfen
         List<Badge> allBadges = badgeRepository.findAllByOrderBySortOrderAsc();
         
+        // Email für Submission-basierte Prüfungen (aktueller User)
+        String studentEmail = userService.getEmail().toLowerCase();
+        
         for (Badge badge : allBadges) {
             // Bereits verdient? Skip
             if (earnedBadgeIds.contains(badge.getId())) {
@@ -68,7 +73,7 @@ public class BadgeService {
             }
             
             // Regel prüfen
-            boolean earned = checkBadgeRule(studentId, badge);
+            boolean earned = checkBadgeRule(studentId, studentEmail, badge);
             
             if (earned) {
                 // Badge vergeben
@@ -91,20 +96,17 @@ public class BadgeService {
     /**
      * Prüft ob eine Badge-Regel erfüllt ist
      */
-    private boolean checkBadgeRule(String studentId, Badge badge) {
+    private boolean checkBadgeRule(String studentId, String studentEmail, Badge badge) {
         switch (badge.getRuleType()) {
             case SESSIONS_COMPLETED:
-                // Session verwendet 'studentId'
                 long sessionCount = sessionRepository.countByStudentIdAndStatus(studentId, SessionStatus.CLOSED);
                 return sessionCount >= badge.getThreshold();
                 
             case NOTES_CREATED:
-                // Note verwendet 'studentId'
                 long noteCount = noteRepository.countByStudentId(studentId);
                 return noteCount >= badge.getThreshold();
                 
             case APPLICATIONS_CREATED:
-                // Application verwendet 'studentId'
                 long appCount = applicationRepository.countByStudentId(studentId);
                 return appCount >= badge.getThreshold();
                 
@@ -116,20 +118,40 @@ public class BadgeService {
                 }
                 return false;
                 
+            case SUBMISSIONS_COMPLETED:
+                // Anzahl abgegebene Aufgaben
+                long submissionCount = submissionRepository.countByStudentEmail(studentEmail);
+                return submissionCount >= badge.getThreshold();
+                
+            case FEEDBACK_RECEIVED:
+                // Anzahl Submissions mit Feedback
+                long feedbackCount = submissionRepository.countByStudentEmailAndTeacherFeedbackIsNotNull(studentEmail);
+                return feedbackCount >= badge.getThreshold();
+                
+            case GRADES_RECEIVED:
+                // Anzahl Submissions mit Note
+                long gradeCount = submissionRepository.countByStudentEmailAndGradeIsNotNull(studentEmail);
+                return gradeCount >= badge.getThreshold();
+                
             default:
+                log.warn("Unbekannter Badge-RuleType: {}", badge.getRuleType());
                 return false;
         }
     }
 
     /**
      * Mappt Threshold auf ApplicationStatus
-     * 0 = INVITED, 1 = ACCEPTED
+     * 0 = APPLIED, 1 = INVITED, 2 = INTERVIEW_DONE, 3 = ACCEPTED
      */
     private ApplicationStatus getStatusFromThreshold(int threshold) {
         switch (threshold) {
             case 0:
-                return ApplicationStatus.INVITED;
+                return ApplicationStatus.APPLIED;
             case 1:
+                return ApplicationStatus.INVITED;
+            case 2:
+                return ApplicationStatus.INTERVIEW_DONE;
+            case 3:
                 return ApplicationStatus.ACCEPTED;
             default:
                 return null;
@@ -156,6 +178,16 @@ public class BadgeService {
                             .earnedAt(earned != null ? earned.getEarnedAt() : null)
                             .build();
                 })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Holt die Icons aller verdienten Badges (für Dashboard)
+     */
+    public List<String> getEarnedBadgeIcons(String studentId) {
+        return getBadgesWithEarnedInfo(studentId).stream()
+                .filter(BadgeWithEarnedInfo::isEarned)
+                .map(b -> b.getBadge().getIcon())
                 .collect(Collectors.toList());
     }
 

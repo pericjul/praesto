@@ -14,15 +14,27 @@
         });
     }
 
-    // Gruppiere Badges nach Kategorie
+    // Gruppiere Badges nach Kategorie (ruleType)
     let sessionBadges = $derived(badges.filter(b => 
         b.badge.ruleType === "SESSIONS_COMPLETED"
     ));
     let noteBadges = $derived(badges.filter(b => 
         b.badge.ruleType === "NOTES_CREATED"
     ));
-    let applicationBadges = $derived(badges.filter(b => 
-        b.badge.ruleType === "APPLICATIONS_CREATED" || b.badge.ruleType === "APPLICATION_STATUS"
+    let applicationCountBadges = $derived(badges.filter(b => 
+        b.badge.ruleType === "APPLICATIONS_CREATED"
+    ));
+    let applicationStatusBadges = $derived(badges.filter(b => 
+        b.badge.ruleType === "APPLICATION_STATUS"
+    ));
+    let submissionBadges = $derived(badges.filter(b => 
+        b.badge.ruleType === "SUBMISSIONS_COMPLETED"
+    ));
+    let feedbackBadges = $derived(badges.filter(b => 
+        b.badge.ruleType === "FEEDBACK_RECEIVED"
+    ));
+    let gradeBadges = $derived(badges.filter(b => 
+        b.badge.ruleType === "GRADES_RECEIVED"
     ));
 </script>
 
@@ -57,68 +69,166 @@
         <span class="progress-text">{Math.round(earnedCount / totalCount * 100 || 0)}% abgeschlossen</span>
     </div>
 
-    <!-- Training Badges -->
-    <section class="badge-section">
-        <h2 class="section-title">🤖 KI-Training</h2>
-        <div class="badge-grid">
-            {#each sessionBadges as item}
-                <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
-                    <div class="badge-icon">{item.badge.icon}</div>
-                    <div class="badge-info">
-                        <h3 class="badge-title">{item.badge.title}</h3>
-                        <p class="badge-desc">{item.badge.description}</p>
-                        {#if item.earned}
-                            <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
-                        {:else}
-                            <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
-                        {/if}
+    <!-- KI-Training Badges -->
+    {#if sessionBadges.length > 0}
+        <section class="badge-section">
+            <h2 class="section-title">🤖 KI-Training</h2>
+            <div class="badge-grid">
+                {#each sessionBadges as item}
+                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
+                        <div class="badge-icon">{item.badge.icon}</div>
+                        <div class="badge-info">
+                            <h3 class="badge-title">{item.badge.title}</h3>
+                            <p class="badge-desc">{item.badge.description}</p>
+                            {#if item.earned}
+                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
+                            {:else}
+                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
+                            {/if}
+                        </div>
                     </div>
-                </div>
-            {/each}
-        </div>
-    </section>
+                {/each}
+            </div>
+        </section>
+    {/if}
 
     <!-- Notizen Badges -->
-    <section class="badge-section">
-        <h2 class="section-title">📝 Notizen</h2>
-        <div class="badge-grid">
-            {#each noteBadges as item}
-                <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
-                    <div class="badge-icon">{item.badge.icon}</div>
-                    <div class="badge-info">
-                        <h3 class="badge-title">{item.badge.title}</h3>
-                        <p class="badge-desc">{item.badge.description}</p>
-                        {#if item.earned}
-                            <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
-                        {:else}
-                            <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
-                        {/if}
+    {#if noteBadges.length > 0}
+        <section class="badge-section">
+            <h2 class="section-title">📝 Notizen</h2>
+            <div class="badge-grid">
+                {#each noteBadges as item}
+                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
+                        <div class="badge-icon">{item.badge.icon}</div>
+                        <div class="badge-info">
+                            <h3 class="badge-title">{item.badge.title}</h3>
+                            <p class="badge-desc">{item.badge.description}</p>
+                            {#if item.earned}
+                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
+                            {:else}
+                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
+                            {/if}
+                        </div>
                     </div>
-                </div>
-            {/each}
-        </div>
-    </section>
+                {/each}
+            </div>
+        </section>
+    {/if}
 
-    <!-- Bewerbungen Badges -->
-    <section class="badge-section">
-        <h2 class="section-title">💼 Bewerbungen</h2>
-        <div class="badge-grid">
-            {#each applicationBadges as item}
-                <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
-                    <div class="badge-icon">{item.badge.icon}</div>
-                    <div class="badge-info">
-                        <h3 class="badge-title">{item.badge.title}</h3>
-                        <p class="badge-desc">{item.badge.description}</p>
-                        {#if item.earned}
-                            <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
-                        {:else}
-                            <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
-                        {/if}
+    <!-- Bewerbungen Anzahl Badges -->
+    {#if applicationCountBadges.length > 0}
+        <section class="badge-section">
+            <h2 class="section-title">💼 Bewerbungen</h2>
+            <div class="badge-grid">
+                {#each applicationCountBadges as item}
+                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
+                        <div class="badge-icon">{item.badge.icon}</div>
+                        <div class="badge-info">
+                            <h3 class="badge-title">{item.badge.title}</h3>
+                            <p class="badge-desc">{item.badge.description}</p>
+                            {#if item.earned}
+                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
+                            {:else}
+                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
+                            {/if}
+                        </div>
                     </div>
-                </div>
-            {/each}
-        </div>
-    </section>
+                {/each}
+            </div>
+        </section>
+    {/if}
+
+    <!-- Bewerbungs-Status Badges -->
+    {#if applicationStatusBadges.length > 0}
+        <section class="badge-section">
+            <h2 class="section-title">🎯 Bewerbungs-Meilensteine</h2>
+            <div class="badge-grid">
+                {#each applicationStatusBadges as item}
+                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
+                        <div class="badge-icon">{item.badge.icon}</div>
+                        <div class="badge-info">
+                            <h3 class="badge-title">{item.badge.title}</h3>
+                            <p class="badge-desc">{item.badge.description}</p>
+                            {#if item.earned}
+                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
+                            {:else}
+                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
+                            {/if}
+                        </div>
+                    </div>
+                {/each}
+            </div>
+        </section>
+    {/if}
+
+    <!-- Aufgaben-Abgabe Badges -->
+    {#if submissionBadges.length > 0}
+        <section class="badge-section">
+            <h2 class="section-title">✅ Aufgaben-Abgaben</h2>
+            <div class="badge-grid">
+                {#each submissionBadges as item}
+                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
+                        <div class="badge-icon">{item.badge.icon}</div>
+                        <div class="badge-info">
+                            <h3 class="badge-title">{item.badge.title}</h3>
+                            <p class="badge-desc">{item.badge.description}</p>
+                            {#if item.earned}
+                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
+                            {:else}
+                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
+                            {/if}
+                        </div>
+                    </div>
+                {/each}
+            </div>
+        </section>
+    {/if}
+
+    <!-- Feedback Badges -->
+    {#if feedbackBadges.length > 0}
+        <section class="badge-section">
+            <h2 class="section-title">💬 Feedback</h2>
+            <div class="badge-grid">
+                {#each feedbackBadges as item}
+                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
+                        <div class="badge-icon">{item.badge.icon}</div>
+                        <div class="badge-info">
+                            <h3 class="badge-title">{item.badge.title}</h3>
+                            <p class="badge-desc">{item.badge.description}</p>
+                            {#if item.earned}
+                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
+                            {:else}
+                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
+                            {/if}
+                        </div>
+                    </div>
+                {/each}
+            </div>
+        </section>
+    {/if}
+
+    <!-- Noten Badges -->
+    {#if gradeBadges.length > 0}
+        <section class="badge-section">
+            <h2 class="section-title">🎓 Bewertungen</h2>
+            <div class="badge-grid">
+                {#each gradeBadges as item}
+                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
+                        <div class="badge-icon">{item.badge.icon}</div>
+                        <div class="badge-info">
+                            <h3 class="badge-title">{item.badge.title}</h3>
+                            <p class="badge-desc">{item.badge.description}</p>
+                            {#if item.earned}
+                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
+                            {:else}
+                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
+                            {/if}
+                        </div>
+                    </div>
+                {/each}
+            </div>
+        </section>
+    {/if}
 
     <!-- Legende -->
     <div class="legend">
