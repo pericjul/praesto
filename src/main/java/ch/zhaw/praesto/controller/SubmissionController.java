@@ -7,6 +7,7 @@ import ch.zhaw.praesto.model.*;
 import ch.zhaw.praesto.repository.AssignmentRepository;
 import ch.zhaw.praesto.repository.SchoolClassRepository;
 import ch.zhaw.praesto.repository.SubmissionRepository;
+import ch.zhaw.praesto.service.BadgeService;
 import ch.zhaw.praesto.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +27,7 @@ public class SubmissionController {
     private final AssignmentRepository assignmentRepository;
     private final SchoolClassRepository schoolClassRepository;
     private final UserService userService;
+    private final BadgeService badgeService;  // NEU: für Badge-Vergabe
 
     /**
      * POST /api/submissions - Neue Abgabe erstellen (Student)
@@ -37,6 +38,7 @@ public class SubmissionController {
             throw new ForbiddenException("Nur Schueler koennen Aufgaben abgeben");
         }
 
+        String studentId = userService.getUserId();
         String studentEmail = userService.getEmail().toLowerCase();
 
         // Assignment prüfen
@@ -75,6 +77,10 @@ public class SubmissionController {
                 .build();
 
         Submission saved = submissionRepository.save(submission);
+
+        // NEU: Badge-Check nach Abgabe
+        badgeService.checkAndAwardBadges(studentId);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
@@ -139,6 +145,10 @@ public class SubmissionController {
 
     /**
      * PUT /api/submissions/{id}/feedback - Feedback geben (Teacher)
+     * 
+     * HINWEIS: Badge-Check für FEEDBACK_RECEIVED und GRADES_RECEIVED wird hier nicht ausgelöst,
+     * da der aktuelle User der Lehrer ist. Die Badges werden vergeben, wenn der Student
+     * das nächste Mal eine Aktion durchführt (z.B. Aufgabe abgeben, Session starten).
      */
     @PutMapping("/{id}/feedback")
     public ResponseEntity<Submission> giveFeedback(

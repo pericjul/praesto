@@ -1,36 +1,36 @@
 package ch.zhaw.praesto.model;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.time.Instant;
+import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class StudentDashboardResponse {
 
-    // Begruessung
     private String studentName;
-
+    
     // Aufgaben
     private long openAssignmentsCount;
-    private String nextAssignmentTitle;
-    private Instant nextAssignmentDueDate;
-
-    // KI Training
+    private List<AssignmentInfo> openAssignments;  // Alle offenen Aufgaben
+    
+    // Sessions
     private String lastSessionId;
     private Instant lastSessionStartedAt;
     private int totalSessionsCount;
-    
-    // Offene Session zum Fortsetzen (falls vorhanden)
     private String openSessionId;
-
-    // Badges (vorerst Platzhalter)
-    private int badgesCount;
-
-    // Notizen (vorerst Platzhalter)
-    private int notesCount;
     
-    // Bewerbungen (vorerst Platzhalter)
+    // Bewerbungen
     private int applicationsCount;
+    
+    // Badges
+    private long badgesCount;
+    private List<String> earnedBadgeIcons;  // Icons der verdienten Badges
+    
+    // Mitteilungen
+    private List<NotificationInfo> notifications;  // Feedback etc.
 }

@@ -27,6 +27,7 @@
             <a href="/student/sessions" class="nav-link">Training</a>
             <a href="/student/notes" class="nav-link">Notizen</a>
             <a href="/student/applications" class="nav-link">Bewerbungen</a>
+            <a href="/student/badges" class="nav-link">🏅 Badges</a>
           {:else if isTeacher}
             <a href="/teacher/dashboard" class="nav-link">Dashboard</a>
             <a href="/teacher/classes" class="nav-link">Klassen</a>

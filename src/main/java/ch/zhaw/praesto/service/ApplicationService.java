@@ -21,6 +21,7 @@ public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
     private final UserService userService;
+    private final BadgeService badgeService;  // NEU: BadgeService injiziert
 
     /**
      * Neue Bewerbung erstellen.
@@ -47,7 +48,12 @@ public class ApplicationService {
                 .updatedAt(now)
                 .build();
 
-        return applicationRepository.save(application);
+        Application saved = applicationRepository.save(application);
+
+        // Badge-Check NACH dem Speichern
+        badgeService.checkAndAwardBadges(studentId);
+
+        return saved;
     }
 
     /**
@@ -92,6 +98,8 @@ public class ApplicationService {
 
         checkOwnership(application);
 
+        String studentId = userService.getUserId();
+
         application.setCompanyName(dto.getCompanyName());
         application.setPosition(dto.getPosition());
         application.setStatus(parseStatus(dto.getStatus()));
@@ -100,7 +108,12 @@ public class ApplicationService {
         application.setNotes(dto.getNotes());
         application.setUpdatedAt(Instant.now());
 
-        return applicationRepository.save(application);
+        Application saved = applicationRepository.save(application);
+
+        // Badge-Check NACH dem Speichern (für Status-Badges wie INVITED, ACCEPTED)
+        badgeService.checkAndAwardBadges(studentId);
+
+        return saved;
     }
 
     /**
@@ -116,10 +129,17 @@ public class ApplicationService {
 
         checkOwnership(application);
 
+        String studentId = userService.getUserId();
+
         application.setStatus(parseStatus(newStatus));
         application.setUpdatedAt(Instant.now());
 
-        return applicationRepository.save(application);
+        Application saved = applicationRepository.save(application);
+
+        // Badge-Check NACH dem Speichern (für Status-Badges wie INVITED, ACCEPTED)
+        badgeService.checkAndAwardBadges(studentId);
+
+        return saved;
     }
 
     /**

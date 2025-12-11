@@ -6,18 +6,34 @@
   const {
     studentName = "Student",
     openAssignmentsCount = 0,
-    nextAssignmentTitle,
-    nextAssignmentDueDate,
+    openAssignments = [],
     lastSessionStartedAt,
     totalSessionsCount = 0,
     badgesCount = 0,
-    notesCount = 0,
-    applicationsCount = 0
+    earnedBadgeIcons = [],
+    applicationsCount = 0,
+    notifications = []
   } = dashboard;
+
+  const assignmentTypes = {
+    AI_INTERVIEW: { label: "🤖 KI-Interview", color: "#8b5cf6" },
+    DOCUMENT_UPLOAD: { label: "📄 Dokument", color: "#3b82f6" },
+    SELF_REFLECTION: { label: "✍️ Reflexion", color: "#10b981" },
+    VIDEO_PITCH: { label: "🎥 Video", color: "#f59e0b" },
+    RESEARCH: { label: "🔍 Recherche", color: "#6366f1" }
+  };
+
+  function getTypeInfo(type) {
+    return assignmentTypes[type] ?? { label: type, color: "#6b7280" };
+  }
 
   function formatDate(date) {
     if (!date) return "-";
-    return new Date(date).toLocaleDateString("de-CH");
+    return new Date(date).toLocaleDateString("de-CH", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
   }
 
   function formatDateTime(date) {
@@ -26,6 +42,27 @@
       dateStyle: "short",
       timeStyle: "short"
     });
+  }
+
+  function isUrgent(dueDate) {
+    if (!dueDate) return false;
+    const due = new Date(dueDate);
+    const now = new Date();
+    const diffDays = (due - now) / (1000 * 60 * 60 * 24);
+    return diffDays <= 2 && diffDays >= 0;
+  }
+
+  function isOverdue(dueDate) {
+    if (!dueDate) return false;
+    return new Date(dueDate) < new Date();
+  }
+
+  function getDaysUntil(dueDate) {
+    if (!dueDate) return null;
+    const due = new Date(dueDate);
+    const now = new Date();
+    const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+    return diffDays;
   }
 </script>
 
@@ -41,11 +78,8 @@
       <h1 class="hero-title">Hi {studentName}</h1>
       <p class="hero-subtitle">
         Hier findest du alles, um dich optimal auf Bewerbungen vorzubereiten.
-        Aufgaben, KI-Trainings und persönliche Notizen – übersichtlich an einem Ort.
       </p>
 
-
-      <!-- NEU: klare Actions -->
       <div class="hero-actions">
         <a href="/student/assignments" class="btn btn-primary">Zu den Aufgaben</a>
         <a href="/student/sessions" class="btn btn-ghost">KI-Training starten</a>
@@ -61,191 +95,224 @@
         <span class="hero-stat-label">KI-Trainings</span>
         <span class="hero-stat-value">{totalSessionsCount}</span>
       </div>
-      <div class="hero-stat">
-        <span class="hero-stat-label">Badges</span>
+      <a href="/student/badges" class="hero-stat hero-stat-link">
+        <span class="hero-stat-label">🏅 Badges</span>
         <span class="hero-stat-value">{badgesCount}</span>
-      </div>
+      </a>
     </div>
   </section>
 
-  <!-- GRID -->
-  <section class="grid">
-    <!-- Aufgaben -->
-    <article class="card">
-      <header class="card-header">
-        <div class="card-title-row">
-          <span class="card-icon">📚</span>
-          <div>
-            <h2 class="card-title">Aufgaben</h2>
-            <p class="card-subtitle">Deine offenen Aufgaben & nächste Steps.</p>
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+    <!-- LINKE SPALTE: Aufgaben + Bewerbungen -->
+    <div class="left-column">
+      <!-- Aufgaben -->
+      <article class="card card-large">
+        <header class="card-header">
+          <div class="card-title-row">
+            <span class="card-icon">📚</span>
+            <div>
+              <h2 class="card-title">Deine Aufgaben</h2>
+              <p class="card-subtitle">Sortiert nach Deadline</p>
+            </div>
           </div>
-        </div>
-        <span class="card-tag">
-          {openAssignmentsCount} offen
-        </span>
-      </header>
+          <span class="card-tag">{openAssignmentsCount} offen</span>
+        </header>
 
-      <div class="card-body">
-        {#if openAssignmentsCount === 0}
-          <p class="card-empty">
-            Du hast aktuell keine offenen Aufgaben. Starte ein KI-Training oder frage deine Lehrperson nach neuen Aufgaben.
-          </p>
-        {:else}
-          <div class="card-highlight">
-            <p class="highlight-label">Nächste Aufgabe</p>
-            <p class="highlight-title">
-              {nextAssignmentTitle ?? "Aufgabe ohne Titel"}
+        <div class="card-body assignments-body">
+          {#if openAssignments.length === 0}
+            <div class="empty-state">
+              <span class="empty-icon">🎉</span>
+              <p>Keine offenen Aufgaben!</p>
+              <p class="empty-hint">Du hast alle Aufgaben erledigt oder es wurden noch keine zugewiesen.</p>
+            </div>
+          {:else}
+            <div class="assignments-list">
+              {#each openAssignments as assignment, index}
+                <a href="/student/assignments/{assignment.id}" class="assignment-item" class:urgent={isUrgent(assignment.dueDate)} class:overdue={isOverdue(assignment.dueDate)}>
+                  <div class="assignment-rank">
+                    {#if index === 0}
+                      <span class="rank-badge">1</span>
+                    {:else}
+                      <span class="rank-num">{index + 1}</span>
+                    {/if}
+                  </div>
+                  
+                  <div class="assignment-info">
+                    <div class="assignment-title">{assignment.title}</div>
+                    <div class="assignment-meta">
+                      <span class="type-tag" style="background: {getTypeInfo(assignment.type).color}20; color: {getTypeInfo(assignment.type).color}">
+                        {getTypeInfo(assignment.type).label}
+                      </span>
+                      {#if assignment.durationMin}
+                        <span class="duration">⏱️ {assignment.durationMin} Min</span>
+                      {/if}
+                    </div>
+                  </div>
+
+                  <div class="assignment-deadline">
+                    {#if isOverdue(assignment.dueDate)}
+                      <span class="deadline-text overdue">⚠️ Überfällig!</span>
+                    {:else if isUrgent(assignment.dueDate)}
+                      <span class="deadline-text urgent">🔥 {getDaysUntil(assignment.dueDate) === 0 ? "Heute!" : getDaysUntil(assignment.dueDate) === 1 ? "Morgen!" : "In " + getDaysUntil(assignment.dueDate) + " Tagen"}</span>
+                    {:else if assignment.dueDate}
+                      <span class="deadline-text">{formatDate(assignment.dueDate)}</span>
+                    {:else}
+                      <span class="deadline-text muted">Kein Datum</span>
+                    {/if}
+                  </div>
+                </a>
+              {/each}
+            </div>
+          {/if}
+        </div>
+
+        <footer class="card-footer">
+          <a href="/student/assignments" class="btn btn-inline">Alle Aufgaben ansehen</a>
+        </footer>
+      </article>
+
+      <!-- Bewerbungen (unter Aufgaben) -->
+      <article class="card">
+        <header class="card-header">
+          <div class="card-title-row">
+            <span class="card-icon">💼</span>
+            <div>
+              <h2 class="card-title">Bewerbungen</h2>
+              <p class="card-subtitle">Dein Tracker</p>
+            </div>
+          </div>
+          <span class="card-tag">{applicationsCount} Bewerbungen</span>
+        </header>
+
+        <div class="card-body">
+          {#if applicationsCount === 0}
+            <p class="card-empty">
+              Behalte den Überblick über deine Bewerbungen.
             </p>
-            <p class="highlight-meta">
-              ⏰ fällig am {formatDate(nextAssignmentDueDate)}
+          {:else}
+            <p class="card-empty">
+              Du trackst {applicationsCount} Bewerbungen. 💪
             </p>
-          </div>
-        {/if}
-      </div>
-
-      <footer class="card-footer">
-        <a href="/student/assignments" class="btn btn-inline">Aufgaben öffnen</a>
-      </footer>
-    </article>
-
-    <!-- KI-Trainings -->
-    <article class="card">
-      <header class="card-header">
-        <div class="card-title-row">
-          <span class="card-icon">🤖</span>
-          <div>
-            <h2 class="card-title">KI-Trainings</h2>
-            <p class="card-subtitle">Interview üben – mit Feedback.</p>
-          </div>
+          {/if}
         </div>
-        <span class="card-tag">
-          {totalSessionsCount} Sessions
-        </span>
-      </header>
 
-      <div class="card-body">
-        {#if totalSessionsCount === 0}
-          <p class="card-empty">
-            Du hast noch keine KI-Trainings gestartet.
-            Wähle eine Aufgabe und starte ein simuliertes Bewerbungsgespräch mit der KI.
-          </p>
-        {:else}
-          <div class="card-highlight">
-            <p class="highlight-label">Letztes Training</p>
-            <p class="highlight-title">
-              Session vom {formatDateTime(lastSessionStartedAt)}
+        <footer class="card-footer">
+          <a href="/student/applications" class="btn btn-inline">Bewerbungen öffnen</a>
+        </footer>
+      </article>
+    </div>
+
+    <!-- RECHTE SPALTE: Mitteilungen zuerst -->
+    <div class="right-column">
+      <!-- Mitteilungen (als erstes) -->
+      <article class="card">
+        <header class="card-header">
+          <div class="card-title-row">
+            <span class="card-icon">🔔</span>
+            <div>
+              <h2 class="card-title">Mitteilungen</h2>
+              <p class="card-subtitle">Neues Feedback</p>
+            </div>
+          </div>
+          {#if notifications.length > 0}
+            <span class="card-tag notification-tag">{notifications.length} neu</span>
+          {/if}
+        </header>
+
+        <div class="card-body">
+          {#if notifications.length === 0}
+            <p class="card-empty">
+              Keine neuen Mitteilungen. Hier siehst du Feedback von deiner Lehrperson.
             </p>
-            <p class="highlight-meta">
-              💬 Du kannst jederzeit eine neue Session starten.
+          {:else}
+            <div class="notifications-list">
+              {#each notifications.slice(0, 3) as notification}
+                <a href="/student/assignments/{notification.assignmentId}" class="notification-item">
+                  <span class="notification-icon">{notification.icon}</span>
+                  <div class="notification-content">
+                    <span class="notification-title">{notification.title}</span>
+                    <span class="notification-message">{notification.message}</span>
+                    {#if notification.grade != null}
+                      <span class="notification-grade">Note: {notification.grade}</span>
+                    {/if}
+                  </div>
+                </a>
+              {/each}
+            </div>
+          {/if}
+        </div>
+
+        {#if notifications.length > 3}
+          <footer class="card-footer">
+            <span class="more-hint">+{notifications.length - 3} weitere</span>
+          </footer>
+        {/if}
+      </article>
+
+      <!-- KI-Trainings -->
+      <article class="card">
+        <header class="card-header">
+          <div class="card-title-row">
+            <span class="card-icon">🤖</span>
+            <div>
+              <h2 class="card-title">KI-Trainings</h2>
+              <p class="card-subtitle">Interview üben</p>
+            </div>
+          </div>
+          <span class="card-tag">{totalSessionsCount} Sessions</span>
+        </header>
+
+        <div class="card-body">
+          {#if totalSessionsCount === 0}
+            <p class="card-empty">
+              Noch keine Trainings absolviert. Starte jetzt dein erstes KI-Bewerbungsgespräch!
             </p>
-          </div>
-        {/if}
-      </div>
-
-      <footer class="card-footer">
-        <a href="/student/sessions" class="btn btn-inline">Training starten</a>
-      </footer>
-    </article>
-
-    <!-- Badges -->
-    <article class="card">
-      <header class="card-header">
-        <div class="card-title-row">
-          <span class="card-icon">🏅</span>
-          <div>
-            <h2 class="card-title">Badges</h2>
-            <p class="card-subtitle">Deine kleinen Erfolge.</p>
-          </div>
+          {:else}
+            <p class="card-empty">
+              Letztes Training: {formatDateTime(lastSessionStartedAt)}
+            </p>
+          {/if}
         </div>
-        <span class="card-tag">
-          {badgesCount} Badges
-        </span>
-      </header>
 
-      <div class="card-body">
-        {#if badgesCount === 0}
-          <p class="card-empty">
-            Sammle Badges, indem du Aufgaben erledigst und Interviews übst.
-            So siehst du deinen Fortschritt auf einen Blick.
-          </p>
-        {:else}
-          <p class="card-empty">
-            Du hast bereits {badgesCount} Badges gesammelt. 🎉
-          </p>
-        {/if}
-      </div>
+        <footer class="card-footer">
+          <a href="/student/sessions" class="btn btn-inline">Training starten</a>
+        </footer>
+      </article>
 
-      <footer class="card-footer card-footer--disabled">
-        <span class="btn btn-inline disabled">Badges bald verfügbar</span>
-      </footer>
-    </article>
-
-    <!-- Notizen -->
-    <article class="card">
-      <header class="card-header">
-        <div class="card-title-row">
-          <span class="card-icon">📝</span>
-          <div>
-            <h2 class="card-title">Notizen</h2>
-            <p class="card-subtitle">Gedanken zu Firmen, Gesprächen & Bewerbungen.</p>
+      <!-- Badges -->
+      <article class="card">
+        <header class="card-header">
+          <div class="card-title-row">
+            <span class="card-icon">🏅</span>
+            <div>
+              <h2 class="card-title">Badges</h2>
+              <p class="card-subtitle">Deine Erfolge</p>
+            </div>
           </div>
+          <span class="card-tag">{badgesCount} verdient</span>
+        </header>
+
+        <div class="card-body">
+          {#if earnedBadgeIcons.length === 0}
+            <p class="card-empty">
+              Noch keine Badges verdient. Erledige Aufgaben und sammle deine ersten Erfolge!
+            </p>
+          {:else}
+            <div class="badge-icons">
+              {#each earnedBadgeIcons as icon}
+                <span class="badge-icon">{icon}</span>
+              {/each}
+            </div>
+          {/if}
         </div>
-        <span class="card-tag">
-          {notesCount} Notizen
-        </span>
-      </header>
 
-      <div class="card-body">
-        {#if notesCount === 0}
-          <p class="card-empty">
-            Halte hier fest, wie Gespräche gelaufen sind, was dir an Firmen gefallen hat
-            und welche Fragen du beim nächsten Mal besser beantworten möchtest.
-          </p>
-        {:else}
-          <p class="card-empty">
-            Du hast {notesCount} Notizen gespeichert. Perfekt, um den Überblick zu behalten.
-          </p>
-        {/if}
-      </div>
-
-      <footer class="card-footer">
-        <a href="/student/notes" class="btn btn-inline">Notizen öffnen</a>
-      </footer>
-    </article>
-
-    <!-- Bewerbungen -->
-    <article class="card">
-      <header class="card-header">
-        <div class="card-title-row">
-          <span class="card-icon">📊</span>
-          <div>
-            <h2 class="card-title">Bewerbungen</h2>
-            <p class="card-subtitle">Dein Bewerbungs-Tracker.</p>
-          </div>
-        </div>
-        <span class="card-tag">
-          {applicationsCount} Bewerbungen
-        </span>
-      </header>
-
-      <div class="card-body">
-        {#if applicationsCount === 0}
-          <p class="card-empty">
-            Behalte den Überblick über deine Bewerbungen. Tracke Status, 
-            Gesprächstermine und Rückmeldungen an einem Ort.
-          </p>
-        {:else}
-          <p class="card-empty">
-            Du trackst {applicationsCount} Bewerbungen. Weiter so! 💪
-          </p>
-        {/if}
-      </div>
-
-      <footer class="card-footer">
-        <a href="/student/applications" class="btn btn-inline">Bewerbungen öffnen</a>
-      </footer>
-    </article>
-  </section>
+        <footer class="card-footer">
+          <a href="/student/badges" class="btn btn-inline">Alle Badges ansehen</a>
+        </footer>
+      </article>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -327,6 +394,18 @@
     padding: 0.6rem 0.9rem;
     min-width: 90px;
     text-align: left;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .hero-stat-link {
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .hero-stat-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
   }
 
   .hero-stat-label {
@@ -342,80 +421,32 @@
     margin-top: 0.1rem;
   }
 
-  /* Buttons */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 999px;
-    font-size: 0.86rem;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    border: none;
-    outline: none;
-    transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.08s ease,
-      color 0.08s ease;
-    white-space: nowrap;
-  }
-
-  .btn-primary {
-    padding: 0.45rem 1.1rem;
-    background: #fbe4b2;
-    color: #3b134f;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  }
-
-  .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
-    background: #ffe2a2;
-  }
-
-  .btn-ghost {
-    padding: 0.42rem 1.05rem;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    color: #fff;
-  }
-
-  .btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.12);
-  }
-
-  .btn-inline {
-    padding: 0.3rem 0.9rem;
-    background: #fdf4e4;
-    color: #7a4b20;
-    border: 1px solid #f1d7aa;
-  }
-
-  .btn-inline:hover {
-    background: #ffe9cc;
-  }
-
-  .btn-inline.disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-
-  .btn:focus-visible {
-    outline: 2px solid #3b134f;
-    outline-offset: 2px;
-  }
-
-  /* GRID */
-  .grid {
+  /* MAIN GRID */
+  .main-grid {
     display: grid;
     gap: 1.2rem;
+    grid-template-columns: 1fr;
   }
 
   @media (min-width: 900px) {
-    .grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .main-grid {
+      grid-template-columns: 1.2fr 1fr;
     }
   }
 
+  .left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  /* CARDS */
   .card {
     background: #fffdf9;
     border-radius: 1rem;
@@ -423,6 +454,10 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     display: flex;
     flex-direction: column;
+  }
+
+  .card-large {
+    min-height: 400px;
   }
 
   .card-header {
@@ -466,53 +501,318 @@
     white-space: nowrap;
   }
 
+  .notification-tag {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
   .card-body {
-    padding: 0.9rem 1.1rem 0.6rem;
-    font-size: 0.9rem;
-    color: #4c3a3a;
+    padding: 0.9rem 1.1rem;
+    flex: 1;
+  }
+
+  .assignments-body {
+    padding: 0.5rem;
   }
 
   .card-footer {
-    padding: 0.4rem 1.1rem 0.9rem;
+    padding: 0.6rem 1.1rem 0.9rem;
     border-top: 1px solid #f4ead6;
     display: flex;
     justify-content: flex-end;
-  }
-
-  .card-footer--disabled {
-    justify-content: flex-start;
   }
 
   .card-empty {
     margin: 0;
     color: #746666;
     line-height: 1.4;
+    font-size: 0.9rem;
   }
 
-  .card-highlight {
-    padding: 0.8rem 0.85rem;
-    border-radius: 0.85rem;
-    background: #fff7e6;
+  /* ASSIGNMENTS LIST */
+  .assignments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .assignment-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #fff;
+    border: 1px solid #f0e1c7;
+    border-radius: 0.75rem;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+
+  .assignment-item:hover {
+    border-color: #3b134f;
+    box-shadow: 0 2px 8px rgba(59, 19, 79, 0.1);
+  }
+
+  .assignment-item.urgent {
+    border-color: #fcd34d;
+    background: #fffbeb;
+  }
+
+  .assignment-item.overdue {
+    border-color: #fca5a5;
+    background: #fef2f2;
+  }
+
+  .assignment-rank {
+    flex-shrink: 0;
+    width: 32px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .rank-badge {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #3b134f, #5a2d6e);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .rank-num {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    font-weight: 500;
+  }
+
+  .assignment-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .assignment-title {
+    font-weight: 600;
+    color: #2d2141;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .assignment-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .type-tag {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 0.3rem;
+    font-weight: 500;
+  }
+
+  .duration {
+    font-size: 0.75rem;
+    color: #9ca3af;
+  }
+
+  .assignment-deadline {
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .deadline-text {
+    font-size: 0.8rem;
+    color: #6b7280;
+  }
+
+  .deadline-text.urgent {
+    color: #d97706;
+    font-weight: 600;
+  }
+
+  .deadline-text.overdue {
+    color: #dc2626;
+    font-weight: 600;
+  }
+
+  .deadline-text.muted {
+    color: #9ca3af;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #6b7280;
+  }
+
+  .empty-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-hint {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin-top: 0.25rem;
+  }
+
+  /* BADGE ICONS */
+  .badge-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .badge-icon {
+    font-size: 1.8rem;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+    border-radius: 50%;
+    border: 2px solid #c4b5fd;
+  }
+
+  /* NOTIFICATIONS */
+  .notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.6rem;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+
+  .notification-item:hover {
+    border-color: #22c55e;
+  }
+
+  .notification-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .notification-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .notification-title {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #166534;
+  }
+
+  .notification-message {
+    display: block;
+    font-size: 0.8rem;
+    color: #4b5563;
+    margin-top: 0.15rem;
+  }
+
+  .notification-grade {
+    display: inline-block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    background: #7c3aed;
+    color: #fff;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+  }
+
+  .more-hint {
+    font-size: 0.8rem;
+    color: #9ca3af;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 0.86rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: all 0.1s ease;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    padding: 0.45rem 1.1rem;
+    background: #fbe4b2;
+    color: #3b134f;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+    background: #ffe2a2;
+  }
+
+  .btn-ghost {
+    padding: 0.42rem 1.05rem;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    color: #fff;
+  }
+
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .btn-inline {
+    padding: 0.3rem 0.9rem;
+    background: #fdf4e4;
+    color: #7a4b20;
     border: 1px solid #f1d7aa;
   }
 
-  .highlight-label {
-    margin: 0 0 0.2rem;
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #a36a18;
+  .btn-inline:hover {
+    background: #ffe9cc;
   }
 
-  .highlight-title {
-    margin: 0;
-    font-weight: 600;
-    font-size: 0.96rem;
+  .btn:focus-visible {
+    outline: 2px solid #3b134f;
+    outline-offset: 2px;
   }
 
-  .highlight-meta {
-    margin: 0.25rem 0 0;
-    font-size: 0.82rem;
-    color: #7a5d37;
+  @media (max-width: 600px) {
+    .assignment-item {
+      flex-wrap: wrap;
+    }
+    
+    .assignment-deadline {
+      width: 100%;
+      text-align: left;
+      margin-top: 0.25rem;
+      padding-left: 40px;
+    }
   }
 </style>

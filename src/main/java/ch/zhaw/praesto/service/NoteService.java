@@ -16,6 +16,7 @@ public class NoteService {
 
     private final NoteRepository noteRepository;
     private final UserService userService;
+    private final BadgeService badgeService;  // NEU: BadgeService injiziert
 
     /**
      * Neue Notiz erstellen.
@@ -37,7 +38,12 @@ public class NoteService {
                 .lastUpdated(now)
                 .build();
 
-        return noteRepository.save(note);
+        Note saved = noteRepository.save(note);
+
+        // Badge-Check NACH dem Speichern
+        badgeService.checkAndAwardBadges(studentId);
+
+        return saved;
     }
 
     /**

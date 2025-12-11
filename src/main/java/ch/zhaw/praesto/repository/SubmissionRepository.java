@@ -38,4 +38,10 @@ public interface SubmissionRepository extends MongoRepository<Submission, String
      * Anzahl Abgaben für eine Aufgabe
      */
     long countByAssignmentId(String assignmentId);
+
+    long countByStudentEmail(String studentEmail);
+
+    long countByStudentEmailAndTeacherFeedbackIsNotNull(String studentEmail);
+
+    long countByStudentEmailAndGradeIsNotNull(String studentEmail);
 }
