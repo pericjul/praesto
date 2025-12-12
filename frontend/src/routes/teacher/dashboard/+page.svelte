@@ -7,6 +7,11 @@
     let stats = $derived(data?.stats ?? {});
     let user = $derived(data?.user ?? {});
 
+    // Nur Submissions die noch Feedback brauchen
+    let pendingSubmissions = $derived(
+        recentSubmissions.filter(s => !s.teacherFeedback)
+    );
+
     const assignmentTypes = {
         AI_INTERVIEW: { label: "🤖 KI-Interview", color: "#8b5cf6" },
         DOCUMENT_UPLOAD: { label: "📄 Dokument", color: "#3b82f6" },
@@ -17,17 +22,6 @@
 
     function getTypeInfo(type) {
         return assignmentTypes[type] ?? { label: type, color: "#6b7280" };
-    }
-
-    function formatDate(date) {
-        if (!date) return "-";
-        return new Date(date).toLocaleDateString("de-CH", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
-        });
     }
 
     function formatRelativeTime(date) {
@@ -43,166 +37,146 @@
         if (diffMin < 60) return `vor ${diffMin} Min.`;
         if (diffHours < 24) return `vor ${diffHours} Std.`;
         if (diffDays < 7) return `vor ${diffDays} Tagen`;
-        return formatDate(date);
+        return new Date(date).toLocaleDateString("de-CH");
     }
 
     function shortenEmail(email) {
         return email?.split("@")[0] ?? "";
     }
 
-    function getStatusColor(status) {
-        if (status === "SUBMITTED") return "#3b82f6";
-        if (status === "REVIEWED") return "#10b981";
-        return "#6b7280";
-    }
-
-    function formatStatus(status) {
-        const map = {
-            "SUBMITTED": "Neu",
-            "IN_REVIEW": "In Prüfung",
-            "REVIEWED": "Bewertet"
-        };
-        return map[status] ?? status;
+    function getInitial(email) {
+        return shortenEmail(email).charAt(0).toUpperCase();
     }
 </script>
 
 <svelte:head>
-    <title>Lehrer Dashboard – Praesto</title>
+    <title>Dashboard – Praesto</title>
 </svelte:head>
 
 <div class="page-wrapper">
+    <!-- Header -->
     <header class="page-header">
-        <div>
-            <h1 class="title">👋 Willkommen, {user.name ?? "Lehrperson"}!</h1>
-            <p class="subtitle">Hier ist deine Übersicht für heute.</p>
-        </div>
+        <h1>Hallo, {user.name ?? "Lehrperson"} 👋</h1>
+        <p class="subtitle">Hier ist deine Übersicht.</p>
     </header>
 
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">📚</div>
-            <div class="stat-content">
-                <span class="stat-value">{stats.totalClasses}</span>
-                <span class="stat-label">Klassen</span>
+    <!-- Wichtigste Info: Feedback nötig -->
+    {#if stats.pendingSubmissions > 0}
+        <div class="alert-banner">
+            <div class="alert-content">
+                <span class="alert-icon">📬</span>
+                <div>
+                    <strong>{stats.pendingSubmissions} {stats.pendingSubmissions === 1 ? 'Abgabe wartet' : 'Abgaben warten'} auf dein Feedback</strong>
+                    <p>Schüler freuen sich über zeitnahes Feedback!</p>
+                </div>
             </div>
-            <a href="/teacher/classes" class="stat-link">Verwalten →</a>
+            <a href="/teacher/assignments" class="alert-action">Jetzt bewerten →</a>
         </div>
+    {/if}
 
+    <!-- Stats -->
+    <div class="stats-row">
         <div class="stat-card">
-            <div class="stat-icon">👥</div>
-            <div class="stat-content">
-                <span class="stat-value">{stats.totalStudents}</span>
-                <span class="stat-label">Schüler</span>
-            </div>
+            <span class="stat-value">{stats.totalClasses}</span>
+            <span class="stat-label">Klassen</span>
         </div>
-
         <div class="stat-card">
-            <div class="stat-icon">📝</div>
-            <div class="stat-content">
-                <span class="stat-value">{stats.totalAssignments}</span>
-                <span class="stat-label">Aufgaben</span>
-            </div>
-            <a href="/teacher/assignments" class="stat-link">Alle ansehen →</a>
+            <span class="stat-value">{stats.totalStudents}</span>
+            <span class="stat-label">Schüler</span>
         </div>
-
-        <div class="stat-card highlight">
-            <div class="stat-icon">📥</div>
-            <div class="stat-content">
-                <span class="stat-value">{stats.pendingSubmissions}</span>
-                <span class="stat-label">Ausstehend</span>
-            </div>
-            {#if stats.pendingSubmissions > 0}
-                <span class="stat-badge">Feedback nötig</span>
-            {/if}
+        <div class="stat-card">
+            <span class="stat-value">{stats.totalAssignments}</span>
+            <span class="stat-label">Aufgaben</span>
+        </div>
+        <div class="stat-card" class:highlight={stats.pendingSubmissions > 0}>
+            <span class="stat-value">{stats.pendingSubmissions}</span>
+            <span class="stat-label">Offen</span>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <section class="section">
-        <h2>⚡ Schnellzugriff</h2>
-        <div class="quick-actions">
-            <a href="/teacher/assignments?new=1" class="action-card">
-                <span class="action-icon">➕</span>
-                <span class="action-label">Neue Aufgabe erstellen</span>
-            </a>
-            <a href="/teacher/classes" class="action-card">
-                <span class="action-icon">👥</span>
-                <span class="action-label">Klassen verwalten</span>
-            </a>
-            <a href="/teacher/assignments" class="action-card">
-                <span class="action-icon">📝</span>
-                <span class="action-label">Alle Aufgaben ansehen</span>
-            </a>
-        </div>
-    </section>
-
-    <!-- Recent Submissions -->
-    <section class="section">
-        <div class="section-header">
-            <h2>📥 Neueste Abgaben</h2>
-            <a href="/teacher/assignments" class="section-link">Alle Aufgaben →</a>
-        </div>
-
-        {#if recentSubmissions.length === 0}
-            <div class="empty-state">
-                <p>Noch keine Abgaben eingegangen.</p>
+    <!-- Main Grid -->
+    <div class="main-grid">
+        <!-- Left: Pending Submissions -->
+        <section class="section">
+            <div class="section-header">
+                <h2>📥 Abgaben ohne Feedback</h2>
+                {#if pendingSubmissions.length > 0}
+                    <a href="/teacher/assignments" class="section-link">Alle ansehen →</a>
+                {/if}
             </div>
-        {:else}
-            <div class="submissions-list">
-                {#each recentSubmissions as sub}
-                    <a href="/teacher/assignments/{sub.assignmentId}" class="submission-item">
-                        <div class="submission-main">
-                            <span class="submission-student">{shortenEmail(sub.studentEmail)}</span>
-                            <span class="submission-assignment">{sub.assignmentTitle}</span>
-                            <span 
-                                class="type-badge" 
-                                style="background: {getTypeInfo(sub.assignmentType).color}15; color: {getTypeInfo(sub.assignmentType).color}"
-                            >
-                                {getTypeInfo(sub.assignmentType).label}
-                            </span>
-                        </div>
-                        <div class="submission-meta">
-                            <span class="submission-time">{formatRelativeTime(sub.submittedAt)}</span>
-                            <span 
-                                class="status-badge"
-                                style="background: {getStatusColor(sub.status)}15; color: {getStatusColor(sub.status)}"
-                            >
-                                {formatStatus(sub.status)}
-                            </span>
-                            <span class="go-arrow">→</span>
-                        </div>
+
+            {#if pendingSubmissions.length === 0}
+                <div class="empty-state success">
+                    <span class="empty-icon">✅</span>
+                    <p>Alle Abgaben wurden bewertet!</p>
+                </div>
+            {:else}
+                <div class="submissions-list">
+                    {#each pendingSubmissions.slice(0, 5) as sub}
+                        <a href="/teacher/assignments/{sub.assignmentId}" class="submission-card">
+                            <div class="submission-avatar">{getInitial(sub.studentEmail)}</div>
+                            <div class="submission-info">
+                                <span class="submission-student">{shortenEmail(sub.studentEmail)}</span>
+                                <span class="submission-assignment">{sub.assignmentTitle}</span>
+                            </div>
+                            <div class="submission-meta">
+                                <span class="submission-type" style="--type-color: {getTypeInfo(sub.assignmentType).color}">
+                                    {getTypeInfo(sub.assignmentType).label}
+                                </span>
+                                <span class="submission-time">{formatRelativeTime(sub.submittedAt)}</span>
+                            </div>
+                            <span class="submission-arrow">→</span>
+                        </a>
+                    {/each}
+                </div>
+            {/if}
+        </section>
+
+        <!-- Right: Quick Actions & Classes -->
+        <aside class="sidebar">
+            <!-- Quick Actions -->
+            <div class="card">
+                <h3>⚡ Schnellzugriff</h3>
+                <nav class="quick-links">
+                    <a href="/teacher/assignments?new=1" class="quick-link">
+                        <span class="quick-icon">➕</span>
+                        <span>Neue Aufgabe</span>
                     </a>
-                {/each}
-            </div>
-        {/if}
-    </section>
-
-    <!-- Classes Overview -->
-    <section class="section">
-        <div class="section-header">
-            <h2>📚 Meine Klassen</h2>
-            <a href="/teacher/classes" class="section-link">Alle ansehen →</a>
-        </div>
-
-        {#if classes.length === 0}
-            <div class="empty-state">
-                <p>Du hast noch keine Klassen erstellt.</p>
-                <a href="/teacher/classes" class="btn btn-primary">Klasse erstellen</a>
-            </div>
-        {:else}
-            <div class="classes-grid">
-                {#each classes.slice(0, 4) as schoolClass}
-                    <a href="/teacher/classes" class="class-card">
-                        <h3 class="class-name">{schoolClass.name}</h3>
-                        <div class="class-meta">
-                            <span>👥 {schoolClass.studentEmails?.length ?? 0} Schüler</span>
-                        </div>
+                    <a href="/teacher/classes" class="quick-link">
+                        <span class="quick-icon">👥</span>
+                        <span>Klassen verwalten</span>
                     </a>
-                {/each}
+                    <a href="/teacher/assignments" class="quick-link">
+                        <span class="quick-icon">📝</span>
+                        <span>Alle Aufgaben</span>
+                    </a>
+                </nav>
             </div>
-        {/if}
-    </section>
+
+            <!-- Classes -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📚 Meine Klassen</h3>
+                    <a href="/teacher/classes" class="card-link">Alle →</a>
+                </div>
+                {#if classes.length === 0}
+                    <div class="empty-mini">
+                        <p>Noch keine Klassen</p>
+                        <a href="/teacher/classes" class="btn-small">Erstellen</a>
+                    </div>
+                {:else}
+                    <div class="classes-list">
+                        {#each classes.slice(0, 4) as schoolClass}
+                            <div class="class-item">
+                                <span class="class-name">{schoolClass.name}</span>
+                                <span class="class-count">{schoolClass.studentEmails?.length ?? 0} Schüler</span>
+                            </div>
+                        {/each}
+                    </div>
+                {/if}
+            </div>
+        </aside>
+    </div>
 </div>
 
 <style>
@@ -212,27 +186,77 @@
         padding: 1.5rem 1rem 3rem;
     }
 
+    /* Header */
     .page-header {
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
     }
 
-    .title {
-        font-size: 1.8rem;
+    .page-header h1 {
+        font-size: 1.75rem;
         font-weight: 700;
         margin: 0;
-        color: #2d2141;
+        color: #2f124d;
     }
 
     .subtitle {
-        margin: 0.3rem 0 0;
+        margin: 0.25rem 0 0;
         color: #6b647a;
-        font-size: 1rem;
     }
 
-    /* Stats Grid */
-    .stats-grid {
+    /* Alert Banner */
+    .alert-banner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border: 1px solid #fcd34d;
+        border-radius: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .alert-content {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .alert-icon {
+        font-size: 1.5rem;
+    }
+
+    .alert-content strong {
+        display: block;
+        color: #92400e;
+    }
+
+    .alert-content p {
+        margin: 0.25rem 0 0;
+        font-size: 0.85rem;
+        color: #a16207;
+    }
+
+    .alert-action {
+        padding: 0.5rem 1rem;
+        background: #2f124d;
+        color: white;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .alert-action:hover {
+        background: #4a1c74;
+    }
+
+    /* Stats Row */
+    .stats-row {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(4, 1fr);
         gap: 1rem;
         margin-bottom: 2rem;
     }
@@ -240,71 +264,48 @@
     .stat-card {
         background: #fff;
         border: 1px solid #e8e0f0;
-        border-radius: 1rem;
-        padding: 1.25rem;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        position: relative;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        text-align: center;
     }
 
     .stat-card.highlight {
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        background: #fef3c7;
         border-color: #fcd34d;
     }
 
-    .stat-icon {
-        font-size: 2rem;
-    }
-
-    .stat-content {
-        display: flex;
-        flex-direction: column;
-    }
-
     .stat-value {
+        display: block;
         font-size: 1.75rem;
         font-weight: 700;
-        color: #3b134f;
+        color: #2f124d;
         line-height: 1;
     }
 
+    .stat-card.highlight .stat-value {
+        color: #92400e;
+    }
+
     .stat-label {
-        font-size: 0.85rem;
-        color: #7c6b80;
+        font-size: 0.8rem;
+        color: #6b647a;
         margin-top: 0.25rem;
     }
 
-    .stat-link {
-        position: absolute;
-        bottom: 0.75rem;
-        right: 1rem;
-        font-size: 0.8rem;
-        color: #7c3aed;
-        text-decoration: none;
-    }
-
-    .stat-badge {
-        position: absolute;
-        top: -0.5rem;
-        right: -0.5rem;
-        background: #dc2626;
-        color: #fff;
-        font-size: 0.7rem;
-        padding: 0.25rem 0.5rem;
-        border-radius: 1rem;
-        font-weight: 600;
+    /* Main Grid */
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 1.5rem;
+        align-items: start;
     }
 
     /* Sections */
     .section {
-        margin-bottom: 2rem;
-    }
-
-    .section h2 {
-        font-size: 1.15rem;
-        margin: 0 0 1rem;
-        color: #2d2141;
+        background: #fff;
+        border: 1px solid #e8e0f0;
+        border-radius: 1rem;
+        padding: 1.25rem;
     }
 
     .section-header {
@@ -314,50 +315,16 @@
         margin-bottom: 1rem;
     }
 
-    .section-header h2 {
+    .section h2 {
         margin: 0;
+        font-size: 1rem;
+        color: #2d2141;
     }
 
     .section-link {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         color: #7c3aed;
         text-decoration: none;
-    }
-
-    /* Quick Actions */
-    .quick-actions {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 1rem;
-    }
-
-    .action-card {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 1.5rem 1rem;
-        background: #fff;
-        border: 1px solid #e8e0f0;
-        border-radius: 1rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .action-card:hover {
-        border-color: #3b134f;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(59, 19, 79, 0.1);
-    }
-
-    .action-icon {
-        font-size: 1.5rem;
-    }
-
-    .action-label {
-        font-size: 0.9rem;
-        color: #2d2141;
-        text-align: center;
     }
 
     /* Submissions List */
@@ -367,138 +334,251 @@
         gap: 0.5rem;
     }
 
-    .submission-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 1rem;
-        background: #fff;
-        border: 1px solid #e8e0f0;
-        border-radius: 0.5rem;
-        text-decoration: none;
-        transition: all 0.15s ease;
-    }
-
-    .submission-item:hover {
-        border-color: #3b134f;
-        background: #faf8fc;
-    }
-
-    .submission-main {
+    .submission-card {
         display: flex;
         align-items: center;
         gap: 0.75rem;
+        padding: 0.75rem;
+        background: #faf8fc;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+
+    .submission-card:hover {
+        background: #f3e8ff;
+    }
+
+    .submission-avatar {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #2f124d, #5a2d6e);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    .submission-info {
+        flex: 1;
+        min-width: 0;
     }
 
     .submission-student {
+        display: block;
         font-weight: 600;
         color: #2d2141;
+        font-size: 0.9rem;
     }
 
     .submission-assignment {
+        display: block;
+        font-size: 0.8rem;
         color: #6b647a;
-        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .submission-meta {
         display: flex;
-        align-items: center;
-        gap: 0.75rem;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.25rem;
+    }
+
+    .submission-type {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.4rem;
+        border-radius: 0.25rem;
+        background: color-mix(in srgb, var(--type-color) 15%, transparent);
+        color: var(--type-color);
     }
 
     .submission-time {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         color: #9ca3af;
     }
 
-    .go-arrow {
+    .submission-arrow {
         color: #7c3aed;
         font-weight: 600;
     }
 
-    .type-badge, .status-badge {
-        padding: 0.2rem 0.5rem;
-        border-radius: 0.4rem;
-        font-size: 0.75rem;
-        font-weight: 500;
-    }
-
-    /* Classes Grid */
-    .classes-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-    }
-
-    .class-card {
-        padding: 1.25rem;
-        background: #fff;
-        border: 1px solid #e8e0f0;
-        border-radius: 0.75rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .class-card:hover {
-        border-color: #3b134f;
-        box-shadow: 0 4px 12px rgba(59, 19, 79, 0.08);
-    }
-
-    .class-name {
-        margin: 0 0 0.5rem;
-        font-size: 1.1rem;
-        color: #2d2141;
-    }
-
-    .class-meta {
-        font-size: 0.85rem;
-        color: #7c6b80;
-    }
-
-    /* Empty State */
+    /* Empty States */
     .empty-state {
         padding: 2rem;
         text-align: center;
         background: #faf8fc;
-        border: 1px dashed #e8e0f0;
+        border: 1px dashed #e0d6eb;
         border-radius: 0.75rem;
-        color: #7c6b80;
+    }
+
+    .empty-state.success {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+    }
+
+    .empty-icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 0.5rem;
     }
 
     .empty-state p {
+        margin: 0;
+        color: #6b647a;
+    }
+
+    .empty-state.success p {
+        color: #166534;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .card {
+        background: #fff;
+        border: 1px solid #e8e0f0;
+        border-radius: 1rem;
+        padding: 1.25rem;
+    }
+
+    .card h3 {
         margin: 0 0 1rem;
+        font-size: 0.95rem;
+        color: #2d2141;
     }
 
-    .btn {
-        display: inline-block;
-        padding: 0.6rem 1.25rem;
-        border-radius: 0.5rem;
-        font-size: 0.9rem;
-        font-weight: 500;
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .card-header h3 {
+        margin: 0;
+    }
+
+    .card-link {
+        font-size: 0.8rem;
+        color: #7c3aed;
         text-decoration: none;
-        border: none;
-        cursor: pointer;
     }
 
-    .btn-primary {
-        background: #3b134f;
-        color: #fff;
+    /* Quick Links */
+    .quick-links {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
-    @media (max-width: 600px) {
-        .submission-item {
+    .quick-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: #faf8fc;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+
+    .quick-link:hover {
+        background: #f0ebf5;
+    }
+
+    .quick-icon {
+        font-size: 1.1rem;
+    }
+
+    .quick-link span:last-child {
+        font-size: 0.9rem;
+        color: #2d2141;
+        font-weight: 500;
+    }
+
+    /* Classes List */
+    .classes-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .class-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6rem 0.75rem;
+        background: #faf8fc;
+        border-radius: 0.5rem;
+    }
+
+    .class-name {
+        font-weight: 600;
+        color: #2d2141;
+        font-size: 0.9rem;
+    }
+
+    .class-count {
+        font-size: 0.8rem;
+        color: #6b647a;
+    }
+
+    .empty-mini {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .empty-mini p {
+        margin: 0 0 0.75rem;
+        font-size: 0.85rem;
+        color: #6b647a;
+    }
+
+    .btn-small {
+        display: inline-block;
+        padding: 0.4rem 0.75rem;
+        background: #2f124d;
+        color: white;
+        border-radius: 0.4rem;
+        text-decoration: none;
+        font-size: 0.8rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .main-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 500px) {
+        .alert-banner {
             flex-direction: column;
-            align-items: flex-start;
-            gap: 0.5rem;
+            align-items: stretch;
+            text-align: center;
         }
 
-        .submission-main {
-            flex-wrap: wrap;
+        .alert-content {
+            flex-direction: column;
         }
 
-        .submission-meta {
-            width: 100%;
-            justify-content: space-between;
+        .alert-action {
+            text-align: center;
         }
     }
 </style>

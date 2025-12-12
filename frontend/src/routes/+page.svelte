@@ -1,31 +1,49 @@
 <script>
+    import { goto } from "$app/navigation";
+    import { onMount } from "svelte";
+
     let { data } = $props();
-    let { isAuthenticated } = data;
+
+    onMount(() => {
+        // Immer zum Dashboard weiterleiten
+        if (data.isAuthenticated) {
+            goto("/dashboard");
+        } else {
+            goto("/login");
+        }
+    });
 </script>
 
-{#if isAuthenticated}
-    <h1>Welcome to Praesto</h1>
-    <!-- Beispiel für die Verwendung von Bildern im Ordner 'static/images' -->
-    <img src="/images/vite.svg" alt="Vite Logo" />
-{:else}
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Welcome to PRAESTO</div>
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Get Started</h5>
-                        <p class="card-text">
-                            Please log in to access your account or sign up to
-                            create a new one.
-                        </p>
-                        <a href="/login" class="btn btn-primary me-2">Login</a>
-                        <a href="/signup" class="btn btn-outline-primary"
-                            >Sign Up</a
-                        >
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-{/if}
+<div class="loading-wrapper">
+    <div class="spinner"></div>
+    <p>Weiterleitung...</p>
+</div>
+
+<style>
+    .loading-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        gap: 1rem;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #e8e0f0;
+        border-top-color: #2F124D;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    p {
+        color: #6b647a;
+        font-size: 0.9rem;
+    }
+</style>
