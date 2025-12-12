@@ -7,16 +7,41 @@
     let myClass = $derived(data?.myClass ?? null);
     let error = $derived(data?.error ?? null);
 
+    // Sortierte Assignments: Offene zuerst (nach Deadline), dann erledigte
+    let sortedAssignments = $derived(() => {
+        const open = [];
+        const done = [];
+        
+        for (const a of assignments) {
+            if (submissions.some(s => s.assignmentId === a.id)) {
+                done.push(a);
+            } else {
+                open.push(a);
+            }
+        }
+        
+        // Offene nach Deadline sortieren (dringendste zuerst)
+        open.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+        // Erledigte nach Abgabedatum sortieren (neueste zuerst)
+        done.sort((a, b) => {
+            const subA = submissions.find(s => s.assignmentId === a.id);
+            const subB = submissions.find(s => s.assignmentId === b.id);
+            return new Date(subB?.submittedAt) - new Date(subA?.submittedAt);
+        });
+        
+        return [...open, ...done];
+    });
+
     const assignmentTypes = {
-        AI_INTERVIEW: { label: "🤖 KI-Bewerbungsgespräch", action: "Training starten", color: "#8b5cf6" },
-        DOCUMENT_UPLOAD: { label: "📄 Dokument einreichen", action: "Hochladen", color: "#3b82f6" },
-        SELF_REFLECTION: { label: "✍️ Selbstreflexion", action: "Schreiben", color: "#10b981" },
-        VIDEO_PITCH: { label: "🎥 Video-Bewerbung", action: "Aufnehmen", color: "#f59e0b" },
+        AI_INTERVIEW: { label: "🤖 KI-Bewerbungsgespräch", action: "Training starten", color: "var(--color-primary)" },
+        DOCUMENT_UPLOAD: { label: "📄 Dokument einreichen", action: "Hochladen", color: "var(--color-info)" },
+        SELF_REFLECTION: { label: "✍️ Selbstreflexion", action: "Schreiben", color: "var(--color-success)" },
+        VIDEO_PITCH: { label: "🎥 Video-Bewerbung", action: "Aufnehmen", color: "var(--color-warning)" },
         RESEARCH: { label: "🔍 Recherche", action: "Bearbeiten", color: "#6366f1" }
     };
 
     function getTypeInfo(type) {
-        return assignmentTypes[type] ?? { label: type, action: "Öffnen", color: "#6b7280" };
+        return assignmentTypes[type] ?? { label: type, action: "Öffnen", color: "var(--color-text-muted)" };
     }
 
     function getSubmissionForAssignment(assignmentId) {
@@ -70,15 +95,6 @@
             default: return status;
         }
     }
-
-    function getStatusColor(status) {
-        switch (status) {
-            case "ASSIGNED": return "#3b82f6";
-            case "IN_PROGRESS": return "#f59e0b";
-            case "COMPLETED": return "#10b981";
-            default: return "#6b7280";
-        }
-    }
 </script>
 
 <svelte:head>
@@ -124,22 +140,22 @@
         </div>
     {:else}
         <div class="stats-bar">
-            <div class="stat-item">
+            <div class="stat-card">
                 <span class="stat-value">{assignments.length}</span>
                 <span class="stat-label">Aufgaben total</span>
             </div>
-            <div class="stat-item">
-                <span class="stat-value">{assignments.length - submissions.length}</span>
+            <div class="stat-card">
+                <span class="stat-value">{assignments.filter(a => !submissions.some(s => s.assignmentId === a.id)).length}</span>
                 <span class="stat-label">Offen</span>
             </div>
-            <div class="stat-item">
-                <span class="stat-value">{submissions.length}</span>
+            <div class="stat-card stat-success">
+                <span class="stat-value">{assignments.filter(a => submissions.some(s => s.assignmentId === a.id)).length}</span>
                 <span class="stat-label">Abgegeben</span>
             </div>
         </div>
 
         <div class="assignments-list">
-            {#each assignments as assignment}
+            {#each sortedAssignments() as assignment}
                 {@const typeInfo = getTypeInfo(assignment.type)}
                 {@const deadlineStatus = getDeadlineStatus(assignment.dueDate)}
                 {@const submission = getSubmissionForAssignment(assignment.id)}
@@ -148,15 +164,13 @@
                 <a href="/student/assignments/{assignment.id}" class="assignment-card" class:overdue={deadlineStatus === "overdue" && !submitted} class:submitted={submitted}>
                     <div class="assignment-content">
                         <div class="assignment-header">
-                            <span class="type-badge" style="background: {typeInfo.color}15; color: {typeInfo.color}">
+                            <span class="type-badge" style="--type-color: {typeInfo.color}">
                                 {typeInfo.label}
                             </span>
                             {#if submitted}
-                                <span class="status-badge submitted-badge">✓ {formatSubmissionStatus(submission.status)}</span>
+                                <span class="badge badge-success">✓ {formatSubmissionStatus(submission.status)}</span>
                             {:else}
-                                <span class="status-badge" style="background: {getStatusColor(assignment.status)}15; color: {getStatusColor(assignment.status)}">
-                                    {formatStatus(assignment.status)}
-                                </span>
+                                <span class="badge badge-primary">{formatStatus(assignment.status)}</span>
                             {/if}
                         </div>
                         
@@ -168,17 +182,17 @@
                         
                         <div class="assignment-meta">
                             {#if submitted}
-                                <span class="meta-item submitted-info">📤 Abgegeben am {formatDateTime(submission.submittedAt)}</span>
+                                <span class="meta-item text-success">📤 Abgegeben am {formatDateTime(submission.submittedAt)}</span>
                                 {#if submission.teacherFeedback}
                                     <span class="meta-item has-feedback">💬 Feedback erhalten</span>
                                 {/if}
                             {:else}
-                                <span class="meta-item" class:deadline-warning={deadlineStatus === "soon"} class:deadline-overdue={deadlineStatus === "overdue"}>
+                                <span class="meta-item" class:text-warning={deadlineStatus === "soon"} class:text-danger={deadlineStatus === "overdue"}>
                                     📅 Deadline: {formatDate(assignment.dueDate)}
                                     {#if deadlineStatus === "overdue"}
-                                        <span class="deadline-label">Überfällig!</span>
+                                        <span class="deadline-label danger">Überfällig!</span>
                                     {:else if deadlineStatus === "soon"}
-                                        <span class="deadline-label">Bald fällig</span>
+                                        <span class="deadline-label warning">Bald fällig</span>
                                     {/if}
                                 </span>
                             {/if}
@@ -212,243 +226,175 @@
 </div>
 
 <style>
-    .page-wrapper {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 1.5rem 1rem 3rem;
-    }
-
-    .page-header { margin-bottom: 1.5rem; }
-
-    .title {
-        font-size: 1.7rem;
-        font-weight: 700;
-        margin: 0;
-        color: #2d2141;
-    }
-
-    .subtitle {
-        margin: 0.3rem 0 0;
-        color: #6b647a;
-        font-size: 0.95rem;
-    }
-
-    .alert {
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .alert-success {
-        background: #f0fdf4;
-        color: #166534;
-        border: 1px solid #bbf7d0;
-    }
-
-    .alert-danger {
-        background: #fef2f2;
-        color: #dc2626;
-        border: 1px solid #fecaca;
-    }
-
+    /* ===== PAGE SPECIFIC STYLES ===== */
     .alert-warning {
-        background: #fffbeb;
-        color: #92400e;
-        border: 1px solid #fde68a;
         display: flex;
-        gap: 0.75rem;
+        gap: var(--space-md);
         align-items: flex-start;
     }
 
-    .empty-state {
-        text-align: center;
-        padding: 3rem 2rem;
-        background: #faf8fc;
-        border: 2px dashed #e8e0f0;
-        border-radius: 1rem;
-    }
-
-    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
-
-    .empty-state h2 {
-        margin: 0 0 0.5rem;
-        color: #2d2141;
-    }
-
-    .empty-state p {
-        margin: 0;
-        color: #6b647a;
-    }
-
-    .stats-bar {
-        display: flex;
-        gap: 2rem;
-        margin-bottom: 2rem;
-        padding: 1rem 1.5rem;
-        background: #fff;
-        border: 1px solid #e8e0f0;
-        border-radius: 0.75rem;
-    }
-
-    .stat-item { display: flex; flex-direction: column; }
-
-    .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #3b134f;
-    }
-
-    .stat-label {
-        font-size: 0.85rem;
-        color: #7c6b80;
+    .alert-warning p {
+        margin: var(--space-xs) 0 0;
     }
 
     .assignments-list {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: var(--space-lg);
     }
 
     .assignment-card {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        gap: 1.5rem;
-        padding: 1.25rem;
-        background: #fff;
-        border: 1px solid #e8e0f0;
-        border-radius: 0.75rem;
-        transition: all 0.2s ease;
+        gap: var(--space-xl);
+        padding: var(--space-xl);
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        transition: all var(--transition-base);
         text-decoration: none;
         cursor: pointer;
     }
 
     .assignment-card:hover {
-        border-color: #d0c8e0;
-        box-shadow: 0 4px 12px rgba(59, 19, 79, 0.08);
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-md);
     }
 
     .assignment-card.overdue {
-        border-color: #fecaca;
-        background: #fef2f2;
+        border-color: var(--color-error-border);
+        background: var(--color-error-bg);
     }
 
     .assignment-card.submitted {
-        border-color: #bbf7d0;
-        background: #f0fdf4;
+        border-color: var(--color-success-border);
+        background: var(--color-success-bg);
     }
 
-    .feedback-box {
-        margin-top: 0.75rem;
-        padding: 0.75rem;
-        background: #faf5ff;
-        border: 1px solid #e9d5ff;
-        border-radius: 0.5rem;
+    .assignment-content {
+        flex: 1;
+        min-width: 0;
     }
-
-    .feedback-box strong { color: #7c3aed; }
-    .feedback-box p { margin: 0.25rem 0 0; color: #4c1d95; font-size: 0.9rem; }
-
-    .grade-badge {
-        display: inline-block;
-        margin-top: 0.5rem;
-        padding: 0.25rem 0.75rem;
-        background: #7c3aed;
-        color: #fff;
-        border-radius: 1rem;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-
-    .assignment-content { flex: 1; }
 
     .assignment-header {
         display: flex;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-sm);
         flex-wrap: wrap;
     }
 
-    .type-badge, .status-badge {
+    .type-badge {
         display: inline-block;
-        padding: 0.25rem 0.6rem;
-        border-radius: 0.4rem;
-        font-size: 0.8rem;
+        padding: var(--space-xs) var(--space-sm);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-xs);
         font-weight: 500;
-    }
-
-    .submitted-badge {
-        background: #d1fae5;
-        color: #059669;
+        background: color-mix(in srgb, var(--type-color) 15%, transparent);
+        color: var(--type-color);
     }
 
     .assignment-title {
-        margin: 0 0 0.25rem;
-        font-size: 1.1rem;
+        margin: 0 0 var(--space-xs);
+        font-size: var(--font-size-lg);
         font-weight: 600;
-        color: #2d2141;
+        color: var(--color-text-secondary);
     }
 
     .assignment-desc {
-        margin: 0 0 0.5rem;
-        font-size: 0.9rem;
-        color: #6b647a;
+        margin: 0 0 var(--space-sm);
+        font-size: var(--font-size-sm);
+        color: var(--color-text-light);
     }
 
     .assignment-meta {
         display: flex;
-        gap: 1rem;
+        gap: var(--space-lg);
         flex-wrap: wrap;
-        font-size: 0.85rem;
-        color: #7c6b80;
+        font-size: var(--font-size-sm);
+        color: var(--color-text-muted);
     }
 
     .meta-item {
         display: flex;
         align-items: center;
-        gap: 0.25rem;
+        gap: var(--space-xs);
     }
 
-    .meta-item.deadline-warning { color: #d97706; font-weight: 500; }
-    .meta-item.deadline-overdue { color: #dc2626; font-weight: 500; }
-    .meta-item.has-feedback { color: #7c3aed; font-weight: 500; }
+    .meta-item.has-feedback {
+        color: var(--color-primary);
+        font-weight: 500;
+    }
 
     .deadline-label {
-        margin-left: 0.5rem;
-        padding: 0.1rem 0.4rem;
-        background: currentColor;
+        margin-left: var(--space-sm);
+        padding: 2px var(--space-sm);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-xs);
+        font-weight: 600;
         color: #fff;
-        border-radius: 0.25rem;
-        font-size: 0.7rem;
     }
 
-    .assignment-action { flex-shrink: 0; }
+    .deadline-label.warning {
+        background: var(--color-warning);
+    }
+
+    .deadline-label.danger {
+        background: var(--color-error);
+    }
+
+    .feedback-box {
+        margin-top: var(--space-md);
+        padding: var(--space-md);
+        background: var(--color-bg-muted);
+        border: 1px solid var(--color-border-light);
+        border-radius: var(--radius-md);
+    }
+
+    .feedback-box strong {
+        color: var(--color-primary);
+    }
+
+    .feedback-box p {
+        margin: var(--space-xs) 0 0;
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+    }
+
+    .grade-badge {
+        display: inline-block;
+        margin-top: var(--space-sm);
+        padding: var(--space-xs) var(--space-md);
+        background: var(--color-primary);
+        color: #fff;
+        border-radius: var(--radius-full);
+        font-size: var(--font-size-sm);
+        font-weight: 600;
+    }
+
+    .assignment-action {
+        flex-shrink: 0;
+    }
 
     .view-hint {
-        color: #7c3aed;
-        font-size: 0.9rem;
+        color: var(--color-primary);
+        font-size: var(--font-size-sm);
         font-weight: 500;
     }
-
-    .btn {
-        padding: 0.6rem 1.25rem;
-        border-radius: 0.5rem;
-        font-size: 0.9rem;
-        font-weight: 500;
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-primary { background: #3b134f; color: #fff; }
-    .btn-primary:hover { filter: brightness(1.1); }
 
     @media (max-width: 600px) {
         .assignment-card {
             flex-direction: column;
             align-items: stretch;
         }
-        .assignment-action { margin-top: 1rem; }
-        .btn { width: 100%; text-align: center; }
-        .stats-bar { flex-wrap: wrap; }
+
+        .assignment-action {
+            margin-top: var(--space-lg);
+        }
+
+        .assignment-action .btn {
+            width: 100%;
+            text-align: center;
+        }
     }
 </style>

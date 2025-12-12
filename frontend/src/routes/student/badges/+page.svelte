@@ -8,34 +8,18 @@
     function formatDate(dateString) {
         if (!dateString) return "";
         return new Date(dateString).toLocaleDateString("de-CH", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric"
+            day: "2-digit", month: "2-digit", year: "numeric"
         });
     }
 
-    // Gruppiere Badges nach Kategorie (ruleType)
-    let sessionBadges = $derived(badges.filter(b => 
-        b.badge.ruleType === "SESSIONS_COMPLETED"
-    ));
-    let noteBadges = $derived(badges.filter(b => 
-        b.badge.ruleType === "NOTES_CREATED"
-    ));
-    let applicationCountBadges = $derived(badges.filter(b => 
-        b.badge.ruleType === "APPLICATIONS_CREATED"
-    ));
-    let applicationStatusBadges = $derived(badges.filter(b => 
-        b.badge.ruleType === "APPLICATION_STATUS"
-    ));
-    let submissionBadges = $derived(badges.filter(b => 
-        b.badge.ruleType === "SUBMISSIONS_COMPLETED"
-    ));
-    let feedbackBadges = $derived(badges.filter(b => 
-        b.badge.ruleType === "FEEDBACK_RECEIVED"
-    ));
-    let gradeBadges = $derived(badges.filter(b => 
-        b.badge.ruleType === "GRADES_RECEIVED"
-    ));
+    // Gruppiere Badges nach Kategorie
+    let sessionBadges = $derived(badges.filter(b => b.badge.ruleType === "SESSIONS_COMPLETED"));
+    let noteBadges = $derived(badges.filter(b => b.badge.ruleType === "NOTES_CREATED"));
+    let applicationCountBadges = $derived(badges.filter(b => b.badge.ruleType === "APPLICATIONS_CREATED"));
+    let applicationStatusBadges = $derived(badges.filter(b => b.badge.ruleType === "APPLICATION_STATUS"));
+    let submissionBadges = $derived(badges.filter(b => b.badge.ruleType === "SUBMISSIONS_COMPLETED"));
+    let feedbackBadges = $derived(badges.filter(b => b.badge.ruleType === "FEEDBACK_RECEIVED"));
+    let gradeBadges = $derived(badges.filter(b => b.badge.ruleType === "GRADES_RECEIVED"));
 </script>
 
 <svelte:head>
@@ -61,174 +45,43 @@
     <!-- Progress Bar -->
     <div class="overall-progress">
         <div class="progress-bar">
-            <div 
-                class="progress-fill" 
-                style="width: {totalCount > 0 ? (earnedCount / totalCount * 100) : 0}%"
-            ></div>
+            <div class="progress-fill" style="width: {totalCount > 0 ? (earnedCount / totalCount * 100) : 0}%"></div>
         </div>
         <span class="progress-text">{Math.round(earnedCount / totalCount * 100 || 0)}% abgeschlossen</span>
     </div>
 
-    <!-- KI-Training Badges -->
-    {#if sessionBadges.length > 0}
-        <section class="badge-section">
-            <h2 class="section-title">🤖 KI-Training</h2>
-            <div class="badge-grid">
-                {#each sessionBadges as item}
-                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
-                        <div class="badge-icon">{item.badge.icon}</div>
-                        <div class="badge-info">
-                            <h3 class="badge-title">{item.badge.title}</h3>
-                            <p class="badge-desc">{item.badge.description}</p>
-                            {#if item.earned}
-                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
-                            {:else}
-                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
-                            {/if}
+    <!-- Badge Sections -->
+    {#snippet badgeSection(title, badgeList)}
+        {#if badgeList.length > 0}
+            <section class="badge-section">
+                <h2 class="section-title">{title}</h2>
+                <div class="badge-grid">
+                    {#each badgeList as item}
+                        <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
+                            <div class="badge-icon">{item.badge.icon}</div>
+                            <div class="badge-info">
+                                <h3 class="badge-title">{item.badge.title}</h3>
+                                <p class="badge-desc">{item.badge.description}</p>
+                                {#if item.earned}
+                                    <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
+                                {:else}
+                                    <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
+                                {/if}
+                            </div>
                         </div>
-                    </div>
-                {/each}
-            </div>
-        </section>
-    {/if}
+                    {/each}
+                </div>
+            </section>
+        {/if}
+    {/snippet}
 
-    <!-- Notizen Badges -->
-    {#if noteBadges.length > 0}
-        <section class="badge-section">
-            <h2 class="section-title">📝 Notizen</h2>
-            <div class="badge-grid">
-                {#each noteBadges as item}
-                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
-                        <div class="badge-icon">{item.badge.icon}</div>
-                        <div class="badge-info">
-                            <h3 class="badge-title">{item.badge.title}</h3>
-                            <p class="badge-desc">{item.badge.description}</p>
-                            {#if item.earned}
-                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
-                            {:else}
-                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
-                            {/if}
-                        </div>
-                    </div>
-                {/each}
-            </div>
-        </section>
-    {/if}
-
-    <!-- Bewerbungen Anzahl Badges -->
-    {#if applicationCountBadges.length > 0}
-        <section class="badge-section">
-            <h2 class="section-title">💼 Bewerbungen</h2>
-            <div class="badge-grid">
-                {#each applicationCountBadges as item}
-                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
-                        <div class="badge-icon">{item.badge.icon}</div>
-                        <div class="badge-info">
-                            <h3 class="badge-title">{item.badge.title}</h3>
-                            <p class="badge-desc">{item.badge.description}</p>
-                            {#if item.earned}
-                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
-                            {:else}
-                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
-                            {/if}
-                        </div>
-                    </div>
-                {/each}
-            </div>
-        </section>
-    {/if}
-
-    <!-- Bewerbungs-Status Badges -->
-    {#if applicationStatusBadges.length > 0}
-        <section class="badge-section">
-            <h2 class="section-title">🎯 Bewerbungs-Meilensteine</h2>
-            <div class="badge-grid">
-                {#each applicationStatusBadges as item}
-                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
-                        <div class="badge-icon">{item.badge.icon}</div>
-                        <div class="badge-info">
-                            <h3 class="badge-title">{item.badge.title}</h3>
-                            <p class="badge-desc">{item.badge.description}</p>
-                            {#if item.earned}
-                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
-                            {:else}
-                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
-                            {/if}
-                        </div>
-                    </div>
-                {/each}
-            </div>
-        </section>
-    {/if}
-
-    <!-- Aufgaben-Abgabe Badges -->
-    {#if submissionBadges.length > 0}
-        <section class="badge-section">
-            <h2 class="section-title">✅ Aufgaben-Abgaben</h2>
-            <div class="badge-grid">
-                {#each submissionBadges as item}
-                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
-                        <div class="badge-icon">{item.badge.icon}</div>
-                        <div class="badge-info">
-                            <h3 class="badge-title">{item.badge.title}</h3>
-                            <p class="badge-desc">{item.badge.description}</p>
-                            {#if item.earned}
-                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
-                            {:else}
-                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
-                            {/if}
-                        </div>
-                    </div>
-                {/each}
-            </div>
-        </section>
-    {/if}
-
-    <!-- Feedback Badges -->
-    {#if feedbackBadges.length > 0}
-        <section class="badge-section">
-            <h2 class="section-title">💬 Feedback</h2>
-            <div class="badge-grid">
-                {#each feedbackBadges as item}
-                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
-                        <div class="badge-icon">{item.badge.icon}</div>
-                        <div class="badge-info">
-                            <h3 class="badge-title">{item.badge.title}</h3>
-                            <p class="badge-desc">{item.badge.description}</p>
-                            {#if item.earned}
-                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
-                            {:else}
-                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
-                            {/if}
-                        </div>
-                    </div>
-                {/each}
-            </div>
-        </section>
-    {/if}
-
-    <!-- Noten Badges -->
-    {#if gradeBadges.length > 0}
-        <section class="badge-section">
-            <h2 class="section-title">🎓 Bewertungen</h2>
-            <div class="badge-grid">
-                {#each gradeBadges as item}
-                    <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
-                        <div class="badge-icon">{item.badge.icon}</div>
-                        <div class="badge-info">
-                            <h3 class="badge-title">{item.badge.title}</h3>
-                            <p class="badge-desc">{item.badge.description}</p>
-                            {#if item.earned}
-                                <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
-                            {:else}
-                                <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
-                            {/if}
-                        </div>
-                    </div>
-                {/each}
-            </div>
-        </section>
-    {/if}
+    {@render badgeSection("🤖 KI-Training", sessionBadges)}
+    {@render badgeSection("📝 Notizen", noteBadges)}
+    {@render badgeSection("💼 Bewerbungen", applicationCountBadges)}
+    {@render badgeSection("🎯 Bewerbungs-Meilensteine", applicationStatusBadges)}
+    {@render badgeSection("✅ Aufgaben-Abgaben", submissionBadges)}
+    {@render badgeSection("💬 Feedback", feedbackBadges)}
+    {@render badgeSection("🎓 Bewertungen", gradeBadges)}
 
     <!-- Legende -->
     <div class="legend">
@@ -244,116 +97,87 @@
 </div>
 
 <style>
-    .page-wrapper {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 1.5rem 1rem 3rem;
-    }
-
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 1.5rem;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .title {
-        font-size: 1.6rem;
-        font-weight: 700;
-        margin: 0;
-        color: #2d2141;
-    }
-
-    .subtitle {
-        margin: 0.25rem 0 0;
-        color: #6b647a;
-        font-size: 0.9rem;
-    }
-
+    /* ===== PAGE SPECIFIC STYLES ===== */
     .progress-card {
-        background: linear-gradient(135deg, #3b134f, #5a2d6e);
+        background: var(--color-primary);
         color: #fff;
-        padding: 0.75rem 1.25rem;
-        border-radius: 0.75rem;
+        padding: var(--space-md) var(--space-xl);
+        border-radius: var(--radius-lg);
         text-align: center;
     }
 
     .progress-number {
         display: block;
-        font-size: 1.5rem;
+        font-size: var(--font-size-2xl);
         font-weight: 700;
     }
 
     .progress-label {
-        font-size: 0.8rem;
+        font-size: var(--font-size-xs);
         opacity: 0.9;
     }
 
-    /* Overall Progress */
     .overall-progress {
-        margin-bottom: 2rem;
+        margin-bottom: var(--space-2xl);
     }
 
     .progress-bar {
         height: 8px;
-        background: #e8e0f0;
+        background: var(--color-border-input);
         border-radius: 4px;
         overflow: hidden;
-        margin-bottom: 0.5rem;
+        margin-bottom: var(--space-sm);
     }
 
     .progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, #7c3aed, #a855f7);
+        background: var(--color-primary);
         border-radius: 4px;
         transition: width 0.5s ease;
     }
 
     .progress-text {
-        font-size: 0.85rem;
-        color: #6b7280;
+        font-size: var(--font-size-sm);
+        color: var(--color-text-muted);
     }
 
-    /* Badge Sections */
     .badge-section {
-        margin-bottom: 2rem;
+        margin-bottom: var(--space-2xl);
     }
 
     .section-title {
-        font-size: 1.1rem;
+        font-size: var(--font-size-lg);
         font-weight: 600;
-        margin: 0 0 1rem;
-        color: #2d2141;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #e8e0f0;
+        margin: 0 0 var(--space-lg);
+        color: var(--color-text-secondary);
+        padding-bottom: var(--space-sm);
+        border-bottom: 2px solid var(--color-border-input);
     }
 
     .badge-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1rem;
+        gap: var(--space-lg);
     }
 
     .badge-card {
         display: flex;
-        gap: 1rem;
-        padding: 1rem;
-        background: #fff;
-        border: 2px solid #e8e0f0;
-        border-radius: 0.75rem;
-        transition: all 0.2s;
+        gap: var(--space-lg);
+        padding: var(--space-lg);
+        background: var(--color-bg-card);
+        border: 2px solid var(--color-border-input);
+        border-radius: var(--radius-lg);
+        transition: all var(--transition-base);
     }
 
     .badge-card.earned {
-        background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
-        border-color: #c4b5fd;
+        background: var(--color-bg-muted);
+        border-color: var(--color-primary);
     }
 
     .badge-card.earned:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+        box-shadow: var(--shadow-primary);
     }
 
     .badge-card.locked {
@@ -379,14 +203,14 @@
         justify-content: center;
         width: 60px;
         height: 60px;
-        background: #fff;
+        background: var(--color-bg-card);
         border-radius: 50%;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--shadow-sm);
     }
 
     .badge-card.earned .badge-icon {
-        background: linear-gradient(135deg, #7c3aed, #a855f7);
-        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        background: var(--color-primary);
+        box-shadow: var(--shadow-primary);
     }
 
     .badge-info {
@@ -395,46 +219,45 @@
     }
 
     .badge-title {
-        margin: 0 0 0.25rem;
-        font-size: 1rem;
+        margin: 0 0 var(--space-xs);
+        font-size: var(--font-size-base);
         font-weight: 600;
-        color: #2d2141;
+        color: var(--color-text-secondary);
     }
 
     .badge-desc {
-        margin: 0 0 0.5rem;
-        font-size: 0.85rem;
-        color: #6b7280;
+        margin: 0 0 var(--space-sm);
+        font-size: var(--font-size-sm);
+        color: var(--color-text-muted);
     }
 
     .badge-date {
-        font-size: 0.75rem;
-        color: #059669;
+        font-size: var(--font-size-xs);
+        color: var(--color-success);
         font-weight: 500;
     }
 
     .badge-locked {
-        font-size: 0.75rem;
+        font-size: var(--font-size-xs);
         color: #9ca3af;
     }
 
-    /* Legend */
     .legend {
         display: flex;
-        gap: 2rem;
+        gap: var(--space-2xl);
         justify-content: center;
-        padding: 1rem;
+        padding: var(--space-lg);
         background: #f9fafb;
-        border-radius: 0.5rem;
-        margin-top: 2rem;
+        border-radius: var(--radius-md);
+        margin-top: var(--space-2xl);
     }
 
     .legend-item {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        font-size: 0.85rem;
-        color: #6b7280;
+        gap: var(--space-sm);
+        font-size: var(--font-size-sm);
+        color: var(--color-text-muted);
     }
 
     .legend-badge {
@@ -448,24 +271,12 @@
     }
 
     .earned-example {
-        background: linear-gradient(135deg, #7c3aed, #a855f7);
+        background: var(--color-primary);
     }
 
     .locked-example {
         background: #e5e7eb;
         filter: grayscale(100%);
-    }
-
-    /* Alert */
-    .alert {
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .alert-danger {
-        background: #fef2f2;
-        color: #dc2626;
     }
 
     @media (max-width: 600px) {
@@ -479,7 +290,7 @@
 
         .legend {
             flex-direction: column;
-            gap: 0.75rem;
+            gap: var(--space-md);
             align-items: flex-start;
         }
     }

@@ -1,9 +1,9 @@
-// frontend/src/routes/teacher/sessions/+page.server.js
-import { redirect } from "@sveltejs/kit";
+// frontend/src/routes/teacher/sessions/[id]/+page.server.js
+import { redirect, fail } from "@sveltejs/kit";
 
 const API_BASE = "http://localhost:8080/api";
 
-export async function load({ locals, fetch }) {
+export async function load({ locals, fetch, params }) {
     if (!locals.isAuthenticated) {
         throw redirect(302, "/login");
     }
@@ -21,73 +21,174 @@ export async function load({ locals, fetch }) {
         ...(token ? { Authorization: `Bearer ${token}` } : {})
     };
 
-    let sessions = [];
-    let assignments = [];
+    const sessionId = params.id;
+    let session = null;
+    let student = null;
 
-    // Assignments des Lehrers laden (für AI_INTERVIEW Filter)
+    // Session laden
     try {
-        const assignmentsRes = await fetch(`${API_BASE}/assignments/teacher`, {
+        const sessionRes = await fetch(`${API_BASE}/sessions/${sessionId}`, {
             method: "GET",
             headers
         });
 
-        if (assignmentsRes.ok) {
-            const allAssignments = await assignmentsRes.json();
-            // Nur AI_INTERVIEW Aufgaben
-            assignments = allAssignments.filter(a => a.type === "AI_INTERVIEW");
+        if (sessionRes.ok) {
+            session = await sessionRes.json();
+        } else {
+            console.error("Session nicht gefunden:", sessionId);
         }
     } catch (err) {
-        console.error("Fehler beim Laden der Aufgaben:", err);
+        console.error("Fehler beim Laden der Session:", err);
     }
 
-    // Sessions für jede AI_INTERVIEW Aufgabe laden
-    for (const assignment of assignments) {
+    // Wenn Session geladen, versuche Student-Info zu laden
+    if (session?.studentId) {
         try {
-            // Submissions für diese Aufgabe laden
-            const submissionsRes = await fetch(`${API_BASE}/submissions/assignment/${assignment.id}`, {
+            const studentRes = await fetch(`${API_BASE}/users/${session.studentId}`, {
+                method: "GET",
+                headers
+            });
+
+            if (studentRes.ok) {
+                student = await studentRes.json();
+            }
+        } catch (err) {
+            console.error("Fehler beim Laden des Studenten:", err);
+        }
+    }
+
+    // Wenn Session eine Assignment-Session ist, lade zusätzliche Infos
+    if (session?.assignmentId) {
+        try {
+            const assignmentRes = await fetch(`${API_BASE}/assignments/${session.assignmentId}`, {
+                method: "GET",
+                headers
+            });
+
+            if (assignmentRes.ok) {
+                const assignment = await assignmentRes.json();
+                session.assignmentTitle = assignment.title;
+            }
+        } catch (err) {
+            console.error("Fehler beim Laden der Aufgabe:", err);
+        }
+
+        // Submission-Infos laden (für Feedback/Note)
+        try {
+            const submissionsRes = await fetch(`${API_BASE}/submissions/assignment/${session.assignmentId}`, {
                 method: "GET",
                 headers
             });
 
             if (submissionsRes.ok) {
                 const submissions = await submissionsRes.json();
-                
-                // Für jede Submission mit chatSessionId die Session-Details holen
-                for (const sub of submissions) {
-                    if (sub.chatSessionId) {
-                        try {
-                            const sessionRes = await fetch(`${API_BASE}/sessions/${sub.chatSessionId}`, {
-                                method: "GET",
-                                headers
-                            });
-
-                            if (sessionRes.ok) {
-                                const session = await sessionRes.json();
-                                sessions.push({
-                                    ...session,
-                                    studentEmail: sub.studentEmail,
-                                    assignmentTitle: assignment.title,
-                                    submissionId: sub.id,
-                                    hasFeedback: !!sub.teacherFeedback,
-                                    grade: sub.grade
-                                });
-                            }
-                        } catch (err) {
-                            console.error("Fehler beim Laden der Session:", err);
-                        }
+                const submission = submissions.find(s => s.chatSessionId === sessionId);
+                if (submission) {
+                    session.submissionId = submission.id;
+                    session.teacherFeedback = submission.teacherFeedback;
+                    session.grade = submission.grade;
+                    session.submittedAsAssignment = submission.status === "SUBMITTED" || 
+                                                    submission.status === "REVIEWED" || 
+                                                    submission.status === "IN_REVIEW";
+                    
+                    // Student-Email aus Submission
+                    if (!student) {
+                        student = { email: submission.studentEmail };
                     }
                 }
             }
         } catch (err) {
-            console.error("Fehler beim Laden der Submissions:", err);
+            console.error("Fehler beim Laden der Submission:", err);
         }
     }
 
-    // Nach Datum sortieren (neueste zuerst)
-    sessions.sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt));
-
     return {
-        sessions,
-        assignments
+        session,
+        student
     };
 }
+
+export const actions = {
+    saveFeedback: async ({ request, locals, fetch, params }) => {
+        if (!locals.isAuthenticated) {
+            throw redirect(302, "/login");
+        }
+
+        const token = locals.jwt_token;
+        const headers = {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+        };
+
+        const formData = await request.formData();
+        const feedback = formData.get("feedback")?.toString() ?? "";
+        const gradeStr = formData.get("grade")?.toString() ?? "";
+        const grade = gradeStr ? parseFloat(gradeStr) : null;
+
+        const sessionId = params.id;
+
+        // Zuerst Session laden um submissionId zu bekommen
+        let session = null;
+        try {
+            const sessionRes = await fetch(`${API_BASE}/sessions/${sessionId}`, {
+                method: "GET",
+                headers
+            });
+
+            if (sessionRes.ok) {
+                session = await sessionRes.json();
+            }
+        } catch (err) {
+            return fail(500, { error: "Session konnte nicht geladen werden" });
+        }
+
+        if (!session?.assignmentId) {
+            return fail(400, { error: "Keine Aufgabe mit dieser Session verknüpft" });
+        }
+
+        // Submission finden
+        let submissionId = null;
+        try {
+            const submissionsRes = await fetch(`${API_BASE}/submissions/assignment/${session.assignmentId}`, {
+                method: "GET",
+                headers
+            });
+
+            if (submissionsRes.ok) {
+                const submissions = await submissionsRes.json();
+                const submission = submissions.find(s => s.chatSessionId === sessionId);
+                if (submission) {
+                    submissionId = submission.id;
+                }
+            }
+        } catch (err) {
+            return fail(500, { error: "Submission konnte nicht gefunden werden" });
+        }
+
+        if (!submissionId) {
+            return fail(400, { error: "Keine Abgabe gefunden" });
+        }
+
+        // Feedback speichern
+        try {
+            const res = await fetch(`${API_BASE}/submissions/${submissionId}/feedback`, {
+                method: "PUT",
+                headers,
+                body: JSON.stringify({
+                    teacherFeedback: feedback,
+                    grade: grade
+                })
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                return fail(res.status, { error: errorText || "Feedback konnte nicht gespeichert werden" });
+            }
+
+            return { success: true, message: "Feedback gespeichert!" };
+        } catch (err) {
+            console.error("Fehler beim Speichern:", err);
+            return fail(500, { error: "Verbindungsfehler" });
+        }
+    }
+};

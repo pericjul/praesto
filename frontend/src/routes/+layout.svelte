@@ -1,6 +1,8 @@
 <script>
   import "../styles/theme.css";
+  import "../styles/components.css";
   import logo from "../lib/assets/praesto-logo.png";
+  import { page } from "$app/stores";
 
   export let data;
   const user = data?.user ?? {};
@@ -9,6 +11,10 @@
   const roles = user.user_roles ?? [];
   const isStudent = roles.includes("STUDENT");
   const isTeacher = roles.includes("TEACHER");
+
+  function isActive(path) {
+    return $page.url.pathname.startsWith(path);
+  }
 </script>
 
 <div class="app-root">
@@ -22,16 +28,16 @@
       {#if isAuthenticated}
         <nav class="nav-main">
           {#if isStudent}
-            <a href="/student/dashboard" class="nav-link">Dashboard</a>
-            <a href="/student/assignments" class="nav-link">Aufgaben</a>
-            <a href="/student/sessions" class="nav-link">Training</a>
-            <a href="/student/notes" class="nav-link">Notizen</a>
-            <a href="/student/applications" class="nav-link">Bewerbungen</a>
-            <a href="/student/badges" class="nav-link">🏅 Badges</a>
+            <a href="/student/dashboard" class="nav-link" class:active={isActive('/student/dashboard')}>Dashboard</a>
+            <a href="/student/assignments" class="nav-link" class:active={isActive('/student/assignments')}>Aufgaben</a>
+            <a href="/student/sessions" class="nav-link" class:active={isActive('/student/sessions')}>Training</a>
+            <a href="/student/notes" class="nav-link" class:active={isActive('/student/notes')}>Notizen</a>
+            <a href="/student/applications" class="nav-link" class:active={isActive('/student/applications')}>Bewerbungen</a>
+            <a href="/student/badges" class="nav-link" class:active={isActive('/student/badges')}>🏅 Badges</a>
           {:else if isTeacher}
-            <a href="/teacher/dashboard" class="nav-link">Dashboard</a>
-            <a href="/teacher/classes" class="nav-link">Klassen</a>
-            <a href="/teacher/assignments" class="nav-link">Aufgaben</a>
+            <a href="/teacher/dashboard" class="nav-link" class:active={isActive('/teacher/dashboard')}>Dashboard</a>
+            <a href="/teacher/classes" class="nav-link" class:active={isActive('/teacher/classes')}>Klassen</a>
+            <a href="/teacher/assignments" class="nav-link" class:active={isActive('/teacher/assignments')}>Aufgaben</a>
           {/if}
         </nav>
       {/if}
@@ -92,9 +98,9 @@
   }
 
   .brand-logo {
-    width: 34px;
-    height: 34px;
-    border-radius: 12px;
+    height: 44px;
+    width: auto;
+    object-fit: contain;
   }
 
   .brand-text {
@@ -115,11 +121,18 @@
     color: var(--color-text-muted);
     padding: 0.35rem 0.7rem;
     border-radius: 999px;
+    transition: all 0.15s;
   }
 
   .nav-link:hover {
     background: var(--color-muted-bg);
     color: var(--color-text);
+  }
+
+  .nav-link.active {
+    background: var(--color-primary);
+    color: #fff;
+    font-weight: 500;
   }
 
   .app-header-right {
