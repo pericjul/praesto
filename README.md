@@ -374,20 +374,16 @@ Der Vorschlag, ein **Lexikon mit Fachwörtern** zu generieren, ist interessant f
 
 ## UI-Mockup
 
+Die folgenden Wireframes wurden in der Konzeptionsphase erstellt, um die grundlegende Struktur und Navigation der Anwendung zu definieren.
+
 ### Student Dashboard
 ![Mockup Student Dashboard](doc/mockup-student-dashboard.png)
-
-*Platzhalter: Mockup Student Dashboard hier einfügen*
 
 ### Chat-Ansicht
 ![Mockup Chat](doc/mockup-chat.png)
 
-*Platzhalter: Mockup Chat-Ansicht hier einfügen*
-
 ### Teacher Dashboard
 ![Mockup Teacher Dashboard](doc/mockup-teacher-dashboard.png)
-
-*Platzhalter: Mockup Teacher Dashboard hier einfügen*
 
 ---
 
@@ -402,18 +398,41 @@ Das Frontend wurde mit **SvelteKit** und **TailwindCSS** entwickelt. Es bietet e
 #### Dashboard
 ![Student Dashboard](doc/screenshot-student-dashboard.png)
 
-*Platzhalter: Screenshot Student Dashboard hier einfügen*
-
 Das Dashboard zeigt:
 - Übersicht offener Aufgaben mit Abgabefristen
 - Letzte Session mit Möglichkeit zum Fortsetzen
 - Statistiken zu Bewerbungen und verdienten Badges
 - Benachrichtigungen über neues Feedback
 
+#### Aufgaben-Übersicht
+![Aufgaben Übersicht](doc/screenshot-student-aufgaben.png)
+
+Die Aufgaben-Übersicht zeigt:
+- Liste aller zugewiesenen Aufgaben der Klasse
+- Filterung nach Status (offen, abgegeben, bewertet)
+- Abgabefrist mit visueller Warnung bei bald fälligen Aufgaben
+- Direkter Link zur Aufgaben-Detailseite
+
+#### Aufgaben-Detail
+![Aufgaben Detail](doc/screenshot-student-aufgabe-detail.png)
+
+Die Aufgaben-Detailseite bietet:
+- Vollständige Aufgabenbeschreibung und Anweisungen
+- Anzeige des Aufgabentyps (AI-Interview, Selbstreflexion, etc.)
+- Button zum Starten einer neuen Session
+- Übersicht bereits abgegebener Versuche mit Feedback
+
+#### Sessions-Übersicht
+![Sessions Übersicht](doc/screenshot-student-sessions.png)
+
+Die Sessions-Übersicht zeigt:
+- Liste aller bisherigen Chat-Sessions
+- Status pro Session (aktiv, beendet, abgegeben)
+- Datum, Dauer und Anzahl Nachrichten
+- Möglichkeit zum Fortsetzen aktiver Sessions
+
 #### Chat-Ansicht
 ![Chat](doc/screenshot-chat.png)
-
-*Platzhalter: Screenshot Chat-Ansicht hier einfügen*
 
 Die Chat-Ansicht bietet:
 - Interaktiver Chat mit der KI
@@ -424,30 +443,35 @@ Die Chat-Ansicht bietet:
 #### Bewerbungs-Tracker
 ![Bewerbungen](doc/screenshot-bewerbungen.png)
 
-*Platzhalter: Screenshot Bewerbungs-Tracker hier einfügen*
-
 Der Tracker zeigt:
 - Kanban-Board mit Bewerbungen nach Status gruppiert
 - Statistiken (Anzahl pro Status)
 - Formular zum Erstellen neuer Bewerbungen
 - Detail-Ansicht mit Notizen
 
+#### Notizen
+![Notizen](doc/screenshot-notizen.png)
+
+Die Notizen-Ansicht bietet:
+- Liste aller erstellten Notizen zu Firmen
+- Suchfunktion nach Firmenname oder Inhalt
+- Formular zum Erstellen neuer Notizen
+- Bearbeiten und Löschen bestehender Notizen
+
 #### Badge-Übersicht
 ![Badges](doc/screenshot-badges.png)
 
-*Platzhalter: Screenshot Badge-Übersicht hier einfügen*
-
 Die Badge-Ansicht zeigt:
-- Alle verfügbaren Badges
+- Alle verfügbaren Badges mit Beschreibung
 - Bereits verdiente Badges hervorgehoben
 - Fortschrittsanzeige zu nächsten Badges
+- Datum der Freischaltung bei verdienten Badges
+
 
 ### Teacher-Ansichten
 
 #### Klassen-Übersicht
 ![Klassen](doc/screenshot-klassen.png)
-
-*Platzhalter: Screenshot Klassen-Übersicht hier einfügen*
 
 Die Klassenverwaltung bietet:
 - Liste aller Klassen der Lehrperson
@@ -457,8 +481,6 @@ Die Klassenverwaltung bietet:
 #### Aufgaben-Verwaltung
 ![Aufgaben](doc/screenshot-aufgaben.png)
 
-*Platzhalter: Screenshot Aufgaben-Verwaltung hier einfügen*
-
 Die Aufgabenverwaltung zeigt:
 - Alle erstellten Aufgaben mit Status
 - Abgabe-Quote pro Aufgabe
@@ -466,8 +488,6 @@ Die Aufgabenverwaltung zeigt:
 
 #### Abgaben-Bewertung
 ![Bewertung](doc/screenshot-bewertung.png)
-
-*Platzhalter: Screenshot Abgaben-Bewertung hier einfügen*
 
 Die Bewertungsansicht bietet:
 - Chat-Verlauf der Session (bei AI-Interview)
@@ -581,6 +601,8 @@ Die folgenden Features sind im **Backlog** für zukünftige Versionen:
 | Voice-Chat | Speech-to-Text für mündliche Antworten |
 | Text-to-Speech | Vorlesen der KI-Antworten für Barrierefreiheit |
 | Export-Funktion | PDF-Export von Bewerbungen und Sessions |
+| Mail-Mitteilungen | Erweiterung von Mitteilungen mit Mailfunktion |
+
 
 
 ### Bekannte Einschränkungen
