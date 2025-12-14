@@ -46,9 +46,9 @@ public class SessionControllerTest {
     @Order(10)
     public void testStartSession() throws Exception {
         var result = mvc.perform(post("/api/sessions")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}")
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}")
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("OPEN"))
@@ -63,8 +63,8 @@ public class SessionControllerTest {
     @Order(20)
     public void testGetSession() throws Exception {
         mvc.perform(get("/api/sessions/" + session_id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(session_id));
@@ -74,18 +74,65 @@ public class SessionControllerTest {
     @Order(25)
     public void testGetMySessions() throws Exception {
         mvc.perform(get("/api/sessions")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
                 .andDo(print())
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @Order(30)
+    public void testSendMessage() throws Exception {
+        String jsonBody = """
+            {
+                "message": "Hallo, ich möchte mich auf eine Stelle bewerben."
+            }
+            """;
+
+        mvc.perform(post("/api/sessions/" + session_id + "/messages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(session_id));
+    }
+
+    @Test
+    public void testSendMessage_AsTeacher_Forbidden() throws Exception {
+        mvc.perform(post("/api/sessions/some-id/messages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"message\": \"Test\"}")
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testSendMessage_NoAuth_Forbidden() throws Exception {
+        mvc.perform(post("/api/sessions/some-id/messages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"message\": \"Test\"}"))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testSendMessage_SessionNotFound() throws Exception {
+        mvc.perform(post("/api/sessions/nonexistent-id/messages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"message\": \"Test\"}")
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 
     @Test
     @Order(40)
     public void testCloseSession() throws Exception {
         mvc.perform(put("/api/sessions/" + session_id + "/close")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CLOSED"));
@@ -94,9 +141,9 @@ public class SessionControllerTest {
     @Test
     public void testStartSession_AsTeacher_Forbidden() throws Exception {
         mvc.perform(post("/api/sessions")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}")
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}")
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -104,9 +151,36 @@ public class SessionControllerTest {
     @Test
     public void testStartSession_NoAuth() throws Exception {
         mvc.perform(post("/api/sessions")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
                 .andDo(print())
                 .andExpect(status().isForbidden());
+    }
+
+
+    @Test
+    public void testCloseAndSubmitSession_AsTeacher_Forbidden() throws Exception {
+        mvc.perform(put("/api/sessions/some-id/submit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testCloseAndSubmitSession_NoAuth_Forbidden() throws Exception {
+        mvc.perform(put("/api/sessions/some-id/submit")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testCloseAndSubmitSession_NotFound() throws Exception {
+        mvc.perform(put("/api/sessions/nonexistent-session-id/submit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 }

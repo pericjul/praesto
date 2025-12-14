@@ -393,4 +393,142 @@ public class SubmissionControllerTest {
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    public void testCreateSubmission_Research_TextTooShort() throws Exception {
+        Assignment researchAssignment = Assignment.builder()
+                .title("Research Test")
+                .type(AssignmentType.RESEARCH)
+                .classId(classId)
+                .createdByTeacherId("test-user-id")
+                .status(AssignmentStatus.ASSIGNED)
+                .build();
+        researchAssignment = assignmentRepository.save(researchAssignment);
+        
+        String jsonBody = """
+            {
+                "assignmentId": "%s",
+                "textContent": "Zu kurz"
+            }
+            """.formatted(researchAssignment.getId());
+
+        mvc.perform(post("/api/submissions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+        
+        assignmentRepository.deleteById(researchAssignment.getId());
+    }
+
+    @Test
+    public void testCreateSubmission_VideoPitch_MissingUrl() throws Exception {
+        Assignment videoAssignment = Assignment.builder()
+                .title("Video Pitch Test")
+                .type(AssignmentType.VIDEO_PITCH)
+                .classId(classId)
+                .createdByTeacherId("test-user-id")
+                .status(AssignmentStatus.ASSIGNED)
+                .build();
+        videoAssignment = assignmentRepository.save(videoAssignment);
+        
+        String jsonBody = """
+            {
+                "assignmentId": "%s"
+            }
+            """.formatted(videoAssignment.getId());
+
+        mvc.perform(post("/api/submissions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+        
+        assignmentRepository.deleteById(videoAssignment.getId());
+    }
+
+    @Test
+    public void testCreateSubmission_SelfReflection_NullText() throws Exception {
+        Assignment reflectionAssignment = Assignment.builder()
+                .title("Reflection Null Test")
+                .type(AssignmentType.SELF_REFLECTION)
+                .classId(classId)
+                .createdByTeacherId("test-user-id")
+                .status(AssignmentStatus.ASSIGNED)
+                .build();
+        reflectionAssignment = assignmentRepository.save(reflectionAssignment);
+        
+        String jsonBody = """
+            {
+                "assignmentId": "%s"
+            }
+            """.formatted(reflectionAssignment.getId());
+
+        mvc.perform(post("/api/submissions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+        
+        assignmentRepository.deleteById(reflectionAssignment.getId());
+    }
+
+    @Test
+    public void testCreateSubmission_DocumentUpload_BlankUrl() throws Exception {
+        Assignment docAssignment = Assignment.builder()
+                .title("Doc Blank URL Test")
+                .type(AssignmentType.DOCUMENT_UPLOAD)
+                .classId(classId)
+                .createdByTeacherId("test-user-id")
+                .status(AssignmentStatus.ASSIGNED)
+                .build();
+        docAssignment = assignmentRepository.save(docAssignment);
+        
+        String jsonBody = """
+            {
+                "assignmentId": "%s",
+                "fileUrl": "   "
+            }
+            """.formatted(docAssignment.getId());
+
+        mvc.perform(post("/api/submissions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+        
+        assignmentRepository.deleteById(docAssignment.getId());
+    }
+
+    @Test
+    public void testCreateSubmission_AIInterview_BlankSessionId() throws Exception {
+        Assignment aiAssignment = Assignment.builder()
+                .title("AI Blank Session Test")
+                .type(AssignmentType.AI_INTERVIEW)
+                .classId(classId)
+                .createdByTeacherId("test-user-id")
+                .status(AssignmentStatus.ASSIGNED)
+                .build();
+        aiAssignment = assignmentRepository.save(aiAssignment);
+        
+        String jsonBody = """
+            {
+                "assignmentId": "%s",
+                "chatSessionId": "   "
+            }
+            """.formatted(aiAssignment.getId());
+
+        mvc.perform(post("/api/submissions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+        
+        assignmentRepository.deleteById(aiAssignment.getId());
+    }
 }

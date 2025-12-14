@@ -53,9 +53,9 @@ public class SchoolClassControllerTest {
         String jsonBody = objectMapper.writeValueAsString(dto);
 
         var result = mvc.perform(post("/api/classes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonBody)
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value(TEST_CLASS_NAME))
@@ -70,8 +70,8 @@ public class SchoolClassControllerTest {
     @Order(20)
     public void testGetClass() throws Exception {
         mvc.perform(get("/api/classes/" + class_id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value(TEST_CLASS_NAME));
@@ -81,8 +81,8 @@ public class SchoolClassControllerTest {
     @Order(25)
     public void testGetMyClasses() throws Exception {
         mvc.perform(get("/api/classes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -91,19 +91,48 @@ public class SchoolClassControllerTest {
     @Order(30)
     public void testAddStudent() throws Exception {
         mvc.perform(post("/api/classes/" + class_id + "/students")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"student@test.ch\"}")
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"student@test.ch\"}")
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
                 .andDo(print())
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @Order(32)
+    public void testGetMyClass_AsStudent() throws Exception {
+        // Student ist in irgendeiner Klasse (könnte SubmissionTestClass sein)
+        mvc.perform(get("/api/classes/my")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists());
+    }
+
+    @Test
+    public void testGetMyClass_AsTeacher_Forbidden() throws Exception {
+        mvc.perform(get("/api/classes/my")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testGetMyClass_NoAuth_Unauthorized() throws Exception {
+        mvc.perform(get("/api/classes/my")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized()); // 401, nicht 403
     }
 
     @Test
     @Order(35)
     public void testRemoveStudent() throws Exception {
         mvc.perform(delete("/api/classes/" + class_id + "/students/student@test.ch")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -112,8 +141,8 @@ public class SchoolClassControllerTest {
     @Order(40)
     public void testDeleteClass() throws Exception {
         mvc.perform(delete("/api/classes/" + class_id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -125,9 +154,9 @@ public class SchoolClassControllerTest {
         String jsonBody = objectMapper.writeValueAsString(dto);
 
         mvc.perform(post("/api/classes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonBody)
+                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -135,8 +164,8 @@ public class SchoolClassControllerTest {
     @Test
     public void testCreateClass_NoAuth() throws Exception {
         mvc.perform(post("/api/classes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
