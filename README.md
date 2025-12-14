@@ -178,8 +178,6 @@ Der Vorschlag, ein **Lexikon mit Fachwörtern** zu generieren, ist interessant f
 
 ![Use-Case Diagramm](doc/uc-diagram.drawio.svg)
 
-*Platzhalter: Use-Case Diagramm hier einfügen*
-
 ---
 
 ## Use-Case Beschreibung
@@ -250,8 +248,6 @@ Der Vorschlag, ein **Lexikon mit Fachwörtern** zu generieren, ist interessant f
 ## Fachliches Datenmodell
 
 ![ER-Diagramm](doc/ER-diagram.drawio.svg)
-
-*Platzhalter: Fachliches ER-Diagramm hier einfügen (ohne technische IDs)*
 
 ### Entitäten und Beziehungen
 
