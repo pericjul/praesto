@@ -1,3 +1,13 @@
+![Workflow](https://github.com/pericjul/praesto/actions/workflows/ci-badge.yml/badge.svg)
+![Coverage](https://github.com/pericjul/praesto/blob/main/.github/badges/jacoco.svg)
+![Branches](https://github.com/pericjul/praesto/blob/main/.github/badges/branches.svg)
+
+## Praesto
+Praesto ist eine KI-gestützte Webplattform, die Schüler:innen im Bewerbungsprozess unterstützt.
+Es werden zwei Rollen unterschieden:
+- **Student**: Kann KI-Bewerbungstrainings durchführen, Bewerbungen verwalten, Notizen erstellen und Badges verdienen.
+- **Teacher**: Kann Klassen verwalten, Aufgaben erstellen und Schüler-Abgaben bewerten.
+
 erDiagram
   USER ||--o{ SUBMISSION : "macht"
   USER ||--o{ BADGE_AWARD : "erhält"
