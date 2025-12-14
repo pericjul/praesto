@@ -176,7 +176,7 @@ Der Vorschlag, ein **Lexikon mit Fachwörtern** zu generieren, ist interessant f
 
 ## Use-Case Diagramm
 
-![Use-Case Diagramm](doc/use-case-diagramm.png)
+![Use-Case Diagramm](doc/use-case-diagramm.drawio.png)
 
 *Platzhalter: Use-Case Diagramm hier einfügen*
 
@@ -249,7 +249,7 @@ Der Vorschlag, ein **Lexikon mit Fachwörtern** zu generieren, ist interessant f
 
 ## Fachliches Datenmodell
 
-![ER-Diagramm](doc/er-diagramm.png)
+![ER-Diagramm](doc/er-diagramm.drawio.png)
 
 *Platzhalter: Fachliches ER-Diagramm hier einfügen (ohne technische IDs)*
 
@@ -544,10 +544,10 @@ Folgende optionale Anforderungen wurden umgesetzt:
 
 Die folgenden Features sind im **Backlog** für zukünftige Versionen:
 
-| Feature | Issue | Priorität | Beschreibung |
+| Feature | Priorität | Beschreibung |
 |---------|-------|-----------|--------------|
 | Voice-Chat | Speech-to-Text für mündliche Antworten |
-| Text-to-Speech | #43 | Medium | Vorlesen der KI-Antworten für Barrierefreiheit |
+| Text-to-Speech | Vorlesen der KI-Antworten für Barrierefreiheit |
 | Export-Funktion | PDF-Export von Bewerbungen und Sessions |
 
 
