@@ -4,7 +4,11 @@
     export let data;
     export let form;
 
-    const sessions = data.sessions ?? [];
+    // Reaktive sessions Liste (kann lokal geändert werden)
+    let sessions = data.sessions ?? [];
+    
+    // Loading States
+    let closingSessionId = null;
 
     function formatDateTime(date) {
         if (!date) return "-";
@@ -20,6 +24,25 @@
 
     function getStatusText(status) {
         return status === "OPEN" ? "Offen" : "Abgeschlossen";
+    }
+
+        // Enhance für Session beenden mit sofortigem UI-Update
+    function handleCloseEnhance(sessionId) {
+        return ({ cancel }) => {
+            closingSessionId = sessionId;
+            return async ({ result, update }) => {
+                if (result.type === 'success') {
+                    // Lokales Update der Session
+                    sessions = sessions.map(s => 
+                        s.id === sessionId 
+                            ? { ...s, status: 'CLOSED', closedAt: new Date().toISOString() }
+                            : s
+                    );
+                }
+                closingSessionId = null;
+                await update();
+            };
+        };
     }
 
     $: sortedSessions = [...sessions].sort((a, b) => {
@@ -112,9 +135,15 @@
                     <div class="session-actions">
                         {#if session.status === "OPEN"}
                             <a href="/student/sessions/{session.id}" class="btn btn-primary">▶️ Fortsetzen</a>
-                            <form method="POST" action="?/close" use:enhance class="inline-form">
+                            <form method="POST" action="?/close" use:enhance={handleCloseEnhance(session.id)} class="inline-form">
                                 <input type="hidden" name="sessionId" value={session.id} />
-                                <button type="submit" class="btn btn-secondary">⏹️ Beenden</button>
+                                <button type="submit" class="btn btn-secondary" disabled={closingSessionId === session.id}>
+                                    {#if closingSessionId === session.id}
+                                        ⏳ Beenden...
+                                    {:else}
+                                        ⏹️ Beenden
+                                    {/if}
+                                </button>
                             </form>
                         {:else}
                             <a href="/student/sessions/{session.id}" class="btn btn-secondary">👁️ Ansehen</a>
