@@ -243,6 +243,40 @@ Der Vorschlag, ein **Lexikon mit Fachwörtern** zu generieren, ist interessant f
 | **Nachbedingung Erfolg** | Klasse ist erstellt/aktualisiert mit Schüler:innen |
 | **Standardablauf** | 1. Lehrperson navigiert zu "Klassen"<br>2. Lehrperson erstellt neue Klasse oder wählt bestehende<br>3. Lehrperson fügt Schüler:innen via E-Mail hinzu<br>4. System speichert Klassenzuordnung |
 
+### UC-06: Notizen erstellen
+
+| Feld | Beschreibung |
+|------|--------------|
+| **Name** | Notizen erstellen |
+| **Akteur** | Schüler:in |
+| **Auslöser** | Schüler:in möchte Informationen zu einer Firma festhalten |
+| **Vorbedingung** | Schüler:in ist eingeloggt |
+| **Nachbedingung Erfolg** | Notiz ist gespeichert und kann später eingesehen werden |
+| **Nachbedingung Fehlschlag** | Fehlermeldung wird angezeigt, keine Notiz erstellt |
+| **Standardablauf** | 1. Schüler:in navigiert zu "Notizen"<br>2. Schüler:in klickt auf "Neue Notiz"<br>3. Schüler:in gibt Firmenname, Position und Notiztext ein<br>4. Schüler:in klickt auf "Speichern"<br>5. System erstellt Notiz mit Zeitstempel |
+
+### UC-07: Badges ansehen
+
+| Feld | Beschreibung |
+|------|--------------|
+| **Name** | Badges ansehen |
+| **Akteur** | Schüler:in |
+| **Auslöser** | Schüler:in möchte Fortschritt und verdiente Auszeichnungen einsehen |
+| **Vorbedingung** | Schüler:in ist eingeloggt |
+| **Nachbedingung Erfolg** | Badge-Übersicht wird angezeigt |
+| **Standardablauf** | 1. Schüler:in navigiert zu "Badges"<br>2. System zeigt alle verfügbaren Badges<br>3. Bereits verdiente Badges werden hervorgehoben<br>4. Fortschritt zu nächsten Badges wird angezeigt |
+
+### UC-08: Meine Klasse ansehen
+
+| Feld | Beschreibung |
+|------|--------------|
+| **Name** | Meine Klasse ansehen |
+| **Akteur** | Schüler:in |
+| **Auslöser** | Schüler:in möchte sehen, welcher Klasse sie/er zugeordnet ist |
+| **Vorbedingung** | Schüler:in ist eingeloggt und einer Klasse zugeordnet |
+| **Nachbedingung Erfolg** | Klasseninformationen werden angezeigt |
+| **Standardablauf** | 1. Schüler:in navigiert zu "Meine Klasse"<br>2. System zeigt Klassenname und zuständige Lehrperson<br>3. Offene Aufgaben der Klasse werden angezeigt |
+
 ---
 
 ## Fachliches Datenmodell
@@ -253,15 +287,17 @@ Der Vorschlag, ein **Lexikon mit Fachwörtern** zu generieren, ist interessant f
 
 | Entität | Beschreibung | Beziehungen |
 |---------|--------------|-------------|
-| **Klasse** | Eine Schulklasse mit Namen und Jahr | Hat eine Lehrperson, enthält mehrere Schüler:innen |
-| **Aufgabe** | Eine Übungsaufgabe mit Typ und Frist | Gehört zu einer Klasse, hat mehrere Abgaben |
-| **Abgabe** | Die Einreichung einer Aufgabe | Gehört zu einer Aufgabe, stammt von Schüler:in, kann Session referenzieren |
-| **Session** | Ein KI-Chat-Gespräch | Gehört zu Schüler:in, kann zu Aufgabe gehören, enthält Nachrichten |
-| **Nachricht** | Eine einzelne Chat-Nachricht | Gehört zu Session |
-| **Bewerbung** | Eine erfasste Stellenbewerbung | Gehört zu Schüler:in |
-| **Notiz** | Eine Notiz zu einer Firma | Gehört zu Schüler:in |
+| **User** | Ein Benutzer (Auth0 extern) | Hat Rolle (Student/Teacher), verwaltet Klassen oder gehört zu Klasse |
+| **SchoolClass** | Eine Schulklasse mit Namen | Hat eine Lehrperson (teacherId), enthält mehrere Schüler:innen (studentEmails) |
+| **Assignment** | Eine Übungsaufgabe mit Typ und Frist | Gehört zu einer Klasse, hat mehrere Abgaben |
+| **Submission** | Die Einreichung einer Aufgabe | Gehört zu einer Aufgabe, stammt von Schüler:in, kann Session referenzieren |
+| **Session** | Ein KI-Chat-Gespräch | Gehört zu Schüler:in, kann zu Aufgabe gehören, enthält Nachrichten (embedded als Liste) |
+| **Application** | Eine erfasste Stellenbewerbung | Gehört zu Schüler:in |
+| **Note** | Eine Notiz zu einer Firma | Gehört zu Schüler:in |
 | **Badge** | Eine Auszeichnung (Definition) | Hat Regeln für automatische Vergabe |
-| **Verdientes Badge** | Zuordnung Badge zu Schüler:in | Verknüpft Badge mit Schüler:in |
+| **UserBadge** | Zuordnung Badge zu Schüler:in | Verknüpft Badge mit Schüler:in, speichert Zeitpunkt |
+
+> **Hinweis:** Die Nachrichten (Messages) werden nicht als separate Entität gespeichert, sondern sind als embedded Liste direkt im Session-Dokument enthalten.
 
 ### Zustandsdiagramme
 
@@ -503,7 +539,7 @@ Folgende optionale Anforderungen wurden umgesetzt:
 
 | Anforderung | Beschreibung | Status |
 |-------------|--------------|--------|
-| **Komplexes Datenmodell** | 8 Entitäten mit Beziehungen (statt Minimum 3) | ✅ |
+| **Komplexes Datenmodell** | 9 Entitäten mit Beziehungen (statt Minimum 3) | ✅ |
 | **Komplexe Benutzerverwaltung** | Zwei Rollen (Student/Teacher) mit unterschiedlichen Berechtigungen via Auth0 | ✅ |
 | **Gamification** | Badge-System mit 7 verschiedenen Badge-Typen und automatischer Vergabe | ✅ |
 | **Dashboard mit Statistiken** | Übersicht für Schüler:innen mit Fortschritt, offenen Aufgaben, Bewerbungsstatistiken | ✅ |
