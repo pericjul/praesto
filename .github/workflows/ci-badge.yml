@@ -59,14 +59,14 @@ jobs:
           path: target/site/jacoco
 
       - name: Generate JaCoCo badge
-        uses: cicirello/jacoco-badge-generator@v2
+        uses: cicirello/jacoco-badge-generator@188d0c9998ca8315864405ed5e6c2ecf8fa9c421
         with:
           jacoco-csv-file: target/site/jacoco/jacoco.csv
           generate-branches-badge: true
 
       - name: Commit and push the badge (if it changed)
         if: github.event_name != 'pull_request'
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5
         with:
           committer_name: GitHub Actions
           committer_email: actions@github.com
