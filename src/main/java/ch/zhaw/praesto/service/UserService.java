@@ -19,7 +19,6 @@ public class UserService {
         }
         return userRoles.contains(role);
     }
-
     public String getUserId() {
         Jwt jwt = getJwt();
         return jwt.getClaimAsString("sub");
