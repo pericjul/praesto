@@ -19,6 +19,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ApplicationService {
 
+    private static final String BEWERBUNG_NICHT_GEFUNDEN = "Bewerbung nicht gefunden";
+    private static final String STUDENT = "STUDENT";
     private final ApplicationRepository applicationRepository;
     private final UserService userService;
     private final BadgeService badgeService;  // NEU: BadgeService injiziert
@@ -27,7 +29,7 @@ public class ApplicationService {
      * Neue Bewerbung erstellen.
      */
     public Application createApplication(ApplicationDTO dto) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Bewerbungen erstellen");
         }
 
@@ -60,7 +62,7 @@ public class ApplicationService {
      * Alle Bewerbungen eines Schuelers (neueste zuerst).
      */
     public List<Application> getMyApplications() {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Bewerbungen sehen");
         }
 
@@ -72,12 +74,12 @@ public class ApplicationService {
      * Eine einzelne Bewerbung holen.
      */
     public Application getApplicationById(String applicationId) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Bewerbungen sehen");
         }
 
         Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new NotFoundException("Bewerbung nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(BEWERBUNG_NICHT_GEFUNDEN));
 
         checkOwnership(application);
         return application;
@@ -87,14 +89,14 @@ public class ApplicationService {
      * Bewerbung bearbeiten.
      */
     public Application updateApplication(String applicationId, ApplicationDTO dto) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Bewerbungen bearbeiten");
         }
 
         validateDTO(dto);
 
         Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new NotFoundException("Bewerbung nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(BEWERBUNG_NICHT_GEFUNDEN));
 
         checkOwnership(application);
 
@@ -120,12 +122,12 @@ public class ApplicationService {
      * Nur Status aendern.
      */
     public Application updateStatus(String applicationId, String newStatus) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen den Status aendern");
         }
 
         Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new NotFoundException("Bewerbung nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(BEWERBUNG_NICHT_GEFUNDEN));
 
         checkOwnership(application);
 
@@ -146,12 +148,12 @@ public class ApplicationService {
      * Bewerbung loeschen.
      */
     public void deleteApplication(String applicationId) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Bewerbungen loeschen");
         }
 
         Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new NotFoundException("Bewerbung nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(BEWERBUNG_NICHT_GEFUNDEN));
 
         checkOwnership(application);
 
@@ -162,7 +164,7 @@ public class ApplicationService {
      * Statistiken fuer den aktuellen Schueler.
      */
     public ApplicationStats getMyStats() {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Statistiken sehen");
         }
 

@@ -23,18 +23,21 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SubmissionController {
 
+    private static final String AUFGABE_NICHT_GEFUNDEN = "Aufgabe nicht gefunden";
+    private static final String STUDENT = "STUDENT";
+    private static final String TEACHER = "TEACHER";
     private final SubmissionRepository submissionRepository;
     private final AssignmentRepository assignmentRepository;
     private final SchoolClassRepository schoolClassRepository;
     private final UserService userService;
-    private final BadgeService badgeService;  // NEU: für Badge-Vergabe
+    private final BadgeService badgeService;
 
     /**
      * POST /api/submissions - Neue Abgabe erstellen (Student)
      */
     @PostMapping("")
     public ResponseEntity<Submission> createSubmission(@RequestBody SubmissionCreateDTO dto) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler koennen Aufgaben abgeben");
         }
 
@@ -43,7 +46,7 @@ public class SubmissionController {
 
         // Assignment prüfen
         Assignment assignment = assignmentRepository.findById(dto.getAssignmentId())
-                .orElseThrow(() -> new NotFoundException("Aufgabe nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(AUFGABE_NICHT_GEFUNDEN));
 
         // Prüfen ob Student in der Klasse ist
         SchoolClass schoolClass = schoolClassRepository.findById(assignment.getClassId())
@@ -89,7 +92,7 @@ public class SubmissionController {
      */
     @GetMapping("/my")
     public ResponseEntity<List<Submission>> getMySubmissions() {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur fuer Schueler");
         }
 
@@ -99,17 +102,18 @@ public class SubmissionController {
     }
 
     /**
-     * GET /api/submissions/assignment/{assignmentId} - Abgaben für eine Aufgabe (Teacher)
+     * GET /api/submissions/assignment/{assignmentId} - Abgaben für eine Aufgabe
+     * (Teacher)
      */
     @GetMapping("/assignment/{assignmentId}")
     public ResponseEntity<List<Submission>> getSubmissionsForAssignment(@PathVariable String assignmentId) {
-        if (!userService.userHasRole("TEACHER")) {
+        if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur fuer Lehrer");
         }
 
         // Prüfen ob Teacher Zugriff auf Assignment hat
         Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new NotFoundException("Aufgabe nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(AUFGABE_NICHT_GEFUNDEN));
 
         if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
             throw new ForbiddenException("Keine Berechtigung fuer diese Aufgabe");
@@ -120,17 +124,18 @@ public class SubmissionController {
     }
 
     /**
-     * GET /api/submissions/check/{assignmentId} - Prüfen ob Student bereits abgegeben hat
+     * GET /api/submissions/check/{assignmentId} - Prüfen ob Student bereits
+     * abgegeben hat
      */
     @GetMapping("/check/{assignmentId}")
     public ResponseEntity<Map<String, Object>> checkSubmission(@PathVariable String assignmentId) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur fuer Schueler");
         }
 
         String studentEmail = userService.getEmail().toLowerCase();
         boolean hasSubmitted = submissionRepository.existsByAssignmentIdAndStudentEmail(assignmentId, studentEmail);
-        
+
         Submission submission = null;
         if (hasSubmitted) {
             submission = submissionRepository.findByAssignmentIdAndStudentEmail(assignmentId, studentEmail)
@@ -139,23 +144,25 @@ public class SubmissionController {
 
         return ResponseEntity.ok(Map.of(
                 "hasSubmitted", hasSubmitted,
-                "submission", submission != null ? submission : Map.of()
-        ));
+                "submission", submission != null ? submission : Map.of()));
     }
 
     /**
      * PUT /api/submissions/{id}/feedback - Feedback geben (Teacher)
      * 
-     * HINWEIS: Badge-Check für FEEDBACK_RECEIVED und GRADES_RECEIVED wird hier nicht ausgelöst,
-     * da der aktuelle User der Lehrer ist. Die Badges werden vergeben, wenn der Student
-     * das nächste Mal eine Aktion durchführt (z.B. Aufgabe abgeben, Session starten).
+     * HINWEIS: Badge-Check für FEEDBACK_RECEIVED und GRADES_RECEIVED wird hier
+     * nicht ausgelöst,
+     * da der aktuelle User der Lehrer ist. Die Badges werden vergeben, wenn der
+     * Student
+     * das nächste Mal eine Aktion durchführt (z.B. Aufgabe abgeben, Session
+     * starten).
      */
     @PutMapping("/{id}/feedback")
     public ResponseEntity<Submission> giveFeedback(
             @PathVariable String id,
             @RequestBody Map<String, Object> body) {
-        
-        if (!userService.userHasRole("TEACHER")) {
+
+        if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer koennen Feedback geben");
         }
 
@@ -164,7 +171,7 @@ public class SubmissionController {
 
         // Prüfen ob Teacher Zugriff hat
         Assignment assignment = assignmentRepository.findById(submission.getAssignmentId())
-                .orElseThrow(() -> new NotFoundException("Aufgabe nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(AUFGABE_NICHT_GEFUNDEN));
 
         if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
             throw new ForbiddenException("Keine Berechtigung");
@@ -193,8 +200,8 @@ public class SubmissionController {
                 .orElseThrow(() -> new NotFoundException("Abgabe nicht gefunden"));
 
         String userEmail = userService.getEmail().toLowerCase();
-        boolean isStudent = userService.userHasRole("STUDENT");
-        boolean isTeacher = userService.userHasRole("TEACHER");
+        boolean isStudent = userService.userHasRole(STUDENT);
+        boolean isTeacher = userService.userHasRole(TEACHER);
 
         // Student darf nur eigene sehen
         if (isStudent && !submission.getStudentEmail().equals(userEmail)) {
@@ -204,7 +211,7 @@ public class SubmissionController {
         // Teacher darf nur Abgaben seiner Aufgaben sehen
         if (isTeacher) {
             Assignment assignment = assignmentRepository.findById(submission.getAssignmentId())
-                    .orElseThrow(() -> new NotFoundException("Aufgabe nicht gefunden"));
+                    .orElseThrow(() -> new NotFoundException(AUFGABE_NICHT_GEFUNDEN));
             if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
                 throw new ForbiddenException("Keine Berechtigung");
             }
@@ -218,34 +225,32 @@ public class SubmissionController {
      */
     private void validateSubmission(AssignmentType type, SubmissionCreateDTO dto) {
         switch (type) {
-            case SELF_REFLECTION:
-                if (dto.getTextContent() == null || dto.getTextContent().trim().length() < 50) {
-                    throw new BadRequestException("Reflexion muss mindestens 50 Zeichen haben");
-                }
-                break;
-            case RESEARCH:
-                if (dto.getTextContent() == null || dto.getTextContent().trim().length() < 50) {
-                    throw new BadRequestException("Recherche muss mindestens 50 Zeichen haben");
-                }
-                break;
-            case DOCUMENT_UPLOAD:
-                if (dto.getFileUrl() == null || dto.getFileUrl().isBlank()) {
-                    throw new BadRequestException("Dokument-URL fehlt");
-                }
-                break;
-            case VIDEO_PITCH:
-                if (dto.getFileUrl() == null || dto.getFileUrl().isBlank()) {
-                    throw new BadRequestException("Video-URL fehlt");
-                }
-                break;
-            case AI_INTERVIEW:
-                if (dto.getChatSessionId() == null || dto.getChatSessionId().isBlank()) {
-                    throw new BadRequestException("Chat-Session-ID fehlt");
-                }
-                break;
-            default:
-                break;
+            case SELF_REFLECTION, RESEARCH -> validateTextContent(dto, type);
+            case DOCUMENT_UPLOAD, VIDEO_PITCH -> validateFileUrl(dto, type);
+            case AI_INTERVIEW -> validateChatSession(dto);
+            default -> {
+            }
         }
     }
-    
+
+    private void validateTextContent(SubmissionCreateDTO dto, AssignmentType type) {
+        if (dto.getTextContent() == null || dto.getTextContent().trim().length() < 50) {
+            String name = type == AssignmentType.SELF_REFLECTION ? "Reflexion" : "Recherche";
+            throw new BadRequestException(name + " muss mindestens 50 Zeichen haben");
+        }
+    }
+
+    private void validateFileUrl(SubmissionCreateDTO dto, AssignmentType type) {
+        if (dto.getFileUrl() == null || dto.getFileUrl().isBlank()) {
+            String name = type == AssignmentType.DOCUMENT_UPLOAD ? "Dokument" : "Video";
+            throw new BadRequestException(name + "-URL fehlt");
+        }
+    }
+
+    private void validateChatSession(SubmissionCreateDTO dto) {
+        if (dto.getChatSessionId() == null || dto.getChatSessionId().isBlank()) {
+            throw new BadRequestException("Chat-Session-ID fehlt");
+        }
+    }
+
 }

@@ -24,6 +24,8 @@ import java.util.List;
 @RequestMapping("/api")
 public class AssignmentController {
 
+    private static final String ASSIGNMENT_NICHT_GEFUNDEN = "Assignment nicht gefunden";
+    private static final String TEACHER = "TEACHER";
     private final AssignmentService assignmentService;
     private final AssignmentRepository assignmentRepository;
     private final SchoolClassRepository schoolClassRepository;
@@ -43,7 +45,7 @@ public class AssignmentController {
     @PostMapping("/assignment")
     public ResponseEntity<Assignment> createAssignment(@RequestBody AssignmentCreateDTO dto) {
 
-        if (!userService.userHasRole("TEACHER")) {
+        if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer dürfen Assignments erstellen");
         }
 
@@ -79,7 +81,7 @@ public class AssignmentController {
             @PathVariable String id,
             @RequestBody UpdateAssignmentStatusRequest req) {
         // Rollen Check
-        if (!userService.userHasRole("TEACHER")) {
+        if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen den Status ändern");
         }
 
@@ -90,7 +92,7 @@ public class AssignmentController {
 
         // Assignment existiert?
         Assignment assignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Assignment nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(ASSIGNMENT_NICHT_GEFUNDEN));
 
         // Status updaten ueber Service
         assignment.setStatus(req.getStatus());
@@ -102,7 +104,7 @@ public class AssignmentController {
     // GET Alle Assignments des aktuellen Lehrers (MUSS VOR /{classId} kommen!)
     @GetMapping("/assignments/teacher")
     public ResponseEntity<List<Assignment>> getMyAssignments() {
-        if (!userService.userHasRole("TEACHER")) {
+        if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen ihre Assignments sehen");
         }
 
@@ -116,7 +118,7 @@ public class AssignmentController {
     public ResponseEntity<List<Assignment>> getAssignmentsForClass(
             @PathVariable String classId) {
         // Rollen Check: nur Teacher oder Student duerfen lesen
-        if (!userService.userHasRole("TEACHER") && !userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(TEACHER) && !userService.userHasRole("STUDENT")) {
             throw new ForbiddenException("Nur Lehrer oder Schueler duerfen Assignments ansehen");
         }
 
@@ -124,13 +126,13 @@ public class AssignmentController {
         return ResponseEntity.ok(assignments);
     }
 
-    // GET Eine einzelne Assignment (Teacher und Student)
+    // GET Eine einzelne Assignment (Teacher und Student)e
     @GetMapping("/assignments/{id}")
     public ResponseEntity<Assignment> getAssignmentById(@PathVariable String id) {
         Assignment assignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Assignment nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(ASSIGNMENT_NICHT_GEFUNDEN));
 
-        boolean isTeacher = userService.userHasRole("TEACHER");
+        boolean isTeacher = userService.userHasRole(TEACHER);
         boolean isStudent = userService.userHasRole("STUDENT");
 
         // Teacher darf nur eigene sehen
@@ -162,12 +164,12 @@ public class AssignmentController {
     // DELETE Assignment (nur Teacher)
     @DeleteMapping("/assignments/{id}")
     public ResponseEntity<Void> deleteAssignment(@PathVariable String id) {
-        if (!userService.userHasRole("TEACHER")) {
+        if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen Assignments loeschen");
         }
 
         Assignment assignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Assignment nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(ASSIGNMENT_NICHT_GEFUNDEN));
 
         // Nur eigene Assignments löschen
         if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
@@ -184,12 +186,12 @@ public class AssignmentController {
             @PathVariable String id,
             @RequestBody AssignmentCreateDTO dto) {
         
-        if (!userService.userHasRole("TEACHER")) {
+        if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen Assignments bearbeiten");
         }
 
         Assignment assignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Assignment nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(ASSIGNMENT_NICHT_GEFUNDEN));
 
         // Nur eigene Assignments bearbeiten
         if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {

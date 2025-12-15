@@ -17,13 +17,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SessionController {
 
+    private static final String STUDENT = "STUDENT";
     private final SessionService sessionService;
     private final UserService userService;
 
     // Session starten (nur Student) - mit optionalem assignmentId
     @PostMapping("")
     public ResponseEntity<Session> startSession(@RequestBody(required = false) StartSessionRequest request) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Sessions starten");
         }
         String assignmentId = (request != null) ? request.getAssignmentId() : null;
@@ -44,7 +45,7 @@ public class SessionController {
             @PathVariable String id,
             @RequestBody ChatMessageRequest request) {
         
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Nachrichten senden");
         }
         
@@ -62,7 +63,7 @@ public class SessionController {
     // Session schliessen UND als Aufgabe abgeben
     @PutMapping("/{id}/submit")
     public ResponseEntity<Session> closeAndSubmitSession(@PathVariable String id) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Sessions abgeben");
         }
         Session submitted = sessionService.closeAndSubmitAsAssignment(id);
@@ -72,7 +73,7 @@ public class SessionController {
     // eigene Sessions ansehen (nur Student)
     @GetMapping("")
     public ResponseEntity<List<Session>> mySessions() {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen ihre Sessions sehen");
         }
         String studentId = userService.getUserId();

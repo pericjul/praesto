@@ -14,6 +14,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NoteService {
 
+    private static final String NOTIZ_NICHT_GEFUNDEN = "Notiz nicht gefunden";
+    private static final String STUDENT = "STUDENT";
     private final NoteRepository noteRepository;
     private final UserService userService;
     private final BadgeService badgeService;  // NEU: BadgeService injiziert
@@ -22,7 +24,7 @@ public class NoteService {
      * Neue Notiz erstellen.
      */
     public Note createNote(String companyName, String position, String text) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Notizen erstellen");
         }
 
@@ -50,7 +52,7 @@ public class NoteService {
      * Alle Notizen eines Schuelers (neueste zuerst).
      */
     public List<Note> getMyNotes() {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Notizen sehen");
         }
 
@@ -62,12 +64,12 @@ public class NoteService {
      * Eine einzelne Notiz holen.
      */
     public Note getNoteById(String noteId) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Notizen sehen");
         }
 
         Note note = noteRepository.findById(noteId)
-                .orElseThrow(() -> new NotFoundException("Notiz nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(NOTIZ_NICHT_GEFUNDEN));
 
         checkOwnership(note);
         return note;
@@ -77,12 +79,12 @@ public class NoteService {
      * Notiz bearbeiten.
      */
     public Note updateNote(String noteId, String companyName, String position, String text) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Notizen bearbeiten");
         }
 
         Note note = noteRepository.findById(noteId)
-                .orElseThrow(() -> new NotFoundException("Notiz nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(NOTIZ_NICHT_GEFUNDEN));
 
         checkOwnership(note);
 
@@ -98,12 +100,12 @@ public class NoteService {
      * Notiz loeschen.
      */
     public void deleteNote(String noteId) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Notizen loeschen");
         }
 
         Note note = noteRepository.findById(noteId)
-                .orElseThrow(() -> new NotFoundException("Notiz nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(NOTIZ_NICHT_GEFUNDEN));
 
         checkOwnership(note);
 

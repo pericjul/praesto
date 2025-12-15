@@ -17,6 +17,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SchoolClassService {
 
+    private static final String KLASSE_NICHT_GEFUNDEN = "Klasse nicht gefunden";
+    private static final String TEACHER = "TEACHER";
     private final SchoolClassRepository schoolClassRepository;
     private final UserService userService;
 
@@ -24,7 +26,7 @@ public class SchoolClassService {
      * Neue Klasse erstellen (nur Lehrer).
      */
     public SchoolClass createClass(SchoolClassDTO dto) {
-        if (!userService.userHasRole("TEACHER")) {
+        if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen Klassen erstellen");
         }
 
@@ -54,7 +56,7 @@ public class SchoolClassService {
      * Alle Klassen des aktuellen Lehrers.
      */
     public List<SchoolClass> getMyClasses() {
-        if (!userService.userHasRole("TEACHER")) {
+        if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen Klassen sehen");
         }
 
@@ -67,11 +69,11 @@ public class SchoolClassService {
      */
     public SchoolClass getClassById(String classId) {
         SchoolClass schoolClass = schoolClassRepository.findById(classId)
-                .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(KLASSE_NICHT_GEFUNDEN));
 
         String userId = userService.getUserId();
         String userEmail = userService.getEmail();
-        boolean isTeacher = userService.userHasRole("TEACHER");
+        boolean isTeacher = userService.userHasRole(TEACHER);
         boolean isStudent = userService.userHasRole("STUDENT");
 
         if (isTeacher && !schoolClass.getTeacherId().equals(userId)) {
@@ -114,12 +116,12 @@ public class SchoolClassService {
      * Klasse aktualisieren (nur eigene Klassen).
      */
     public SchoolClass updateClass(String classId, SchoolClassDTO dto) {
-        if (!userService.userHasRole("TEACHER")) {
+        if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen Klassen bearbeiten");
         }
 
         SchoolClass schoolClass = schoolClassRepository.findById(classId)
-                .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(KLASSE_NICHT_GEFUNDEN));
 
         String teacherId = userService.getUserId();
         if (!schoolClass.getTeacherId().equals(teacherId)) {
@@ -142,7 +144,7 @@ public class SchoolClassService {
      * Schüler zur Klasse hinzufügen (per Email).
      */
     public SchoolClass addStudentToClass(String classId, String studentEmail) {
-        if (!userService.userHasRole("TEACHER")) {
+        if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen Schueler hinzufuegen");
         }
 
@@ -156,7 +158,7 @@ public class SchoolClassService {
         }
 
         SchoolClass schoolClass = schoolClassRepository.findById(classId)
-                .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(KLASSE_NICHT_GEFUNDEN));
 
         String teacherId = userService.getUserId();
         if (!schoolClass.getTeacherId().equals(teacherId)) {
@@ -179,12 +181,12 @@ public class SchoolClassService {
      * Schüler aus Klasse entfernen.
      */
     public SchoolClass removeStudentFromClass(String classId, String studentEmail) {
-        if (!userService.userHasRole("TEACHER")) {
+        if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen Schueler entfernen");
         }
 
         SchoolClass schoolClass = schoolClassRepository.findById(classId)
-                .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(KLASSE_NICHT_GEFUNDEN));
 
         String teacherId = userService.getUserId();
         if (!schoolClass.getTeacherId().equals(teacherId)) {
@@ -200,12 +202,12 @@ public class SchoolClassService {
      * Klasse löschen.
      */
     public void deleteClass(String classId) {
-        if (!userService.userHasRole("TEACHER")) {
+        if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen Klassen loeschen");
         }
 
         SchoolClass schoolClass = schoolClassRepository.findById(classId)
-                .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(KLASSE_NICHT_GEFUNDEN));
 
         String teacherId = userService.getUserId();
         if (!schoolClass.getTeacherId().equals(teacherId)) {

@@ -25,6 +25,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SessionService {
 
+    private static final String SESSION_NICHT_GEFUNDEN = "Session nicht gefunden";
+    private static final String ASSISTANT = "ASSISTANT";
+    private static final String STUDENT = "STUDENT";
     private final SessionRepository sessionRepository;
     private final AssignmentRepository assignmentRepository;
     private final SubmissionRepository submissionRepository;
@@ -199,7 +202,7 @@ public class SessionService {
      * Neue Session fuer einen Schueler starten.
      */
     public Session startSession(String assignmentId) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Sessions starten");
         }
 
@@ -246,7 +249,7 @@ public class SessionService {
 
         List<SessionMessage> messages = new ArrayList<>();
         messages.add(SessionMessage.builder()
-                .role("ASSISTANT")
+                .role(ASSISTANT)
                 .content(initialMessage)
                 .createdAt(Instant.now())
                 .build());
@@ -263,7 +266,7 @@ public class SessionService {
         String studentId = userService.getUserId();
 
         Session session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new NotFoundException("Session nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(SESSION_NICHT_GEFUNDEN));
 
         if (!studentId.equals(session.getStudentId())) {
             throw new ForbiddenException("Keine Berechtigung fuer diese Session");
@@ -288,7 +291,7 @@ public class SessionService {
 
         // KI-Antwort hinzufuegen
         session.getMessages().add(SessionMessage.builder()
-                .role("ASSISTANT")
+                .role(ASSISTANT)
                 .content(aiResponse)
                 .createdAt(Instant.now())
                 .build());
@@ -352,7 +355,7 @@ public class SessionService {
             for (SessionMessage msg : messages) {
                 if ("USER".equals(msg.getRole())) {
                     chatMessages.add(new UserMessage(msg.getContent()));
-                } else if ("ASSISTANT".equals(msg.getRole())) {
+                } else if (ASSISTANT.equals(msg.getRole())) {
                     chatMessages.add(new AssistantMessage(msg.getContent()));
                 }
             }
@@ -369,14 +372,14 @@ public class SessionService {
      * Session schliessen.
      */
     public Session closeSession(String sessionId) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Sessions schliessen");
         }
 
         String studentId = userService.getUserId();
 
         Session session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new NotFoundException("Session nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(SESSION_NICHT_GEFUNDEN));
 
         if (!studentId.equals(session.getStudentId())) {
             throw new ForbiddenException("Keine Berechtigung fuer diese Session");
@@ -401,7 +404,7 @@ public class SessionService {
      * Session schliessen UND als Aufgabe abgeben.
      */
     public Session closeAndSubmitAsAssignment(String sessionId) {
-        if (!userService.userHasRole("STUDENT")) {
+        if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Sessions abgeben");
         }
 
@@ -409,7 +412,7 @@ public class SessionService {
         String studentEmail = userService.getEmail().toLowerCase();
 
         Session session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new NotFoundException("Session nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(SESSION_NICHT_GEFUNDEN));
 
         if (!studentId.equals(session.getStudentId())) {
             throw new ForbiddenException("Keine Berechtigung fuer diese Session");
@@ -458,11 +461,11 @@ public class SessionService {
      */
     public Session getSessionById(String sessionId) {
         String userId = userService.getUserId();
-        boolean isStudent = userService.userHasRole("STUDENT");
+        boolean isStudent = userService.userHasRole(STUDENT);
         boolean isTeacher = userService.userHasRole("TEACHER");
 
         Session session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new NotFoundException("Session nicht gefunden"));
+                .orElseThrow(() -> new NotFoundException(SESSION_NICHT_GEFUNDEN));
 
         if (isStudent && !userId.equals(session.getStudentId())) {
             throw new ForbiddenException("Keine Berechtigung fuer diese Session");
