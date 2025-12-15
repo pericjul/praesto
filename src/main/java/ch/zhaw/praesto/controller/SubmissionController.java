@@ -247,6 +247,5 @@ public class SubmissionController {
                 break;
         }
     }
-
     
 }
