@@ -1,7 +1,6 @@
 package ch.zhaw.praesto.controller;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,11 +14,13 @@ import ch.zhaw.praesto.service.UserService;
 @RequestMapping("/api")
 public class ChatController {
 
-    @Autowired
-    UserService userService;
+    private final UserService userService;
+    private final ChatClient chatClient;
 
-    @Autowired
-    ChatClient chatClient;
+    public ChatController(UserService userService, ChatClient chatClient) {
+        this.userService = userService;
+        this.chatClient = chatClient;
+    }
 
     private static final String SYSTEM_PROMPT = """
             Du bist ein erfahrener Bewerbungscoach für Schüler (15-18 Jahre) in der Schweiz.

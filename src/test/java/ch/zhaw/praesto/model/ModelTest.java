@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @DisplayName("Model Tests")
 class ModelTest {
@@ -28,7 +29,7 @@ class ModelTest {
         void session_builder_setsAllFields() {
             Instant now = Instant.now();
             List<SessionMessage> messages = new ArrayList<>();
-            
+
             Session session = Session.builder()
                     .id("session-123")
                     .studentId("student-123")
@@ -63,7 +64,7 @@ class ModelTest {
         void session_setters_work() {
             Session session = new Session();
             Instant now = Instant.now();
-            
+
             session.setId("id");
             session.setStudentId("student");
             session.setStudentEmail("student@test.ch");
@@ -92,7 +93,7 @@ class ModelTest {
         void application_builder_setsAllFields() {
             Instant now = Instant.now();
             LocalDate today = LocalDate.now();
-            
+
             Application app = Application.builder()
                     .id("app-123")
                     .studentId("student-123")
@@ -137,7 +138,7 @@ class ModelTest {
         @DisplayName("Assignment Builder")
         void assignment_builder_setsAllFields() {
             Instant now = Instant.now();
-            
+
             Assignment assignment = Assignment.builder()
                     .id("assign-123")
                     .title("Bewerbungstraining")
@@ -190,7 +191,7 @@ class ModelTest {
         @DisplayName("Note Builder")
         void note_builder_setsAllFields() {
             Instant now = Instant.now();
-            
+
             Note note = Note.builder()
                     .id("note-123")
                     .studentId("student-123")
@@ -256,7 +257,7 @@ class ModelTest {
         @DisplayName("UserBadge Builder")
         void userBadge_builder_setsAllFields() {
             Instant now = Instant.now();
-            
+
             UserBadge userBadge = UserBadge.builder()
                     .id("ub-123")
                     .studentId("student-123")
@@ -282,7 +283,7 @@ class ModelTest {
         void submission_builder_setsAllFields() {
             Instant now = Instant.now();
             List<String> links = List.of("https://example.com");
-            
+
             Submission submission = Submission.builder()
                     .id("sub-123")
                     .assignmentId("assign-123")
@@ -334,7 +335,7 @@ class ModelTest {
         void schoolClass_builder_setsAllFields() {
             List<String> students = List.of("student1@test.ch", "student2@test.ch");
             Instant now = Instant.now();
-            
+
             SchoolClass schoolClass = SchoolClass.builder()
                     .id("class-123")
                     .name("3SE2")
@@ -354,9 +355,9 @@ class ModelTest {
         void schoolClass_addStudent_addsNormalized() {
             SchoolClass schoolClass = new SchoolClass();
             schoolClass.setStudentEmails(new ArrayList<>());
-            
+
             schoolClass.addStudent("Test@Example.COM");
-            
+
             assertThat(schoolClass.getStudentEmails()).containsExactly("test@example.com");
         }
 
@@ -365,10 +366,10 @@ class ModelTest {
         void schoolClass_addStudent_noDuplicate() {
             SchoolClass schoolClass = new SchoolClass();
             schoolClass.setStudentEmails(new ArrayList<>());
-            
+
             schoolClass.addStudent("test@example.com");
             schoolClass.addStudent("TEST@EXAMPLE.COM");
-            
+
             assertThat(schoolClass.getStudentEmails()).hasSize(1);
         }
 
@@ -377,9 +378,9 @@ class ModelTest {
         void schoolClass_removeStudent_removes() {
             SchoolClass schoolClass = new SchoolClass();
             schoolClass.setStudentEmails(new ArrayList<>(List.of("test@example.com")));
-            
+
             schoolClass.removeStudent("Test@Example.COM");
-            
+
             assertThat(schoolClass.getStudentEmails()).isEmpty();
         }
 
@@ -388,7 +389,7 @@ class ModelTest {
         void schoolClass_hasStudent_returnsTrue() {
             SchoolClass schoolClass = new SchoolClass();
             schoolClass.setStudentEmails(new ArrayList<>(List.of("test@example.com")));
-            
+
             assertThat(schoolClass.hasStudent("TEST@EXAMPLE.COM")).isTrue();
             assertThat(schoolClass.hasStudent("other@example.com")).isFalse();
         }
@@ -398,7 +399,7 @@ class ModelTest {
         void schoolClass_getStudentCount_returnsCount() {
             SchoolClass schoolClass = new SchoolClass();
             schoolClass.setStudentEmails(new ArrayList<>(List.of("a@b.com", "c@d.com")));
-            
+
             assertThat(schoolClass.getStudentCount()).isEqualTo(2);
         }
 
@@ -407,7 +408,7 @@ class ModelTest {
         void schoolClass_getStudentCount_nullList_returnsZero() {
             SchoolClass schoolClass = new SchoolClass();
             schoolClass.setStudentEmails(null);
-            
+
             assertThat(schoolClass.getStudentCount()).isEqualTo(0);
         }
 
@@ -416,7 +417,7 @@ class ModelTest {
         void schoolClass_hasStudent_nullList_returnsFalse() {
             SchoolClass schoolClass = new SchoolClass();
             schoolClass.setStudentEmails(null);
-            
+
             assertThat(schoolClass.hasStudent("test@test.com")).isFalse();
         }
 
@@ -425,9 +426,8 @@ class ModelTest {
         void schoolClass_removeStudent_nullList_noException() {
             SchoolClass schoolClass = new SchoolClass();
             schoolClass.setStudentEmails(null);
-            
-            // Sollte keine Exception werfen
-            schoolClass.removeStudent("test@test.com");
+
+            assertDoesNotThrow(() -> schoolClass.removeStudent("test@example.com"));
         }
 
         @Test
@@ -435,9 +435,9 @@ class ModelTest {
         void schoolClass_addStudent_nullList_initializes() {
             SchoolClass schoolClass = new SchoolClass();
             schoolClass.setStudentEmails(null);
-            
+
             schoolClass.addStudent("test@test.com");
-            
+
             assertThat(schoolClass.getStudentEmails()).containsExactly("test@test.com");
         }
     }
@@ -513,7 +513,7 @@ class ModelTest {
         @DisplayName("AssignmentInfo Builder")
         void assignmentInfo_builder() {
             Instant now = Instant.now();
-            
+
             AssignmentInfo info = AssignmentInfo.builder()
                     .id("assign-123")
                     .title("Test")
@@ -531,7 +531,7 @@ class ModelTest {
         @DisplayName("NotificationInfo Builder")
         void notificationInfo_builder() {
             Instant now = Instant.now();
-            
+
             NotificationInfo info = NotificationInfo.builder()
                     .type("FEEDBACK")
                     .icon("💬")
@@ -574,7 +574,7 @@ class ModelTest {
             List<String> badgeIcons = List.of("🎯", "🔥");
             List<NotificationInfo> notifications = new ArrayList<>();
             Instant now = Instant.now();
-            
+
             StudentDashboardResponse response = StudentDashboardResponse.builder()
                     .studentName("Max")
                     .openAssignmentsCount(5L)
@@ -608,7 +608,7 @@ class ModelTest {
         @DisplayName("SessionMessage Builder")
         void sessionMessage_builder() {
             Instant now = Instant.now();
-            
+
             SessionMessage message = SessionMessage.builder()
                     .role("user")
                     .content("Hallo!")
