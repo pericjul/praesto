@@ -29,6 +29,7 @@
 	<properties>
 		<java.version>21</java.version>
 		<sonar.organization>pericjul</sonar.organization>
+		<sonar.projectKey>pericjul_praesto-original</sonar.projectKey>
 	</properties>
 	<dependencies>
 		
