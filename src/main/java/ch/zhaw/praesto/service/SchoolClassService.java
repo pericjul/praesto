@@ -21,7 +21,6 @@ public class SchoolClassService {
     private static final String TEACHER = "TEACHER";
     private final SchoolClassRepository schoolClassRepository;
     private final UserService userService;
-
     /**
      * Neue Klasse erstellen (nur Lehrer).
      */
