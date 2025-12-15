@@ -618,7 +618,7 @@ Die folgenden Features sind im **Backlog** für zukünftige Versionen:
 | Ressource | Link |
 |-----------|------|
 | **Postman Collection** | *https://documenter.getpostman.com/view/48903716/2sB3dTs7qG* |
-| **SonarCloud Dashboard** | *https://sonarcloud.io/summary/new_code?id=pericjul_praesto-original* |
+| **SonarCloud Dashboard** | *https://sonarcloud.io/summary/new_code?id=pericjul_praesto* |
 | **Live-Anwendung** | *https://praesto.azurewebsites.net/login* |
 
 ---
