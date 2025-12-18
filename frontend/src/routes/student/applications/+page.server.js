@@ -14,7 +14,6 @@ export async function load({ locals, fetch }) {
     };
 
     try {
-        // Bewerbungen und Stats parallel laden
         const [applicationsRes, statsRes] = await Promise.all([
             fetch(`${API_BASE}/applications`, { method: "GET", headers }),
             fetch(`${API_BASE}/applications/stats`, { method: "GET", headers })

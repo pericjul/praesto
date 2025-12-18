@@ -8,6 +8,7 @@ import ch.zhaw.praesto.repository.AssignmentRepository;
 import ch.zhaw.praesto.repository.SessionRepository;
 import ch.zhaw.praesto.repository.SubmissionRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SessionService {
@@ -363,7 +365,7 @@ public class SessionService {
             Prompt prompt = new Prompt(chatMessages);
             return chatClient.prompt(prompt).call().content();
         } catch (Exception e) {
-            System.err.println("KI-Fehler: " + e.getMessage());
+            log.error("KI-Fehler: {}", e.getMessage());
             return "Entschuldigung, es gab einen technischen Fehler. Kannst du das bitte nochmal versuchen?";
         }
     }

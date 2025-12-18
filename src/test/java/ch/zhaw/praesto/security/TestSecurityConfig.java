@@ -13,7 +13,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 
 @TestConfiguration
 public class TestSecurityConfig {
-    // Basiert auf Freelancer4u TestSecurityConfig aus Übung 8
 
     public static final String STUDENT = "Bearer student";
     public static final String TEACHER = "Bearer teacher";

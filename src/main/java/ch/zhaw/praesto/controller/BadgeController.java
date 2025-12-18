@@ -16,7 +16,7 @@ import java.util.List;
 public class BadgeController {
 
     private final BadgeService badgeService;
-    private final UserService userService;  // UserService statt AuthUtil
+    private final UserService userService;
 
     /**
      * Alle verfügbaren Badges abrufen

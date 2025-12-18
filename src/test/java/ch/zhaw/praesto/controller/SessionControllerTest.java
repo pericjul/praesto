@@ -183,4 +183,217 @@ public class SessionControllerTest {
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
+
+    // ========================================
+    // getSession Tests
+    // ========================================
+
+    @Test
+    public void testGetSession_NotFound() throws Exception {
+        mvc.perform(get("/api/sessions/nonexistent-session-id")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testGetSession_AsTeacher() throws Exception {
+        // Teacher darf Sessions einsehen (laut SessionService.getSessionById)
+        // Zuerst Session erstellen
+        var result = mvc.perform(post("/api/sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String jsonResponse = result.getResponse().getContentAsString();
+        JsonNode jsonNode = objectMapper.readTree(jsonResponse);
+        String tempSessionId = jsonNode.get("id").asText();
+
+        mvc.perform(get("/api/sessions/" + tempSessionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // Aufräumen
+        sessionRepository.deleteById(tempSessionId);
+    }
+
+    @Test
+    public void testGetSession_NoAuth() throws Exception {
+        mvc.perform(get("/api/sessions/some-id")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    // ========================================
+    // getMySessions Tests
+    // ========================================
+
+    @Test
+    public void testGetMySessions_AsTeacher_Forbidden() throws Exception {
+        mvc.perform(get("/api/sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testGetMySessions_NoAuth() throws Exception {
+        mvc.perform(get("/api/sessions")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    // ========================================
+    // closeSession Tests
+    // ========================================
+
+    @Test
+    public void testCloseSession_AsTeacher_Forbidden() throws Exception {
+        mvc.perform(put("/api/sessions/some-id/close")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testCloseSession_NoAuth() throws Exception {
+        mvc.perform(put("/api/sessions/some-id/close")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testCloseSession_NotFound() throws Exception {
+        mvc.perform(put("/api/sessions/nonexistent-session-id/close")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testCloseSession_AlreadyClosed() throws Exception {
+        // Session erstellen
+        var result = mvc.perform(post("/api/sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String jsonResponse = result.getResponse().getContentAsString();
+        JsonNode jsonNode = objectMapper.readTree(jsonResponse);
+        String tempSessionId = jsonNode.get("id").asText();
+
+        // Erste Schliessung - OK
+        mvc.perform(put("/api/sessions/" + tempSessionId + "/close")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andExpect(status().isOk());
+
+        // Zweite Schliessung - BadRequest
+        mvc.perform(put("/api/sessions/" + tempSessionId + "/close")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+        // Aufräumen
+        sessionRepository.deleteById(tempSessionId);
+    }
+
+    // ========================================
+    // startSession mit Assignment Tests
+    // ========================================
+
+    @Test
+    public void testStartSession_WithInvalidAssignmentId() throws Exception {
+        String jsonBody = """
+            {
+                "assignmentId": "nonexistent-assignment-id"
+            }
+            """;
+
+        mvc.perform(post("/api/sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    // ========================================
+    // closeAndSubmitSession Tests
+    // ========================================
+
+    @Test
+    public void testCloseAndSubmitSession_NoAssignment() throws Exception {
+        // Session ohne Assignment erstellen
+        var result = mvc.perform(post("/api/sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String jsonResponse = result.getResponse().getContentAsString();
+        JsonNode jsonNode = objectMapper.readTree(jsonResponse);
+        String tempSessionId = jsonNode.get("id").asText();
+
+        // Submit ohne Assignment - BadRequest
+        mvc.perform(put("/api/sessions/" + tempSessionId + "/submit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+        // Aufräumen
+        sessionRepository.deleteById(tempSessionId);
+    }
+
+    // ========================================
+    // sendMessage Tests
+    // ========================================
+
+    @Test
+    public void testSendMessage_ClosedSession() throws Exception {
+        // Session erstellen
+        var result = mvc.perform(post("/api/sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String jsonResponse = result.getResponse().getContentAsString();
+        JsonNode jsonNode = objectMapper.readTree(jsonResponse);
+        String tempSessionId = jsonNode.get("id").asText();
+
+        // Session schliessen
+        mvc.perform(put("/api/sessions/" + tempSessionId + "/close")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andExpect(status().isOk());
+
+        // Nachricht an geschlossene Session - BadRequest
+        mvc.perform(post("/api/sessions/" + tempSessionId + "/messages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"message\": \"Test\"}")
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+        // Aufräumen
+        sessionRepository.deleteById(tempSessionId);
+    }
 }

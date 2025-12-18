@@ -418,4 +418,335 @@ class SessionServiceTest {
                     .isInstanceOf(ForbiddenException.class);
         }
     }
+
+    // ========================================
+    // startSession - Erfolgreiche Fälle
+    // ========================================
+    @Nested
+    @DisplayName("startSession - Success")
+    class StartSessionSuccess {
+
+        @Mock
+        private ChatClientRequestSpec chatClientRequestSpec;
+
+        @Mock
+        private CallResponseSpec callResponseSpec;
+
+        @Test
+        @DisplayName("Session ohne Assignment erfolgreich starten")
+        void startSession_noAssignment_createsSession() {
+            when(userService.userHasRole("STUDENT")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("student-123");
+            when(userService.getEmail()).thenReturn("student@test.ch");
+            when(chatClient.prompt(anyString())).thenReturn(chatClientRequestSpec);
+            when(chatClientRequestSpec.call()).thenReturn(callResponseSpec);
+            when(callResponseSpec.content()).thenReturn("Hallo! Ich bin dein Coach.");
+            when(sessionRepository.save(any(Session.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            Session result = sessionService.startSession(null);
+
+            assertThat(result).isNotNull();
+            assertThat(result.getStudentId()).isEqualTo("student-123");
+            assertThat(result.getStatus()).isEqualTo(SessionStatus.OPEN);
+            assertThat(result.getMessages()).hasSize(1);
+            verify(sessionRepository).save(any(Session.class));
+        }
+
+        @Test
+        @DisplayName("Session ohne Assignment - leerer String wird ignoriert")
+        void startSession_emptyAssignmentId_createsSession() {
+            when(userService.userHasRole("STUDENT")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("student-123");
+            when(userService.getEmail()).thenReturn("student@test.ch");
+            when(chatClient.prompt(anyString())).thenReturn(chatClientRequestSpec);
+            when(chatClientRequestSpec.call()).thenReturn(callResponseSpec);
+            when(callResponseSpec.content()).thenReturn("Hallo!");
+            when(sessionRepository.save(any(Session.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            Session result = sessionService.startSession("");
+
+            assertThat(result).isNotNull();
+            assertThat(result.getAssignmentId()).isNull();
+        }
+
+        @Test
+        @DisplayName("Session mit Assignment erfolgreich starten")
+        void startSession_withAssignment_createsSessionWithAssignmentInfo() {
+            Assignment assignment = Assignment.builder()
+                    .id("assign-123")
+                    .title("Interview Training")
+                    .description("Übe dein Vorstellungsgespräch")
+                    .durationMin(20)
+                    .build();
+
+            when(userService.userHasRole("STUDENT")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("student-123");
+            when(userService.getEmail()).thenReturn("student@test.ch");
+            when(assignmentRepository.findById("assign-123")).thenReturn(Optional.of(assignment));
+            when(submissionRepository.existsByAssignmentIdAndStudentEmail("assign-123", "student@test.ch")).thenReturn(false);
+            when(chatClient.prompt(anyString())).thenReturn(chatClientRequestSpec);
+            when(chatClientRequestSpec.call()).thenReturn(callResponseSpec);
+            when(callResponseSpec.content()).thenReturn("Willkommen zum Interview!");
+            when(sessionRepository.save(any(Session.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            Session result = sessionService.startSession("assign-123");
+
+            assertThat(result).isNotNull();
+            assertThat(result.getAssignmentId()).isEqualTo("assign-123");
+            assertThat(result.getAssignmentTitle()).isEqualTo("Interview Training");
+            assertThat(result.getTargetDurationMin()).isEqualTo(20);
+        }
+
+        @Test
+        @DisplayName("Session mit Assignment ohne Duration - Default 15 Min")
+        void startSession_assignmentNoDuration_usesDefault() {
+            Assignment assignment = Assignment.builder()
+                    .id("assign-123")
+                    .title("Test")
+                    .durationMin(null)
+                    .build();
+
+            when(userService.userHasRole("STUDENT")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("student-123");
+            when(userService.getEmail()).thenReturn("student@test.ch");
+            when(assignmentRepository.findById("assign-123")).thenReturn(Optional.of(assignment));
+            when(submissionRepository.existsByAssignmentIdAndStudentEmail(anyString(), anyString())).thenReturn(false);
+            when(chatClient.prompt(anyString())).thenReturn(chatClientRequestSpec);
+            when(chatClientRequestSpec.call()).thenReturn(callResponseSpec);
+            when(callResponseSpec.content()).thenReturn("Hallo!");
+            when(sessionRepository.save(any(Session.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            Session result = sessionService.startSession("assign-123");
+
+            assertThat(result.getTargetDurationMin()).isEqualTo(15);
+        }
+
+        @Test
+        @DisplayName("Session - KI-Fehler gibt Fallback-Nachricht")
+        void startSession_aiError_usesFallbackMessage() {
+            when(userService.userHasRole("STUDENT")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("student-123");
+            when(userService.getEmail()).thenReturn("student@test.ch");
+            when(chatClient.prompt(anyString())).thenThrow(new RuntimeException("API Error"));
+            when(sessionRepository.save(any(Session.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            Session result = sessionService.startSession(null);
+
+            assertThat(result).isNotNull();
+            assertThat(result.getMessages()).hasSize(1);
+            assertThat(result.getMessages().get(0).getContent()).contains("Bewerbungscoach");
+        }
+
+        @Test
+        @DisplayName("Session mit Assignment - KI-Fehler gibt Assignment-Fallback")
+        void startSession_withAssignment_aiError_usesFallbackMessage() {
+            Assignment assignment = Assignment.builder()
+                    .id("assign-123")
+                    .title("Test")
+                    .build();
+
+            when(userService.userHasRole("STUDENT")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("student-123");
+            when(userService.getEmail()).thenReturn("student@test.ch");
+            when(assignmentRepository.findById("assign-123")).thenReturn(Optional.of(assignment));
+            when(submissionRepository.existsByAssignmentIdAndStudentEmail(anyString(), anyString())).thenReturn(false);
+            when(chatClient.prompt(anyString())).thenThrow(new RuntimeException("API Error"));
+            when(sessionRepository.save(any(Session.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            Session result = sessionService.startSession("assign-123");
+
+            assertThat(result.getMessages().get(0).getContent()).contains("üben");
+        }
+    }
+
+    // ========================================
+    // addMessageAndGetAIResponse - Erfolgreiche Fälle
+    // ========================================
+    @Nested
+    @DisplayName("addMessageAndGetAIResponse - Success")
+    class AddMessageSuccess {
+
+        @Mock
+        private ChatClientRequestSpec chatClientRequestSpec;
+
+        @Mock
+        private CallResponseSpec callResponseSpec;
+
+        @Test
+        @DisplayName("Nachricht erfolgreich hinzufügen und KI-Antwort erhalten")
+        void addMessage_valid_addsMessageAndResponse() {
+            testSession.setMessages(new ArrayList<>());
+            
+            when(userService.getUserId()).thenReturn("student-123");
+            when(sessionRepository.findById("session-123")).thenReturn(Optional.of(testSession));
+            when(chatClient.prompt(any(Prompt.class))).thenReturn(chatClientRequestSpec);
+            when(chatClientRequestSpec.call()).thenReturn(callResponseSpec);
+            when(callResponseSpec.content()).thenReturn("Das ist eine gute Frage!");
+            when(sessionRepository.save(any(Session.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            Session result = sessionService.addMessageAndGetAIResponse("session-123", "Wie bereite ich mich vor?");
+
+            assertThat(result.getMessages()).hasSize(2);
+            assertThat(result.getMessages().get(0).getRole()).isEqualTo("USER");
+            assertThat(result.getMessages().get(0).getContent()).isEqualTo("Wie bereite ich mich vor?");
+            assertThat(result.getMessages().get(1).getRole()).isEqualTo("ASSISTANT");
+        }
+
+        @Test
+        @DisplayName("Nachricht mit Assignment-Session")
+        void addMessage_withAssignment_usesAssignmentPrompt() {
+            testSession.setMessages(new ArrayList<>());
+            testSession.setAssignmentId("assign-123");
+            testSession.setAssignmentTitle("Interview Übung");
+            testSession.setTargetDurationMin(15);
+
+            when(userService.getUserId()).thenReturn("student-123");
+            when(sessionRepository.findById("session-123")).thenReturn(Optional.of(testSession));
+            when(chatClient.prompt(any(Prompt.class))).thenReturn(chatClientRequestSpec);
+            when(chatClientRequestSpec.call()).thenReturn(callResponseSpec);
+            when(callResponseSpec.content()).thenReturn("Gute Antwort!");
+            when(sessionRepository.save(any(Session.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            Session result = sessionService.addMessageAndGetAIResponse("session-123", "Ich möchte Informatiker werden");
+
+            assertThat(result.getMessages()).hasSize(2);
+            verify(sessionRepository).save(any(Session.class));
+        }
+
+        @Test
+        @DisplayName("KI-Fehler gibt Fallback-Nachricht")
+        void addMessage_aiError_returnsFallback() {
+            testSession.setMessages(new ArrayList<>());
+
+            when(userService.getUserId()).thenReturn("student-123");
+            when(sessionRepository.findById("session-123")).thenReturn(Optional.of(testSession));
+            when(chatClient.prompt(any(Prompt.class))).thenThrow(new RuntimeException("API Error"));
+            when(sessionRepository.save(any(Session.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            Session result = sessionService.addMessageAndGetAIResponse("session-123", "Hallo");
+
+            assertThat(result.getMessages()).hasSize(2);
+            assertThat(result.getMessages().get(1).getContent()).contains("technischen Fehler");
+        }
+
+        @Test
+        @DisplayName("Konversation mit mehreren Nachrichten")
+        void addMessage_existingMessages_appendsCorrectly() {
+            List<SessionMessage> existingMessages = new ArrayList<>();
+            existingMessages.add(SessionMessage.builder().role("ASSISTANT").content("Hallo!").createdAt(Instant.now()).build());
+            existingMessages.add(SessionMessage.builder().role("USER").content("Hi").createdAt(Instant.now()).build());
+            testSession.setMessages(existingMessages);
+
+            when(userService.getUserId()).thenReturn("student-123");
+            when(sessionRepository.findById("session-123")).thenReturn(Optional.of(testSession));
+            when(chatClient.prompt(any(Prompt.class))).thenReturn(chatClientRequestSpec);
+            when(chatClientRequestSpec.call()).thenReturn(callResponseSpec);
+            when(callResponseSpec.content()).thenReturn("Antwort");
+            when(sessionRepository.save(any(Session.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            Session result = sessionService.addMessageAndGetAIResponse("session-123", "Neue Frage");
+
+            assertThat(result.getMessages()).hasSize(4);
+        }
+    }
+
+    // ========================================
+    // closeAndSubmitAsAssignment - Weitere Fälle
+    // ========================================
+    @Nested
+    @DisplayName("closeAndSubmitAsAssignment - Edge Cases")
+    class CloseAndSubmitEdgeCases {
+
+        @Test
+        @DisplayName("Session nicht gefunden")
+        void closeAndSubmit_sessionNotFound_throwsNotFound() {
+            when(userService.userHasRole("STUDENT")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("student-123");
+            when(userService.getEmail()).thenReturn("student@test.ch");
+            when(sessionRepository.findById("unknown")).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> sessionService.closeAndSubmitAsAssignment("unknown"))
+                    .isInstanceOf(NotFoundException.class);
+        }
+
+        @Test
+        @DisplayName("Fremde Session abgeben - nicht erlaubt")
+        void closeAndSubmit_otherStudent_throwsForbidden() {
+            testSession.setAssignmentId("assign-123");
+            
+            when(userService.userHasRole("STUDENT")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("other-student");
+            when(userService.getEmail()).thenReturn("other@test.ch");
+            when(sessionRepository.findById("session-123")).thenReturn(Optional.of(testSession));
+
+            assertThatThrownBy(() -> sessionService.closeAndSubmitAsAssignment("session-123"))
+                    .isInstanceOf(ForbiddenException.class);
+        }
+
+        @Test
+        @DisplayName("Email wird zu Lowercase normalisiert")
+        void closeAndSubmit_uppercaseEmail_normalized() {
+            testSession.setAssignmentId("assign-123");
+            
+            when(userService.userHasRole("STUDENT")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("student-123");
+            when(userService.getEmail()).thenReturn("STUDENT@TEST.CH");
+            when(sessionRepository.findById("session-123")).thenReturn(Optional.of(testSession));
+            when(submissionRepository.existsByAssignmentIdAndStudentEmail("assign-123", "student@test.ch")).thenReturn(false);
+            when(sessionRepository.save(any(Session.class))).thenReturn(testSession);
+
+            sessionService.closeAndSubmitAsAssignment("session-123");
+
+            verify(submissionRepository).existsByAssignmentIdAndStudentEmail("assign-123", "student@test.ch");
+        }
+    }
+
+    // ========================================
+    // closeSession - Weitere Fälle
+    // ========================================
+    @Nested
+    @DisplayName("closeSession - Edge Cases")
+    class CloseSessionEdgeCases {
+
+        @Test
+        @DisplayName("Session wird korrekt mit Timestamp geschlossen")
+        void closeSession_setsClosedAtTimestamp() {
+            when(userService.userHasRole("STUDENT")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("student-123");
+            when(sessionRepository.findById("session-123")).thenReturn(Optional.of(testSession));
+            when(sessionRepository.save(any(Session.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            Session result = sessionService.closeSession("session-123");
+
+            assertThat(result.getStatus()).isEqualTo(SessionStatus.CLOSED);
+            assertThat(result.getClosedAt()).isNotNull();
+        }
+    }
+
+    // ========================================
+    // getSessionsForStudent - Weitere Fälle
+    // ========================================
+    @Nested
+    @DisplayName("getSessionsForStudent - Edge Cases")
+    class GetSessionsEdgeCases {
+
+        @Test
+        @DisplayName("Mehrere Sessions werden korrekt sortiert")
+        void getSessionsForStudent_multipleSessions_sortedByDateDesc() {
+            Instant now = Instant.now();
+            Session s1 = Session.builder().id("s1").studentId("student-123").startedAt(now.minusSeconds(300)).build();
+            Session s2 = Session.builder().id("s2").studentId("student-123").startedAt(now.minusSeconds(100)).build();
+            Session s3 = Session.builder().id("s3").studentId("student-123").startedAt(now).build();
+
+            when(sessionRepository.findByStudentId("student-123"))
+                    .thenReturn(new ArrayList<>(List.of(s1, s3, s2)));
+
+            List<Session> result = sessionService.getSessionsForStudent("student-123");
+
+            assertThat(result).hasSize(3);
+            assertThat(result.get(0).getId()).isEqualTo("s3");
+            assertThat(result.get(1).getId()).isEqualTo("s2");
+            assertThat(result.get(2).getId()).isEqualTo("s1");
+        }
+    }
 }

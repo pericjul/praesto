@@ -18,7 +18,7 @@ public class NoteService {
     private static final String STUDENT = "STUDENT";
     private final NoteRepository noteRepository;
     private final UserService userService;
-    private final BadgeService badgeService;  // NEU: BadgeService injiziert
+    private final BadgeService badgeService;
 
     /**
      * Neue Notiz erstellen.

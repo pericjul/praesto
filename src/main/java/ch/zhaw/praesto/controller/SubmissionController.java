@@ -81,7 +81,6 @@ public class SubmissionController {
 
         Submission saved = submissionRepository.save(submission);
 
-        // NEU: Badge-Check nach Abgabe
         badgeService.checkAndAwardBadges(studentId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);

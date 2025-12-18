@@ -1,5 +1,7 @@
 package ch.zhaw.praesto.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import ch.zhaw.praesto.service.UserService;
 @RequestMapping("/api")
 public class ChatController {
 
+    private static final Logger log = LoggerFactory.getLogger(ChatController.class);
     private final UserService userService;
     private final ChatClient chatClient;
 
@@ -92,7 +95,7 @@ public class ChatController {
 
             return ResponseEntity.ok(content);
         } catch (Exception e) {
-            System.err.println("Chat error: " + e.getMessage());
+            log.error("Chat error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Fehler bei der KI-Anfrage: " + e.getMessage());
         }

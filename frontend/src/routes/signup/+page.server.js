@@ -10,7 +10,6 @@ export const actions = {
     const lastName = data.get('lastName');
 
     try {
-      // Call the auth.js signup function - it handles cookie setting
       await auth.signup(email, password, firstName, lastName, cookies);
     } catch (error) {
       console.error('Signup error:', error);
@@ -19,7 +18,6 @@ export const actions = {
       };
     }
     
-    // If we get here, signup was successful - redirect
     throw redirect(303, '/');
   }
 };

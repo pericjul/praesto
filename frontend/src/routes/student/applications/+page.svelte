@@ -340,7 +340,6 @@
 {/if}
 
 <style>
-    /* ===== PAGE SPECIFIC STYLES ===== */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));

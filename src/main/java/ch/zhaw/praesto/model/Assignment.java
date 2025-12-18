@@ -21,7 +21,7 @@ public class Assignment {
     private Integer durationMin;
     private Instant dueDate;
 
-    private AssignmentType type;      // NEU: Art der Aufgabe
+    private AssignmentType type;
     private AssignmentStatus status;
 
     private String classId;

@@ -11,7 +11,6 @@
 
 <div class="signup-page">
     <div class="signup-container">
-        <!-- Left: Branding -->
         <div class="signup-branding">
             <div class="branding-content">
                 <img src={logo} alt="Praesto Logo" class="brand-logo" />
@@ -35,7 +34,6 @@
             </div>
         </div>
 
-        <!-- Right: Signup Form -->
         <div class="signup-form-section">
             <div class="signup-card">
                 <h2>Konto erstellen 🚀</h2>
@@ -138,7 +136,6 @@
         max-height: 90vh;
     }
 
-    /* Branding Section */
     .signup-branding {
         flex: 1;
         background: linear-gradient(180deg, #c97d3c 0%, #5a2d6e 50%, #2F124D 100%);
@@ -194,7 +191,6 @@
         font-size: 1.2rem;
     }
 
-    /* Form Section */
     .signup-form-section {
         flex: 1;
         padding: 3rem;
@@ -324,7 +320,6 @@
         text-decoration: underline;
     }
 
-    /* Responsive */
     @media (max-width: 700px) {
         .signup-container {
             flex-direction: column;

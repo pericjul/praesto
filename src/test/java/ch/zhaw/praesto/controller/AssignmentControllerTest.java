@@ -329,4 +329,432 @@ public class AssignmentControllerTest {
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
+
+    // ========================================
+    // createAssignment Validierung
+    // ========================================
+
+    @Test
+    public void testCreateAssignment_EmptyTitle() throws Exception {
+        String jsonBody = """
+            {
+                "title": "",
+                "classId": "%s",
+                "type": "AI_INTERVIEW"
+            }
+            """.formatted(class_id);
+
+        mvc.perform(post("/api/assignment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testCreateAssignment_NullTitle() throws Exception {
+        String jsonBody = """
+            {
+                "classId": "%s",
+                "type": "AI_INTERVIEW"
+            }
+            """.formatted(class_id);
+
+        mvc.perform(post("/api/assignment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testCreateAssignment_MissingClassId() throws Exception {
+        String jsonBody = """
+            {
+                "title": "Test",
+                "type": "AI_INTERVIEW"
+            }
+            """;
+
+        mvc.perform(post("/api/assignment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testCreateAssignment_MissingType() throws Exception {
+        String jsonBody = """
+            {
+                "title": "Test",
+                "classId": "%s"
+            }
+            """.formatted(class_id);
+
+        mvc.perform(post("/api/assignment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testCreateAssignment_WithDueDate() throws Exception {
+        String jsonBody = """
+            {
+                "title": "Mit Deadline",
+                "classId": "%s",
+                "type": "SELF_REFLECTION",
+                "dueDate": "2025-12-31T23:59:59Z"
+            }
+            """.formatted(class_id);
+
+        var result = mvc.perform(post("/api/assignment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.dueDate").exists())
+                .andReturn();
+
+        // Aufräumen
+        String jsonResponse = result.getResponse().getContentAsString();
+        JsonNode jsonNode = objectMapper.readTree(jsonResponse);
+        assignmentRepository.deleteById(jsonNode.get("id").asText());
+    }
+
+    // ========================================
+    // updateAssignment Validierung
+    // ========================================
+
+    @Test
+    public void testUpdateAssignment_EmptyTitle() throws Exception {
+        // Erst Assignment erstellen
+        String createBody = """
+            {
+                "title": "Zum Updaten",
+                "classId": "%s",
+                "type": "SELF_REFLECTION"
+            }
+            """.formatted(class_id);
+
+        var result = mvc.perform(post("/api/assignment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String jsonResponse = result.getResponse().getContentAsString();
+        JsonNode jsonNode = objectMapper.readTree(jsonResponse);
+        String newAssignmentId = jsonNode.get("id").asText();
+
+        // Update mit leerem Titel
+        String updateBody = """
+            {
+                "title": "",
+                "classId": "%s",
+                "type": "SELF_REFLECTION"
+            }
+            """.formatted(class_id);
+
+        mvc.perform(put("/api/assignments/" + newAssignmentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+        // Aufräumen
+        assignmentRepository.deleteById(newAssignmentId);
+    }
+
+    // ========================================
+    // updateStatus Tests
+    // ========================================
+
+    @Test
+    public void testUpdateStatus_Success() throws Exception {
+        // Erst Assignment erstellen
+        String createBody = """
+            {
+                "title": "Status Test",
+                "classId": "%s",
+                "type": "AI_INTERVIEW"
+            }
+            """.formatted(class_id);
+
+        var result = mvc.perform(post("/api/assignment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String jsonResponse = result.getResponse().getContentAsString();
+        JsonNode jsonNode = objectMapper.readTree(jsonResponse);
+        String newAssignmentId = jsonNode.get("id").asText();
+
+        // Status ändern
+        String statusBody = """
+            {
+                "status": "CLOSED"
+            }
+            """;
+
+        mvc.perform(put("/api/" + newAssignmentId + "/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(statusBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CLOSED"));
+
+        // Aufräumen
+        assignmentRepository.deleteById(newAssignmentId);
+    }
+
+    @Test
+    public void testUpdateStatus_AsStudent_Forbidden() throws Exception {
+        mvc.perform(put("/api/some-id/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\": \"CLOSED\"}")
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testUpdateStatus_MissingStatus() throws Exception {
+        mvc.perform(put("/api/some-id/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testUpdateStatus_NotFound() throws Exception {
+        String statusBody = """
+            {
+                "status": "CLOSED"
+            }
+            """;
+
+        mvc.perform(put("/api/nonexistent-id/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(statusBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testUpdateStatus_NoAuth() throws Exception {
+        mvc.perform(put("/api/some-id/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"status\": \"CLOSED\"}"))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    // ========================================
+    // Anderer Teacher - kein Zugriff
+    // ========================================
+
+    @Test
+    public void testUpdateAssignment_OtherTeacher_Forbidden() throws Exception {
+        // Assignment von anderem Teacher erstellen (direkt in DB)
+        var otherTeacherAssignment = assignmentRepository.save(
+                ch.zhaw.praesto.model.Assignment.builder()
+                        .title("Other Teacher Assignment")
+                        .classId(class_id)
+                        .type(ch.zhaw.praesto.model.AssignmentType.SELF_REFLECTION)
+                        .status(ch.zhaw.praesto.model.AssignmentStatus.ASSIGNED)
+                        .createdByTeacherId("other-teacher-id")
+                        .build()
+        );
+
+        String updateBody = """
+            {
+                "title": "Versuch zu ändern",
+                "classId": "%s",
+                "type": "SELF_REFLECTION"
+            }
+            """.formatted(class_id);
+
+        mvc.perform(put("/api/assignments/" + otherTeacherAssignment.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+
+        // Aufräumen
+        assignmentRepository.deleteById(otherTeacherAssignment.getId());
+    }
+
+    @Test
+    public void testDeleteAssignment_OtherTeacher_Forbidden() throws Exception {
+        // Assignment von anderem Teacher erstellen
+        var otherTeacherAssignment = assignmentRepository.save(
+                ch.zhaw.praesto.model.Assignment.builder()
+                        .title("Other Teacher Delete Test")
+                        .classId(class_id)
+                        .type(ch.zhaw.praesto.model.AssignmentType.SELF_REFLECTION)
+                        .status(ch.zhaw.praesto.model.AssignmentStatus.ASSIGNED)
+                        .createdByTeacherId("other-teacher-id")
+                        .build()
+        );
+
+        mvc.perform(delete("/api/assignments/" + otherTeacherAssignment.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+
+        // Aufräumen
+        assignmentRepository.deleteById(otherTeacherAssignment.getId());
+    }
+
+    @Test
+    public void testGetAssignment_OtherTeacher_Forbidden() throws Exception {
+        // Assignment von anderem Teacher erstellen
+        var otherTeacherAssignment = assignmentRepository.save(
+                ch.zhaw.praesto.model.Assignment.builder()
+                        .title("Other Teacher View Test")
+                        .classId(class_id)
+                        .type(ch.zhaw.praesto.model.AssignmentType.SELF_REFLECTION)
+                        .status(ch.zhaw.praesto.model.AssignmentStatus.ASSIGNED)
+                        .createdByTeacherId("other-teacher-id")
+                        .build()
+        );
+
+        mvc.perform(get("/api/assignments/" + otherTeacherAssignment.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+
+        // Aufräumen
+        assignmentRepository.deleteById(otherTeacherAssignment.getId());
+    }
+
+    // ========================================
+    // Student kann Assignment seiner Klasse sehen
+    // ========================================
+
+    @Test
+    public void testGetAssignment_AsStudentInClass_Success() throws Exception {
+        // Klasse mit Student erstellen
+        SchoolClass classWithStudent = schoolClassRepository.findByName("StudentAssignmentTestClass")
+                .orElseGet(() -> {
+                    SchoolClass c = SchoolClass.builder()
+                            .name("StudentAssignmentTestClass")
+                            .teacherId("test-user-id")
+                            .studentEmails(new ArrayList<>())
+                            .build();
+                    c.getStudentEmails().add("test@test.ch"); // Test-Student hinzufügen
+                    return schoolClassRepository.save(c);
+                });
+
+        // Sicherstellen dass Student in Klasse ist
+        if (!classWithStudent.getStudentEmails().contains("test@test.ch")) {
+            classWithStudent.getStudentEmails().add("test@test.ch");
+            schoolClassRepository.save(classWithStudent);
+        }
+
+        // Assignment für diese Klasse erstellen
+        String createBody = """
+            {
+                "title": "Student View Success",
+                "classId": "%s",
+                "type": "SELF_REFLECTION"
+            }
+            """.formatted(classWithStudent.getId());
+
+        var result = mvc.perform(post("/api/assignment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String jsonResponse = result.getResponse().getContentAsString();
+        JsonNode jsonNode = objectMapper.readTree(jsonResponse);
+        String studentAssignmentId = jsonNode.get("id").asText();
+
+        // Als Student abrufen - sollte OK sein
+        mvc.perform(get("/api/assignments/" + studentAssignmentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Student View Success"));
+
+        // Aufräumen
+        assignmentRepository.deleteById(studentAssignmentId);
+    }
+
+    @Test
+    public void testGetAssignmentsForClass_AsStudent() throws Exception {
+        mvc.perform(get("/api/assignments/class/" + class_id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    // ========================================
+    // NoAuth Tests
+    // ========================================
+
+    @Test
+    public void testGetAssignment_NoAuth() throws Exception {
+        mvc.perform(get("/api/assignments/some-id")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testGetTeacherAssignments_NoAuth() throws Exception {
+        mvc.perform(get("/api/assignments/teacher")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testGetAssignmentsForClass_NoAuth() throws Exception {
+        mvc.perform(get("/api/assignments/class/" + class_id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testUpdateAssignment_NoAuth() throws Exception {
+        mvc.perform(put("/api/assignments/some-id")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\": \"Test\"}"))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testDeleteAssignment_NoAuth() throws Exception {
+        mvc.perform(delete("/api/assignments/some-id")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
 }

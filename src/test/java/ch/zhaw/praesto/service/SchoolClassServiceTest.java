@@ -429,4 +429,262 @@ class SchoolClassServiceTest {
                     .isInstanceOf(ForbiddenException.class);
         }
     }
+
+    // ========================================
+    // getMyClassId
+    // ========================================
+    @Nested
+    @DisplayName("getMyClassId")
+    class GetMyClassId {
+
+        @Test
+        @DisplayName("Student in Klasse erhält ClassId")
+        void getMyClassId_studentInClass_returnsId() {
+            when(userService.getEmail()).thenReturn("student1@test.ch");
+            when(schoolClassRepository.findFirstByStudentEmailsContaining("student1@test.ch"))
+                    .thenReturn(Optional.of(testClass));
+
+            String result = schoolClassService.getMyClassId();
+
+            assertThat(result).isEqualTo("class-123");
+        }
+
+        @Test
+        @DisplayName("Student nicht in Klasse erhält null")
+        void getMyClassId_notInClass_returnsNull() {
+            when(userService.getEmail()).thenReturn("notinclass@test.ch");
+            when(schoolClassRepository.findFirstByStudentEmailsContaining("notinclass@test.ch"))
+                    .thenReturn(Optional.empty());
+
+            String result = schoolClassService.getMyClassId();
+
+            assertThat(result).isNull();
+        }
+
+        @Test
+        @DisplayName("Null Email gibt null zurück")
+        void getMyClassId_nullEmail_returnsNull() {
+            when(userService.getEmail()).thenReturn(null);
+
+            String result = schoolClassService.getMyClassId();
+
+            assertThat(result).isNull();
+            verify(schoolClassRepository, never()).findFirstByStudentEmailsContaining(any());
+        }
+    }
+
+    // ========================================
+    // updateClass
+    // ========================================
+    @Nested
+    @DisplayName("updateClass")
+    class UpdateClass {
+
+        @Test
+        @DisplayName("Klasse erfolgreich aktualisieren")
+        void updateClass_valid_updatesClass() {
+            SchoolClassDTO dto = new SchoolClassDTO();
+            dto.setName("4SE1-Neu");
+
+            when(userService.userHasRole("TEACHER")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("teacher-123");
+            when(schoolClassRepository.findById("class-123")).thenReturn(Optional.of(testClass));
+            when(schoolClassRepository.existsByName("4SE1-Neu")).thenReturn(false);
+            when(schoolClassRepository.save(any(SchoolClass.class))).thenReturn(testClass);
+
+            SchoolClass result = schoolClassService.updateClass("class-123", dto);
+
+            assertThat(result).isNotNull();
+            verify(schoolClassRepository).save(any(SchoolClass.class));
+        }
+
+        @Test
+        @DisplayName("Nicht-Teacher darf nicht aktualisieren")
+        void updateClass_notTeacher_throwsForbidden() {
+            when(userService.userHasRole("TEACHER")).thenReturn(false);
+
+            assertThatThrownBy(() -> schoolClassService.updateClass("class-123", new SchoolClassDTO()))
+                    .isInstanceOf(ForbiddenException.class);
+        }
+
+        @Test
+        @DisplayName("Klasse nicht gefunden")
+        void updateClass_notFound_throwsNotFound() {
+            when(userService.userHasRole("TEACHER")).thenReturn(true);
+            when(schoolClassRepository.findById("unknown")).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> schoolClassService.updateClass("unknown", new SchoolClassDTO()))
+                    .isInstanceOf(NotFoundException.class);
+        }
+
+        @Test
+        @DisplayName("Anderer Teacher darf nicht aktualisieren")
+        void updateClass_otherTeacher_throwsForbidden() {
+            when(userService.userHasRole("TEACHER")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("other-teacher");
+            when(schoolClassRepository.findById("class-123")).thenReturn(Optional.of(testClass));
+
+            assertThatThrownBy(() -> schoolClassService.updateClass("class-123", new SchoolClassDTO()))
+                    .isInstanceOf(ForbiddenException.class);
+        }
+
+        @Test
+        @DisplayName("Doppelter Name bei Update nicht erlaubt")
+        void updateClass_duplicateName_throwsBadRequest() {
+            SchoolClassDTO dto = new SchoolClassDTO();
+            dto.setName("ExistingClass");
+
+            when(userService.userHasRole("TEACHER")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("teacher-123");
+            when(schoolClassRepository.findById("class-123")).thenReturn(Optional.of(testClass));
+            when(schoolClassRepository.existsByName("ExistingClass")).thenReturn(true);
+
+            assertThatThrownBy(() -> schoolClassService.updateClass("class-123", dto))
+                    .isInstanceOf(BadRequestException.class)
+                    .hasMessageContaining("existiert bereits");
+        }
+
+        @Test
+        @DisplayName("Gleicher Name erlaubt (keine Änderung)")
+        void updateClass_sameName_allowed() {
+            SchoolClassDTO dto = new SchoolClassDTO();
+            dto.setName("3SE2");
+
+            when(userService.userHasRole("TEACHER")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("teacher-123");
+            when(schoolClassRepository.findById("class-123")).thenReturn(Optional.of(testClass));
+            when(schoolClassRepository.save(any(SchoolClass.class))).thenReturn(testClass);
+
+            SchoolClass result = schoolClassService.updateClass("class-123", dto);
+
+            assertThat(result).isNotNull();
+            verify(schoolClassRepository, never()).existsByName(any());
+        }
+
+        @Test
+        @DisplayName("Null Name wird ignoriert")
+        void updateClass_nullName_keepsOldName() {
+            SchoolClassDTO dto = new SchoolClassDTO();
+            dto.setName(null);
+
+            when(userService.userHasRole("TEACHER")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("teacher-123");
+            when(schoolClassRepository.findById("class-123")).thenReturn(Optional.of(testClass));
+            when(schoolClassRepository.save(any(SchoolClass.class))).thenReturn(testClass);
+
+            schoolClassService.updateClass("class-123", dto);
+
+            assertThat(testClass.getName()).isEqualTo("3SE2");
+        }
+
+        @Test
+        @DisplayName("Leerer Name wird ignoriert")
+        void updateClass_blankName_keepsOldName() {
+            SchoolClassDTO dto = new SchoolClassDTO();
+            dto.setName("   ");
+
+            when(userService.userHasRole("TEACHER")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("teacher-123");
+            when(schoolClassRepository.findById("class-123")).thenReturn(Optional.of(testClass));
+            when(schoolClassRepository.save(any(SchoolClass.class))).thenReturn(testClass);
+
+            schoolClassService.updateClass("class-123", dto);
+
+            assertThat(testClass.getName()).isEqualTo("3SE2");
+        }
+    }
+
+    // ========================================
+    // Zusätzliche Edge Cases
+    // ========================================
+    @Nested
+    @DisplayName("Edge Cases")
+    class EdgeCases {
+
+        @Test
+        @DisplayName("createClass mit null DTO Name")
+        void createClass_nullName_throwsBadRequest() {
+            SchoolClassDTO dto = new SchoolClassDTO();
+            dto.setName(null);
+
+            when(userService.userHasRole("TEACHER")).thenReturn(true);
+
+            assertThatThrownBy(() -> schoolClassService.createClass(dto))
+                    .isInstanceOf(BadRequestException.class)
+                    .hasMessageContaining("Klassenname");
+        }
+
+        @Test
+        @DisplayName("createClass trimmt Whitespace")
+        void createClass_trimmedName_savesCorrectly() {
+            SchoolClassDTO dto = new SchoolClassDTO();
+            dto.setName("  4SE1  ");
+
+            when(userService.userHasRole("TEACHER")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("teacher-123");
+            when(schoolClassRepository.existsByName("4SE1")).thenReturn(false);
+            when(schoolClassRepository.save(any(SchoolClass.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            SchoolClass result = schoolClassService.createClass(dto);
+
+            assertThat(result.getName()).isEqualTo("4SE1");
+        }
+
+        @Test
+        @DisplayName("addStudent normalisiert Email zu Lowercase")
+        void addStudent_uppercaseEmail_normalized() {
+            when(userService.userHasRole("TEACHER")).thenReturn(true);
+            when(userService.getUserId()).thenReturn("teacher-123");
+            when(schoolClassRepository.findById("class-123")).thenReturn(Optional.of(testClass));
+            when(schoolClassRepository.save(any(SchoolClass.class))).thenReturn(testClass);
+
+            schoolClassService.addStudentToClass("class-123", "NEW@TEST.CH");
+
+            assertThat(testClass.getStudentEmails()).contains("new@test.ch");
+        }
+
+        @Test
+        @DisplayName("addStudent Klasse nicht gefunden")
+        void addStudent_classNotFound_throwsNotFound() {
+            when(userService.userHasRole("TEACHER")).thenReturn(true);
+            when(schoolClassRepository.findById("unknown")).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> schoolClassService.addStudentToClass("unknown", "test@test.ch"))
+                    .isInstanceOf(NotFoundException.class);
+        }
+
+        @Test
+        @DisplayName("addStudent null Email")
+        void addStudent_nullEmail_throwsBadRequest() {
+            when(userService.userHasRole("TEACHER")).thenReturn(true);
+
+            assertThatThrownBy(() -> schoolClassService.addStudentToClass("class-123", null))
+                    .isInstanceOf(BadRequestException.class)
+                    .hasMessageContaining("Email");
+        }
+
+        @Test
+        @DisplayName("removeStudent Klasse nicht gefunden")
+        void removeStudent_classNotFound_throwsNotFound() {
+            when(userService.userHasRole("TEACHER")).thenReturn(true);
+            when(schoolClassRepository.findById("unknown")).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> schoolClassService.removeStudentFromClass("unknown", "test@test.ch"))
+                    .isInstanceOf(NotFoundException.class);
+        }
+
+        @Test
+        @DisplayName("getMyClass Email wird zu Lowercase konvertiert")
+        void getMyClass_uppercaseEmail_normalized() {
+            when(userService.userHasRole("STUDENT")).thenReturn(true);
+            when(userService.getEmail()).thenReturn("STUDENT1@TEST.CH");
+            when(schoolClassRepository.findFirstByStudentEmailsContaining("student1@test.ch"))
+                    .thenReturn(Optional.of(testClass));
+
+            SchoolClass result = schoolClassService.getMyClass();
+
+            assertThat(result).isNotNull();
+            verify(schoolClassRepository).findFirstByStudentEmailsContaining("student1@test.ch");
+        }
+    }
 }

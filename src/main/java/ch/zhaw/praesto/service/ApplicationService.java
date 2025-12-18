@@ -23,7 +23,7 @@ public class ApplicationService {
     private static final String STUDENT = "STUDENT";
     private final ApplicationRepository applicationRepository;
     private final UserService userService;
-    private final BadgeService badgeService;  // NEU: BadgeService injiziert
+    private final BadgeService badgeService;
 
     /**
      * Neue Bewerbung erstellen.

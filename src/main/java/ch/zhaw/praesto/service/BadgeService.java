@@ -22,8 +22,8 @@ public class BadgeService {
     private final SessionRepository sessionRepository;
     private final NoteRepository noteRepository;
     private final ApplicationRepository applicationRepository;
-    private final SubmissionRepository submissionRepository;  // NEU: für Submission-basierte Badges
-    private final UserService userService;  // NEU: für Email-Lookup
+    private final SubmissionRepository submissionRepository;
+    private final UserService userService;
 
     /**
      * Alle verfügbaren Badges abrufen

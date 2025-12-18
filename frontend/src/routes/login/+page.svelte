@@ -9,7 +9,6 @@
 
 <div class="login-page">
     <div class="login-container">
-        <!-- Left: Branding -->
         <div class="login-branding">
             <div class="branding-content">
                 <img src={logo} alt="Praesto Logo" class="brand-logo" />
@@ -33,7 +32,6 @@
             </div>
         </div>
 
-        <!-- Right: Login Form -->
         <div class="login-form-section">
             <div class="login-card">
                 <h2>Willkommen zurück! 👋</h2>
@@ -109,7 +107,6 @@
         max-height: 90vh;
     }
 
-    /* Branding Section */
     .login-branding {
         flex: 1;
         background: linear-gradient(180deg, #c97d3c 0%, #5a2d6e 50%, #2F124D 100%);
@@ -165,7 +162,6 @@
         font-size: 1.2rem;
     }
 
-    /* Form Section */
     .login-form-section {
         flex: 1;
         padding: 3rem;
@@ -280,7 +276,6 @@
         text-decoration: underline;
     }
 
-    /* Responsive */
     @media (max-width: 700px) {
         .login-container {
             flex-direction: column;
