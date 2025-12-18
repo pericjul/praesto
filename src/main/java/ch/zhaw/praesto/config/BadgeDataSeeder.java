@@ -370,7 +370,7 @@ public class BadgeDataSeeder implements CommandLineRunner {
                 .description("25 Bewertungen erhalten")
                 .ruleType(BadgeRuleType.GRADES_RECEIVED)
                 .threshold(25)
-                .sortOrder(sortOrder++)
+                .sortOrder(sortOrder)
                 .build());
 
         badgeRepository.saveAll(badges);

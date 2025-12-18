@@ -26,7 +26,6 @@ public class AssignmentController {
 
     private static final String ASSIGNMENT_NICHT_GEFUNDEN = "Assignment nicht gefunden";
     private static final String TEACHER = "TEACHER";
-    private final AssignmentService assignmentService;
     private final AssignmentRepository assignmentRepository;
     private final SchoolClassRepository schoolClassRepository;
     private final UserService userService;
@@ -39,7 +38,6 @@ public class AssignmentController {
         this.assignmentRepository = assignmentRepository;
         this.schoolClassRepository = schoolClassRepository;
         this.userService = userService;
-        this.assignmentService = assignmentService;
     }
 
     @PostMapping("/assignment")

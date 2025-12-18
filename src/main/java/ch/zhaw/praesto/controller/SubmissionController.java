@@ -227,8 +227,6 @@ public class SubmissionController {
             case SELF_REFLECTION, RESEARCH -> validateTextContent(dto, type);
             case DOCUMENT_UPLOAD, VIDEO_PITCH -> validateFileUrl(dto, type);
             case AI_INTERVIEW -> validateChatSession(dto);
-            default -> {
-            }
         }
     }
 
