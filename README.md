@@ -164,7 +164,7 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 ### Gamification / Belohnungssystem
 **Feedback:** Eine Teilnehmerin schlug vor, ein Belohnungssystem mit Abzeichen einzubauen – ähnlich wie bei Duolingo.
 
-**Einordnung:** Dieses Feedback wurde direkt umgesetzt! Praesto enthält ein Badge-System mit 37 Badges in 7 Kategorien (KI-Training, Notizen, Bewerbungen, Meilensteine, Abgaben, Feedback, Bewertungen). Schüler:innen werden so motiviert, regelmässig zu üben.
+**Einordnung:** Dieses Feedback wurde direkt umgesetzt! Praesto enthält ein Badge-System mit verschiedenen Kategorien (KI-Training, Notizen, Bewerbungen, Meilensteine, Abgaben, Feedback, Bewertungen). Schüler:innen werden so motiviert, regelmässig zu üben.
 
 ### Barrierefreiheit
 **Feedback:** Wie können Schüler:innen mit Leseschwäche die App effizient nutzen?
@@ -314,7 +314,7 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 | **Akteure** | Student |
 | **Vorbedingung** | Student ist eingeloggt |
 | **Nachbedingung** | - |
-| **Standardablauf** | 1. Student öffnet Badge-Übersicht<br>2. System lädt alle verfügbaren Badges (37 Stück)<br>3. System lädt bereits verdiente Badges des Students<br>4. System zeigt Badges gruppiert nach Kategorie<br>5. Verdiente Badges werden farbig angezeigt, nicht verdiente ausgegraut<br>6. Bei Klick auf Badge zeigt System Details (Name, Beschreibung, Kriterium) |
+| **Standardablauf** | 1. Student öffnet Badge-Übersicht<br>2. System lädt alle verfügbaren Badges<br>3. System lädt bereits verdiente Badges des Students<br>4. System zeigt Badges gruppiert nach Kategorie<br>5. Verdiente Badges werden farbig angezeigt, nicht verdiente ausgegraut<br>6. Bei Klick auf Badge zeigt System Details (Name, Beschreibung, Kriterium) |
 | **Data Definitions** | Ein **Badge** hat: id, name, description, icon, category (KI_TRAINING, NOTES, APPLICATIONS, MILESTONES, SUBMISSIONS, FEEDBACK, RATINGS). Ein **UserBadge** verknüpft Badge mit User und enthält earnedAt-Timestamp. |
 
 ---
@@ -904,56 +904,86 @@ Das Dashboard ist die Startseite für Schüler:innen nach dem Login. Es bietet e
 #### Aufgaben-Übersicht
 ![Student Aufgaben Übersicht](doc/student/schueler-aufgaben-uebersicht.png)
 
-Diese Ansicht zeigt alle Aufgaben, die der Klasse des Schülers zugewiesen wurden.
+Diese Ansicht zeigt alle Aufgaben, die der Klasse des Schülers zugewiesen wurden. Aufgaben werden von der Lehrkraft erstellt und haben eine Deadline.
 
 **Angezeigte Elemente:**
-- Liste aller Aufgaben mit Titel und Beschreibung
-- Aufgabentyp als Icon (KI-Interview, Dokument, Selbstreflexion, etc.)
-- Deadline mit farblicher Hervorhebung (rot = überfällig, orange = bald fällig)
-- Aktueller Status der eigenen Abgabe (offen, eingereicht, bewertet)
-- Geschätzte Dauer der Aufgabe in Minuten
+- Liste aller Aufgaben mit Titel und kurzer Beschreibung
+- **Aufgabentyp als Icon:**
+  - 🤖 **KI-Bewerbungsgespräch** - Bewerbungsgespräch mit der KI üben
+  - 📄 **Dokument einreichen** - Eine Datei hochladen (z.B. Lebenslauf)
+  - ✍️ **Selbstreflexion** - Einen Text schreiben
+  - 🎥 **Video-Bewerbung** - Ein Video aufnehmen
+  - 🔍 **Recherche** - Ein Thema recherchieren und zusammenfassen
+- **Deadline mit Farbcodierung:**
+  - Normal: Mehr als 3 Tage Zeit
+  - Orange ("Bald fällig"): 3 Tage oder weniger
+  - Rot ("Überfällig!"): Deadline überschritten
+- **Status der eigenen Abgabe:**
+  - "Offen" - Noch nicht begonnen
+  - "Eingereicht" - Abgabe erfolgt, wartet auf Bewertung
+  - "Bewertet" - Lehrkraft hat Feedback gegeben
+- Geschätzte Dauer in Minuten
 
 **Mögliche Aktionen:**
-- Aufgabe anklicken um Details zu sehen
-- Nach Status filtern (alle, offen, erledigt)
-- Nach Deadline sortieren
+- Aufgabe anklicken um Details zu sehen und zu starten
+- Filter: Alle / Offene / Erledigte Aufgaben
+- Sortierung nach Deadline (dringendste zuerst)
 
 ---
 
 #### Aufgaben-Detail
 ![Student Aufgabe Detail](doc/student/schueler-aufgabe-detail.png)
 
-Die Detailansicht einer einzelnen Aufgabe mit allen Informationen und Aktionsmöglichkeiten.
+Die Detailansicht einer einzelnen Aufgabe mit allen Informationen und der Möglichkeit, die Aufgabe zu bearbeiten.
 
 **Angezeigte Elemente:**
-- Vollständiger Titel und Beschreibung der Aufgabe
-- Aufgabentyp mit Erklärung was erwartet wird
-- Deadline und verbleibende Zeit
-- Vorgesehene Bearbeitungsdauer
-- Eigener Abgabestatus
+- **Titel** der Aufgabe
+- **Beschreibung** - Was genau soll gemacht werden?
+- **Aufgabentyp** mit Erklärung:
+  - *KI-Interview:* "Führe ein simuliertes Bewerbungsgespräch mit der KI. Am Ende kannst du die Session als Abgabe einreichen."
+  - *Dokument:* "Lade ein Dokument hoch (PDF, Word). Z.B. deinen Lebenslauf oder ein Motivationsschreiben."
+  - *Selbstreflexion:* "Schreibe einen Text zu dem vorgegebenen Thema."
+  - *Video:* "Nimm ein kurzes Video auf, z.B. eine Selbstvorstellung."
+  - *Recherche:* "Recherchiere zum Thema und fasse deine Erkenntnisse zusammen."
+- **Deadline** - Bis wann muss abgegeben werden?
+- **Geschätzte Dauer** - Wie viel Zeit sollte man einplanen?
+- **Eigener Status** - Habe ich schon abgegeben?
 
-**Mögliche Aktionen:**
-- Bei KI-Interview: "Training starten" öffnet den Chat
-- Bei anderen Typen: Abgabe-Formular ausfüllen und einreichen
-- Zurück zur Übersicht navigieren
+**Mögliche Aktionen je nach Typ:**
+| Typ | Button | Was passiert? |
+|-----|--------|---------------|
+| KI-Interview | "Training starten" | Öffnet den Chat mit der KI |
+| Dokument | "Datei hochladen" | Öffnet Datei-Auswahl |
+| Selbstreflexion | "Text schreiben" | Öffnet Texteditor |
+| Video | "Video aufnehmen" | Öffnet Kamera (falls implementiert) |
+| Recherche | "Recherche starten" | Öffnet Texteditor mit Link-Feld |
 
 ---
 
 #### Aufgabe mit Feedback
 ![Student Aufgabe mit Feedback](doc/student/schueler-aufgabe-mit-feedback.png)
 
-Nachdem eine Lehrkraft die Abgabe bewertet hat, erscheint das Feedback in der Aufgabenansicht.
+Nachdem eine Lehrkraft die Abgabe bewertet hat, erscheint das Feedback in dieser Ansicht. Hier kann der Schüler sehen, wie seine Arbeit bewertet wurde.
 
 **Angezeigte Elemente:**
-- Erhaltene Note/Bewertung prominent angezeigt
-- Schriftliches Feedback der Lehrkraft
-- Datum der Bewertung
-- Eigene ursprüngliche Abgabe zum Vergleich
-- Bei KI-Interview: Link zum Chat-Verlauf
+- **Note/Bewertung** - Prominent angezeigt (z.B. "5.0" oder "Sehr gut")
+- **Schriftliches Feedback** - Kommentar der Lehrkraft mit:
+  - Was war gut?
+  - Was könnte verbessert werden?
+  - Tipps für die Zukunft
+- **Bewertungsdatum** - Wann wurde bewertet?
+- **Eigene Abgabe** - Was hatte ich eingereicht?
+  - Bei KI-Interview: Link zum Chat-Verlauf
+  - Bei Dokument: Link zur hochgeladenen Datei
+  - Bei Text: Der eingereichte Text
 
 **Mögliche Aktionen:**
-- Chat-Verlauf der Session nochmals ansehen
-- Feedback als gelesen markieren
+- Chat-Verlauf nochmals durchlesen (bei KI-Interview)
+- Eigene Abgabe nochmals ansehen
+- Feedback als "gelesen" markieren
+
+**Warum ist Feedback wichtig?**
+Das Feedback der Lehrkraft hilft, sich zu verbessern. Durch das Badge-System wird auch das Erhalten von Feedback belohnt.
 
 ---
 
@@ -1024,145 +1054,211 @@ Der Chat-Modus wenn eine Session zu einer Aufgabe gehört.
 #### Bewerbungen-Übersicht
 ![Student Bewerbungen Übersicht](doc/student/schueler-bewerbungen-uebersicht.png)
 
-Der Bewerbungs-Tracker hilft Schüler:innen, den Überblick über ihre echten Bewerbungen zu behalten.
+Der Bewerbungs-Tracker hilft Schüler:innen, den Überblick über ihre echten Bewerbungen zu behalten. Anders als das KI-Training geht es hier um die Verwaltung von realen Bewerbungen bei echten Firmen.
 
 **Angezeigte Elemente:**
-- Liste aller erfassten Bewerbungen
-- Firmenname und Position pro Eintrag
-- Aktueller Status mit farbigem Badge (geplant, beworben, eingeladen, etc.)
-- Bewerbungsdatum
-- Gesprächstermin falls vorhanden
-- Statistik-Übersicht: Wie viele Bewerbungen in welchem Status
+- Liste aller erfassten Bewerbungen mit Firmenname und Position
+- Aktueller Status als farbiger Badge mit Emoji:
+  - 📝 **Geplant** - Bewerbung ist vorgemerkt, aber noch nicht abgeschickt
+  - 📤 **Beworben** - Bewerbung wurde abgeschickt, wartet auf Antwort
+  - 📅 **Eingeladen** - Einladung zum Vorstellungsgespräch erhalten
+  - ✅ **Gespräch absolviert** - Vorstellungsgespräch wurde geführt
+  - 🎉 **Zusage** - Lehrstelle erhalten!
+  - ❌ **Absage** - Leider nicht geklappt
+  - 🔙 **Zurückgezogen** - Selbst abgesagt (z.B. weil andere Stelle gefunden)
+- Bewerbungsdatum und Gesprächstermin (falls vorhanden)
+- Statistik-Balken: Visualisiert wie viele Bewerbungen in welchem Status sind
 
 **Mögliche Aktionen:**
-- Neue Bewerbung erfassen
-- Bestehende Bewerbung anklicken zum Bearbeiten
-- Status schnell ändern über Dropdown
-- Bewerbung löschen
-- Nach Status filtern
+- "Neue Bewerbung" Button öffnet das Erfassungsformular
+- Klick auf eine Bewerbung öffnet die Detailansicht zum Bearbeiten
+- Status kann direkt in der Liste per Dropdown geändert werden
+- Filterfunktion um nur bestimmte Status anzuzeigen (z.B. nur offene Bewerbungen)
+
+**Warum ist das nützlich?**
+Schüler:innen bewerben sich oft bei 10-20 Firmen gleichzeitig. Ohne Übersicht verliert man schnell den Überblick: Wo habe ich mich beworben? Wann war das Gespräch? Was muss ich noch tun?
 
 ---
 
 #### Bewerbung erstellen
 ![Student Bewerbung erstellen](doc/student/schueler-bewerbung-erstellen.png)
 
-Formular zum Erfassen einer neuen Bewerbung.
+Formular zum Erfassen einer neuen Bewerbung. Hier werden alle wichtigen Informationen zu einer Bewerbung festgehalten.
 
 **Formularfelder:**
-- Firmenname (Pflichtfeld)
-- Position/Stelle (Pflichtfeld)
-- Status (Dropdown: geplant, beworben, etc.)
-- Bewerbungsdatum
-- Gesprächstermin (optional)
-- Notizen (Freitextfeld für persönliche Anmerkungen)
+
+| Feld | Pflicht | Beschreibung |
+|------|---------|--------------|
+| **Firmenname** | Ja | Name des Unternehmens (z.B. "Swisscom", "Migros") |
+| **Position** | Ja | Lehrstelle/Beruf (z.B. "Informatiker EFZ", "Kauffrau EFZ") |
+| **Status** | Ja | Aktueller Stand der Bewerbung (siehe Status-Erklärung unten) |
+| **Bewerbungsdatum** | Nein | Wann wurde die Bewerbung abgeschickt? |
+| **Gesprächstermin** | Nein | Datum des Vorstellungsgesprächs (falls bereits bekannt) |
+| **Notizen** | Nein | Persönliche Anmerkungen (z.B. "Kontaktperson: Frau Müller") |
+
+**Status-Dropdown erklärt:**
+- 📝 **Geplant** - Für Firmen die man im Auge hat, aber noch nicht angeschrieben hat. Gut um eine Wunschliste zu führen.
+- 📤 **Beworben** - Bewerbung ist raus! Jetzt heisst es warten.
+- 📅 **Eingeladen** - Super! Die Firma möchte dich kennenlernen. Termin eintragen nicht vergessen!
+- ✅ **Gespräch absolviert** - Gespräch ist vorbei, Entscheidung steht noch aus.
+- 🎉 **Zusage** - Herzlichen Glückwunsch!
+- ❌ **Absage** - Schade, aber nicht aufgeben - weiter geht's!
+- 🔙 **Zurückgezogen** - Falls man selbst absagt (z.B. andere Stelle angenommen).
 
 **Mögliche Aktionen:**
-- Formular ausfüllen und speichern
-- Abbrechen und zurück zur Übersicht
+- Alle Felder ausfüllen und mit "Speichern" bestätigen
+- "Abbrechen" verwirft die Eingaben und kehrt zur Übersicht zurück
 
 ---
 
 #### Bewerbung bearbeiten
 ![Student Bewerbung bearbeiten](doc/student/schueler-bewerbung-bearbeiten.png)
 
-Bearbeiten einer bestehenden Bewerbung mit vorausgefüllten Feldern.
+Bearbeiten einer bestehenden Bewerbung. Alle Felder können aktualisiert werden, z.B. wenn ein Gesprächstermin hinzukommt oder sich der Status ändert.
 
 **Angezeigte Elemente:**
-- Gleiches Formular wie beim Erstellen
-- Alle Felder mit aktuellen Werten vorausgefüllt
-- Erstellungsdatum und letzte Änderung
+- Alle Formularfelder vorausgefüllt mit den aktuellen Werten
+- Erstellungsdatum: Wann wurde die Bewerbung erfasst?
+- Letzte Änderung: Wann wurde zuletzt etwas geändert?
+
+**Typische Anwendungsfälle:**
+- Gesprächstermin nachtragen nachdem die Einladung kam
+- Status aktualisieren (z.B. von "Beworben" auf "Eingeladen")
+- Notizen ergänzen nach einem Telefonat
+- Kontaktdaten oder Details korrigieren
 
 **Mögliche Aktionen:**
-- Felder bearbeiten und Änderungen speichern
-- Bewerbung löschen
-- Abbrechen ohne Speichern
+- Felder bearbeiten und mit "Speichern" bestätigen
+- "Löschen" entfernt die Bewerbung komplett (mit Bestätigungsdialog)
+- "Abbrechen" verwirft alle Änderungen
 
 ---
 
 #### Bewerbungsstatus ändern
 ![Student Bewerbungsstatus ändern](doc/student/schueler-bewerbungsstatus-aendern.png)
 
-Schnelles Ändern des Bewerbungsstatus direkt aus der Übersicht.
+Schnelles Ändern des Bewerbungsstatus direkt aus der Übersicht - ohne die Detailansicht öffnen zu müssen.
 
-**Angezeigte Elemente:**
-- Dropdown-Menü mit allen möglichen Status
-- Aktueller Status vorausgewählt
+**So funktioniert's:**
+1. In der Bewerbungsliste auf den Status-Badge klicken
+2. Dropdown öffnet sich mit allen verfügbaren Status
+3. Neuen Status auswählen
+4. Änderung wird sofort gespeichert
 
-**Verfügbare Status:**
-- PLANNED (Geplant)
-- APPLIED (Beworben)
-- INVITED (Eingeladen)
-- INTERVIEW_DONE (Gespräch absolviert)
-- ACCEPTED (Zusage)
-- REJECTED (Absage)
-- WITHDRAWN (Zurückgezogen)
+**Verfügbare Status im Detail:**
+
+| Status | Emoji | Bedeutung | Wann setzen? |
+|--------|-------|-----------|--------------|
+| **Geplant** | 📝 | Bewerbung noch nicht abgeschickt | Firma auf der Wunschliste |
+| **Beworben** | 📤 | Bewerbung ist unterwegs | Nach dem Abschicken |
+| **Eingeladen** | 📅 | Einladung zum Gespräch erhalten | Nach positiver Rückmeldung |
+| **Gespräch absolviert** | ✅ | Interview ist vorbei | Nach dem Vorstellungsgespräch |
+| **Zusage** | 🎉 | Lehrstelle erhalten! | Nach der Zusage der Firma |
+| **Absage** | ❌ | Absage erhalten | Nach negativer Rückmeldung |
+| **Zurückgezogen** | 🔙 | Selbst abgesagt | Wenn man die Stelle nicht mehr will |
+
+**Tipp:** Den Status regelmässig aktualisieren hilft, den Überblick zu behalten und zeigt den Fortschritt im Bewerbungsprozess.
 
 ---
 
 #### Notizen-Übersicht
 ![Student Notizen Übersicht](doc/student/schueler-notizen-übersicht.png)
 
-Persönliche Notizen zu Firmen, Stellen oder allgemeine Gedanken zur Berufswahl.
+Persönliche Notizen zu Firmen, Stellen oder allgemeine Gedanken zur Berufswahl. Die Notizen sind nur für den Schüler selbst sichtbar - Lehrkräfte haben keinen Zugriff.
 
 **Angezeigte Elemente:**
-- Liste aller Notizen chronologisch sortiert
-- Vorschau des Notizinhalts (erste Zeilen)
-- Optional: Verknüpfte Firma/Position
-- Erstellungsdatum
+- Liste aller Notizen, neueste zuerst
+- Vorschau des Notizinhalts (erste 2-3 Zeilen)
+- Falls angegeben: Verknüpfte Firma und Position
+- Erstellungsdatum jeder Notiz
 
 **Mögliche Aktionen:**
-- Neue Notiz erstellen
-- Notiz anklicken zum Bearbeiten
-- Notiz löschen
-- Nach Firma filtern
+- "Neue Notiz" erstellt eine leere Notiz
+- Klick auf eine Notiz öffnet sie zum Bearbeiten
+- Notiz kann gelöscht werden
+- Suchfunktion um Notizen nach Firma zu filtern
+
+**Wozu Notizen verwenden?**
+- Informationen über Firmen festhalten (Grösse, Produkte, Kultur)
+- Fragen für das Vorstellungsgespräch vorbereiten
+- Nach einem Gespräch reflektieren: Was lief gut? Was könnte besser?
+- Tipps vom KI-Coach oder der Lehrkraft festhalten
+- Kontaktpersonen und deren Infos notieren
 
 ---
 
 #### Notiz erstellen
 ![Student Notiz erstellen](doc/student/schueler-notiz-erstellen.png)
 
-Formular zum Erstellen einer neuen Notiz.
+Formular zum Erstellen einer neuen Notiz. Notizen können frei verwendet werden - von kurzen Gedanken bis zu ausführlichen Recherchen.
 
 **Formularfelder:**
-- Firmenname (optional - zur Verknüpfung mit Bewerbung)
-- Position (optional)
-- Notiztext (Pflichtfeld, mehrzeiliges Textfeld)
+
+| Feld | Pflicht | Beschreibung |
+|------|---------|--------------|
+| **Firmenname** | Nein | Optional - verknüpft die Notiz mit einer Firma |
+| **Position** | Nein | Optional - z.B. "Informatiker EFZ" |
+| **Notiztext** | Ja | Der eigentliche Inhalt, mehrzeilig |
 
 **Mögliche Aktionen:**
-- Notiz speichern
-- Abbrechen
+- Text eingeben und mit "Speichern" bestätigen
+- "Abbrechen" verwirft die Notiz
 
-**Anwendungsbeispiele:**
-- Infos zu einer Firma nach der Recherche festhalten
-- Fragen für ein Vorstellungsgespräch notieren
-- Reflexion nach einem Gespräch
+**Beispiele für nützliche Notizen:**
+
+*Firmen-Recherche:*
+> **Firma:** Swisscom  
+> **Position:** Informatiker EFZ  
+> **Notiz:** Grösster Telekom-Anbieter der Schweiz. Hat ein Lehrlings-Programm mit über 900 Lernenden. Standorte: Bern, Zürich, Lausanne. Bewerbungsfrist: Ende Oktober.
+
+*Gesprächsvorbereitung:*
+> **Firma:** Migros  
+> **Notiz:** Fragen die ich stellen will:
+> - Wie sieht ein typischer Tag aus?
+> - Gibt es Möglichkeiten nach der Lehre weiterzumachen?
+> - Wer wäre mein Berufsbildner?
+
+*Reflexion nach Gespräch:*
+> **Firma:** Post  
+> **Notiz:** Gespräch war gut! Frau Meier war sehr freundlich. Meine Antwort auf "Warum die Post?" kam gut an. Nächstes Mal: Mehr über aktuelle Projekte der Firma wissen.
 
 ---
 
 #### Badges-Übersicht
 ![Student Badges Übersicht](doc/student/schueler-badges-uebersicht.png)
 
-Das Gamification-Element der Anwendung: 37 Badges in 7 Kategorien motivieren zur regelmässigen Nutzung.
+Das Gamification-Element der Anwendung: Badges in verschiedenen Kategorien motivieren zur regelmässigen Nutzung. Badges werden automatisch vergeben, sobald die Kriterien erfüllt sind.
 
 **Angezeigte Elemente:**
 - Alle Badges gruppiert nach Kategorie
-- Verdiente Badges farbig mit Emoji-Icon
-- Noch nicht verdiente Badges ausgegraut
-- Badge-Titel und Beschreibung
-- Fortschrittsanzeige pro Kategorie
+- Verdiente Badges: Farbig mit Emoji-Icon und Datum
+- Noch nicht verdiente Badges: Ausgegraut mit Hinweis was fehlt
+- Fortschrittsanzeige pro Kategorie (z.B. "3 von 8 Badges")
 
 **Badge-Kategorien:**
-- KI-Training (Sessions abschliessen)
-- Notizen (Notizen erstellen)
-- Bewerbungen (Bewerbungen erfassen, Status erreichen)
-- Meilensteine (Erste Woche aktiv, etc.)
-- Abgaben (Aufgaben einreichen)
-- Feedback (Bewertungen erhalten)
-- Noten (Gute Bewertungen erhalten)
+
+| Kategorie | Beschreibung |
+|-----------|--------------|
+| **KI-Training** | Für absolvierte Sessions (erste Session, mehrere Sessions, etc.) |
+| **Notizen** | Für erstellte Notizen |
+| **Bewerbungen** | Für erfasste Bewerbungen und erreichte Status |
+| **Meilensteine** | Für allgemeine Aktivität (erste Woche aktiv, etc.) |
+| **Abgaben** | Für eingereichte Aufgaben |
+| **Feedback** | Für erhaltenes Feedback von Lehrkräften |
+| **Bewertungen** | Für gute Noten |
+
+**Wie verdient man Badges?**
+- **Automatisch:** Das System prüft nach jeder Aktion (Training beenden, Bewerbung erstellen, etc.) ob neue Badges verdient wurden
+- **Sofortige Benachrichtigung:** Bei einem neuen Badge erscheint eine Meldung
+- **Keine Wiederholung:** Jedes Badge kann nur einmal verdient werden
+
+**Warum Badges?**
+Badges machen den Fortschritt sichtbar und motivieren zur regelmässigen Nutzung. Statt "Ich muss noch üben" wird es zu "Ich will das nächste Badge!"
 
 **Mögliche Aktionen:**
-- Badge anklicken für Details (was muss man tun um es zu verdienen)
-- Durch Kategorien navigieren
+- Durch die Kategorien scrollen
+- Auf ein Badge klicken zeigt Details: Name, Beschreibung, Kriterium
+- Nicht verdiente Badges zeigen, was noch fehlt
 
 ---
 
@@ -1251,26 +1347,44 @@ Alle erstellten Aufgaben mit Abgabe-Status.
 #### Aufgabe erstellen
 ![Teacher Aufgabe erstellen](doc/teacher/teacher-aufgabe-erstellen.png)
 
-Formular zum Erstellen einer neuen Aufgabe für eine Klasse.
+Formular zum Erstellen einer neuen Aufgabe für eine Klasse. Hier definiert die Lehrkraft, was die Schüler:innen tun sollen.
 
 **Formularfelder:**
-- Titel (Pflichtfeld)
-- Beschreibung (Pflichtfeld, erklärt was die Schüler:innen tun sollen)
-- Aufgabentyp (Dropdown):
-  - KI-Bewerbungsgespräch
-  - Dokument einreichen
-  - Selbstreflexion
-  - Video-Bewerbung
-  - Recherche
-- Klasse (Dropdown mit eigenen Klassen)
-- Deadline (Datum und Uhrzeit)
-- Geschätzte Dauer in Minuten
+
+| Feld | Pflicht | Beschreibung |
+|------|---------|--------------|
+| **Titel** | Ja | Kurzer, aussagekräftiger Name (z.B. "Bewerbungsgespräch üben") |
+| **Beschreibung** | Ja | Detaillierte Anleitung für die Schüler:innen |
+| **Aufgabentyp** | Ja | Art der Aufgabe (siehe unten) |
+| **Klasse** | Ja | Welche Klasse soll die Aufgabe erhalten? |
+| **Deadline** | Ja | Bis wann muss abgegeben werden? |
+| **Geschätzte Dauer** | Nein | Wie lange sollte man einplanen? (in Minuten) |
+
+**Aufgabentypen erklärt:**
+
+| Typ | Icon | Beschreibung | Ideal für |
+|-----|------|--------------|-----------|
+| **KI-Bewerbungsgespräch** | 🤖 | Schüler führt Chat mit KI-Coach | Gesprächsübung, Selbstpräsentation |
+| **Dokument einreichen** | 📄 | Schüler lädt Datei hoch (PDF, Word) | Lebenslauf, Motivationsschreiben |
+| **Selbstreflexion** | ✍️ | Schüler schreibt einen Text | Nachdenken über Stärken/Schwächen |
+| **Video-Bewerbung** | 🎥 | Schüler nimmt Video auf | Selbstvorstellung, Elevator Pitch |
+| **Recherche** | 🔍 | Schüler recherchiert und fasst zusammen | Firmenrecherche, Berufsbilder |
+
+**Beispiel für eine gute Aufgabenbeschreibung:**
+
+> **Titel:** Bewerbungsgespräch für Informatiker-Lehrstelle
+> 
+> **Beschreibung:** Führe ein 15-minütiges Übungsgespräch mit dem KI-Coach. Stell dir vor, du bewirbst dich bei einer IT-Firma deiner Wahl als Informatiker/in EFZ. Die KI wird dir typische Fragen stellen. Antworte so, wie du es in einem echten Gespräch tun würdest. Am Ende erhältst du Feedback.
+> 
+> **Typ:** KI-Bewerbungsgespräch  
+> **Dauer:** 15 Minuten
 
 **Mögliche Aktionen:**
-- Aufgabe erstellen und der Klasse zuweisen
-- Abbrechen
+- Alle Felder ausfüllen und "Erstellen" klicken
+- Aufgabe wird sofort für alle Schüler:innen der Klasse sichtbar
+- "Abbrechen" verwirft die Eingaben
 
-**Hinweis:** Nach dem Erstellen sehen alle Schüler:innen der Klasse die Aufgabe in ihrer Aufgabenliste.
+**Tipp für Lehrkräfte:** Je klarer die Beschreibung, desto besser wissen die Schüler:innen was erwartet wird. Bei KI-Interviews kann man auch einen spezifischen Beruf oder eine Branche vorgeben.
 
 ---
 
@@ -1299,29 +1413,54 @@ Detailansicht einer Aufgabe mit allen eingereichten Abgaben.
 #### Feedback geben
 ![Teacher Feedback geben](doc/teacher/teacher-aufgaben-feedback-geben.png)
 
-Die Bewertungs-Ansicht für eine einzelne Schüler-Abgabe.
+Die Bewertungs-Ansicht für eine einzelne Schüler-Abgabe. Hier kann die Lehrkraft die Arbeit prüfen und konstruktives Feedback geben.
 
 **Angezeigte Elemente:**
-- Schülername und Klasse
-- Aufgabentitel und Typ
-- **Abgabe-Inhalt je nach Typ:**
-  - KI-Interview: Vollständiger Chat-Verlauf
-  - Dokument: Download-Link
-  - Selbstreflexion: Eingereichter Text
-  - Recherche: Text und Links
-- Abgabezeitpunkt
-- Bisheriges Feedback (falls vorhanden)
+- **Kopfzeile:** Schülername, Klasse, Aufgabentitel
+- **Abgabezeitpunkt:** Wann wurde eingereicht? (Pünktlich oder verspätet?)
+- **Abgabe-Inhalt** - je nach Aufgabentyp:
 
-**Formularfelder:**
-- Note/Punkte (Zahlenfeld)
-- Schriftliches Feedback (Textfeld)
+| Aufgabentyp | Was wird angezeigt? |
+|-------------|---------------------|
+| KI-Interview | Vollständiger Chat-Verlauf zwischen Schüler und KI |
+| Dokument | Download-Link zur hochgeladenen Datei |
+| Selbstreflexion | Der geschriebene Text |
+| Video | Video-Player (falls implementiert) |
+| Recherche | Text und gesammelte Links |
+
+**Bewertungsformular:**
+
+| Feld | Beschreibung |
+|------|--------------|
+| **Note/Punkte** | Zahlenwert (z.B. 1-6 oder Punktzahl) |
+| **Schriftliches Feedback** | Freitext-Kommentar für den Schüler |
+
+**Tipps für gutes Feedback:**
+- **Positives zuerst:** Was hat der Schüler gut gemacht?
+- **Konkret sein:** Statt "War gut" besser "Deine Antwort auf die Frage nach Stärken war überzeugend weil..."
+- **Verbesserungsvorschläge:** Was kann beim nächsten Mal besser werden?
+- **Ermutigung:** Motivation für weitere Übungen
+
+**Beispiel-Feedback:**
+> **Note:** 5.0
+> 
+> **Feedback:** Sehr gutes Gespräch! Deine Antworten waren authentisch und du hast dir Zeit genommen nachzudenken. Besonders gut: Du hast konkrete Beispiele genannt bei der Frage nach deinen Stärken.
+> 
+> **Verbesserungspotenzial:** Bei der Frage "Warum unsere Firma?" könntest du noch mehr zeigen, dass du dich über das Unternehmen informiert hast. Tipp: Schau dir vor dem Gespräch die Website und News der Firma an.
 
 **Mögliche Aktionen:**
-- Feedback eingeben und speichern
-- Note vergeben
-- Chat-Verlauf bei KI-Interview vollständig durchlesen
-- Dokument herunterladen bei Upload-Aufgaben
-- Zurück zur Aufgaben-Detailansicht
+- Note eingeben (optional)
+- Feedback-Text schreiben
+- "Speichern" sendet das Feedback an den Schüler
+- Bei KI-Interview: Durch den gesamten Chat-Verlauf scrollen
+- Bei Dokument: Datei herunterladen und offline prüfen
+- "Zurück" ohne zu speichern
+
+**Was passiert nach dem Speichern?**
+- Der Schüler sieht das Feedback in seiner Aufgabenansicht
+- Der Schüler erhält eine Benachrichtigung auf dem Dashboard
+- Falls Note ≥4: Schüler erhält möglicherweise ein Badge ("Gute Arbeit")
+- Die Abgabe wird als "Bewertet" markiert
 
 ---
 
