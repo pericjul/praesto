@@ -840,6 +840,46 @@ Die folgenden Mockups wurden in der Planungsphase erstellt, um die Kernfunktione
 
 Das Frontend wurde mit SvelteKit und Svelte 5 entwickelt. Es bietet separate Ansichten für Schüler:innen und Lehrkräfte, die rollenbasiert nach dem Login angezeigt werden. Das Design verwendet Tailwind CSS und ist responsive für Desktop und Mobile optimiert.
 
+### Authentifizierung
+
+#### Landing Page / Sign In
+![Sign In](doc/signIn.png)
+
+Die Startseite von Praesto begrüsst Besucher und bietet den Einstieg in die Anwendung.
+
+**Angezeigte Elemente:**
+- Praesto Logo und Slogan
+- Kurze Beschreibung der Anwendung
+- "Sign In"-Button für bestehende Benutzer
+- Optionaler Link zur Registrierung
+
+**Mögliche Aktionen:**
+- Klick auf "Sign In" leitet zu Auth0 weiter
+- Informationen über die Plattform lesen
+
+---
+
+#### Auth0 Login
+![Login](doc/login.png)
+
+Die Anmeldung erfolgt über Auth0, einen externen Authentifizierungsdienst.
+
+**Angezeigte Elemente:**
+- Auth0 Login-Formular
+- Email-Eingabefeld
+- Passwort-Eingabefeld
+- "Continue" / "Login"-Button
+- Link für "Passwort vergessen"
+
+**Mögliche Aktionen:**
+- Email und Passwort eingeben
+- Anmelden mit bestehenden Credentials
+- Passwort zurücksetzen falls vergessen
+
+**Besonderheit:** Nach erfolgreicher Anmeldung wird die Rolle (Student/Teacher) aus dem JWT-Token ausgelesen und der Benutzer zum entsprechenden Dashboard weitergeleitet.
+
+---
+
 ### Student-Ansichten
 
 #### Dashboard
