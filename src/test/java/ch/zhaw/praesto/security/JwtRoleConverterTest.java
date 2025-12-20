@@ -20,6 +20,8 @@ import static org.mockito.Mockito.*;
 @DisplayName("JwtRoleConverter Tests")
 class JwtRoleConverterTest {
 
+    private static final String ROLES_CLAIM = "https://2f124d.ch/user_roles";
+    
     private JwtRoleConverter converter;
     private Jwt jwt;
 
@@ -36,7 +38,7 @@ class JwtRoleConverterTest {
         @Test
         @DisplayName("Einzelne Rolle STUDENT")
         void convert_singleRoleStudent_returnsRoleStudent() {
-            when(jwt.getClaimAsStringList("user_roles")).thenReturn(List.of("STUDENT"));
+            when(jwt.getClaimAsMap(ROLES_CLAIM)).thenReturn(Map.of("roles", List.of("STUDENT")));
 
             Collection<SimpleGrantedAuthority> result = converter.convert(jwt);
 
@@ -47,7 +49,7 @@ class JwtRoleConverterTest {
         @Test
         @DisplayName("Einzelne Rolle TEACHER")
         void convert_singleRoleTeacher_returnsRoleTeacher() {
-            when(jwt.getClaimAsStringList("user_roles")).thenReturn(List.of("TEACHER"));
+            when(jwt.getClaimAsMap(ROLES_CLAIM)).thenReturn(Map.of("roles", List.of("TEACHER")));
 
             Collection<SimpleGrantedAuthority> result = converter.convert(jwt);
 
@@ -58,7 +60,7 @@ class JwtRoleConverterTest {
         @Test
         @DisplayName("Mehrere Rollen")
         void convert_multipleRoles_returnsAllRoles() {
-            when(jwt.getClaimAsStringList("user_roles")).thenReturn(List.of("STUDENT", "TEACHER", "ADMIN"));
+            when(jwt.getClaimAsMap(ROLES_CLAIM)).thenReturn(Map.of("roles", List.of("STUDENT", "TEACHER", "ADMIN")));
 
             Collection<SimpleGrantedAuthority> result = converter.convert(jwt);
 
@@ -71,9 +73,9 @@ class JwtRoleConverterTest {
         }
 
         @Test
-        @DisplayName("Keine Rollen (null)")
+        @DisplayName("Keine Rollen (null claim)")
         void convert_nullRoles_returnsEmptyList() {
-            when(jwt.getClaimAsStringList("user_roles")).thenReturn(null);
+            when(jwt.getClaimAsMap(ROLES_CLAIM)).thenReturn(null);
 
             Collection<SimpleGrantedAuthority> result = converter.convert(jwt);
 
@@ -81,9 +83,19 @@ class JwtRoleConverterTest {
         }
 
         @Test
-        @DisplayName("Leere Rollenliste")
-        void convert_emptyRoles_returnsEmptyList() {
-            when(jwt.getClaimAsStringList("user_roles")).thenReturn(List.of());
+        @DisplayName("Leere Map")
+        void convert_emptyMap_returnsEmptyList() {
+            when(jwt.getClaimAsMap(ROLES_CLAIM)).thenReturn(Map.of());
+
+            Collection<SimpleGrantedAuthority> result = converter.convert(jwt);
+
+            assertThat(result).isEmpty();
+        }
+        
+        @Test
+        @DisplayName("Map ohne roles Key")
+        void convert_mapWithoutRolesKey_returnsEmptyList() {
+            when(jwt.getClaimAsMap(ROLES_CLAIM)).thenReturn(Map.of("other", "value"));
 
             Collection<SimpleGrantedAuthority> result = converter.convert(jwt);
 
@@ -94,7 +106,7 @@ class JwtRoleConverterTest {
         @ValueSource(strings = {"STUDENT", "TEACHER", "ADMIN", "USER", "MANAGER"})
         @DisplayName("Verschiedene Rollennamen werden zu ROLE_ prefixed")
         void convert_variousRoles_addsPrefx(String role) {
-            when(jwt.getClaimAsStringList("user_roles")).thenReturn(List.of(role));
+            when(jwt.getClaimAsMap(ROLES_CLAIM)).thenReturn(Map.of("roles", List.of(role)));
 
             Collection<SimpleGrantedAuthority> result = converter.convert(jwt);
 
@@ -112,7 +124,7 @@ class JwtRoleConverterTest {
         void convert_realJwt_works() {
             Jwt realJwt = Jwt.withTokenValue("token")
                     .header("alg", "RS256")
-                    .claim("user_roles", List.of("STUDENT"))
+                    .claim(ROLES_CLAIM, Map.of("roles", List.of("STUDENT")))
                     .claim("sub", "auth0|12345")
                     .issuedAt(Instant.now())
                     .expiresAt(Instant.now().plusSeconds(3600))
@@ -144,7 +156,7 @@ class JwtRoleConverterTest {
         void convert_jwtWithBothRoles_returnsBoth() {
             Jwt realJwt = Jwt.withTokenValue("token")
                     .header("alg", "RS256")
-                    .claim("user_roles", List.of("STUDENT", "TEACHER"))
+                    .claim(ROLES_CLAIM, Map.of("roles", List.of("STUDENT", "TEACHER")))
                     .issuedAt(Instant.now())
                     .expiresAt(Instant.now().plusSeconds(3600))
                     .build();
