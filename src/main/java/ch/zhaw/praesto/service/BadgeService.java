@@ -165,9 +165,9 @@ public class BadgeService {
         List<Badge> allBadges = getAllBadges();
         List<UserBadge> earnedBadges = getEarnedBadges(studentId);
         
-        // Map für schnellen Lookup
+        // Map für schnellen Lookup (bei Duplikaten: erstes behalten)
         var earnedMap = earnedBadges.stream()
-                .collect(Collectors.toMap(UserBadge::getBadgeId, ub -> ub));
+                .collect(Collectors.toMap(UserBadge::getBadgeId, ub -> ub, (existing, replacement) -> existing));
         
         return allBadges.stream()
                 .map(badge -> {
