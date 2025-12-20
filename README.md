@@ -1470,9 +1470,9 @@ Die folgenden optionalen Anforderungen aus der Projektausschreibung wurden umges
 
 ### SonarQube
 
-![SonarQube Analyse](doc/sonar12.png)
+![SonarQube Analyse](doc/sonar.png)
 
-Die Codequalität wird mit SonarQube überwacht. Issues werden nach Schweregrad kategorisiert und im Entwicklungsprozess behoben.
+Die Codequalität wird mit SonarQube überwacht.
 
 ### Testabdeckung
 
