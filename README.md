@@ -9,7 +9,7 @@ Praesto ist eine KI-gestützte Webplattform, die Schüler:innen im Bewerbungspro
 | Ressource | Link |
 |-----------|------|
 | **Live-Anwendung** | [praesto.azurewebsites.net](https://praesto.azurewebsites.net/login) |
-| **SonarCloud Dashboard** | [sonarcloud.io/praesto](https://sonarcloud.io/summary/new_code?id=pericjul_praesto-original) |
+| **SonarCloud Dashboard** | [sonarcloud.io/praesto](https://sonarcloud.io/summary/overall?id=ch.zhaw.pericjul.praesto-original&branch=main) |
 | **Postman API-Dokumentation** | [documenter.getpostman.com](https://documenter.getpostman.com/view/48903716/2sB3dTs7qG) |
 
 # Inhaltsverzeichnis
@@ -242,9 +242,9 @@ Die folgenden Use-Cases sind aus dem tatsächlichen Code (Controller, Services) 
 | **Beschreibung** | Benutzer authentifiziert sich über Auth0 und erhält Zugang zur rollenspezifischen Ansicht |
 | **Vorbedingung** | Benutzer hat ein Auth0-Konto mit zugewiesener Rolle (`STUDENT` oder `TEACHER`) |
 | **Nachbedingung** | JWT-Token mit Rolle wird im Frontend gespeichert; rollenspezifisches Dashboard wird angezeigt |
-| **Standardablauf** | 1. Benutzer öffnet die Anwendung unter `praesto.azurewebsites.net`<br>2. System zeigt Login-Seite mit "Anmelden"-Button<br>3. Benutzer klickt auf "Anmelden"<br>4. System leitet zu Auth0 Login-Seite weiter<br>5. Benutzer gibt Email und Passwort ein<br>6. Auth0 validiert Credentials und prüft zugewiesene Rolle<br>7. Auth0 gibt JWT-Token mit Rollen-Claim `https://praesto.ch/roles` zurück<br>8. Frontend speichert Token im LocalStorage<br>9. System liest Rolle aus Token und leitet weiter:<br>   - `STUDENT` → `/student/dashboard`<br>   - `TEACHER` → `/teacher/dashboard` |
+| **Standardablauf** | 1. Benutzer öffnet die Anwendung unter `praesto.azurewebsites.net`<br>2. System zeigt Login-Seite mit "Anmelden"-Button<br>3. Benutzer klickt auf "Anmelden"<br>4. System leitet zu Auth0 Login-Seite weiter<br>5. Benutzer gibt Email und Passwort ein<br>6. Auth0 validiert Credentials und prüft zugewiesene Rolle<br>7. Auth0 gibt JWT-Token mit Rollen-Claim zurück<br>8. Frontend speichert Token im LocalStorage<br>9. System liest Rolle aus Token und leitet weiter:<br>   - `STUDENT` → `/student/dashboard`<br>   - `TEACHER` → `/teacher/dashboard` |
 | **Alternativablauf** | 5a. Falsche Credentials → Auth0 zeigt Fehlermeldung, zurück zu Schritt 5<br>7a. Keine Rolle zugewiesen → Zugriff verweigert |
-| **Technische Details** | **Backend:** `SecurityConfig.java` konfiguriert OAuth2 Resource Server mit JWT-Validierung. `JwtRoleConverter.java` extrahiert Rollen aus dem Custom-Claim `https://praesto.ch/roles`.<br>**Frontend:** SvelteKit Auth-Integration speichert Token und stellt `isAuthenticated` und `userRole` bereit. |
+| **Technische Details** | **Backend:** `SecurityConfig.java` konfiguriert OAuth2 Resource Server mit JWT-Validierung. `JwtRoleConverter.java` extrahiert Rollen aus dem Custom-Claim.<br>**Frontend:** SvelteKit Auth-Integration speichert Token und stellt `isAuthenticated` und `userRole` bereit. |
 
 ---
 
