@@ -972,253 +972,131 @@ stateDiagram-v2
 
 ---
 
-## UI-Mockup
+## UI-Mockups
 
-Die folgenden Mockups wurden in der Entwurfsphase erstellt und zeigen die geplante Benutzeroberfläche. Sie dienten als Grundlage für die Implementation des Frontends.
+Vor der Implementierung wurden Wireframe-Mockups erstellt, um die Benutzeroberfläche zu planen. Die Mockups dienten als Grundlage für Diskussionen und halfen, die Anforderungen zu visualisieren bevor Code geschrieben wurde.
+
+### Design-Prinzipien
+
+Bei der Gestaltung der Mockups wurden folgende Überlegungen berücksichtigt:
+
+- **Konsistente Navigation:** Beide Rollen (Student/Teacher) haben eine fixe Navigation im Header mit allen relevanten Bereichen
+- **Dashboard als Einstiegspunkt:** Nach dem Login landet der Benutzer auf einem Dashboard mit Übersicht und Schnellzugriff
+- **Statistik-Karten:** Wichtige Kennzahlen werden prominent als Karten dargestellt
+- **Karten-basiertes Layout:** Inhalte wie Aufgaben und Sessions werden als übersichtliche Karten dargestellt
+- **Klare Aktionen:** Jede Ansicht hat eindeutige Buttons für die wichtigsten Aktionen
 
 ---
 
-### Student-Ansichten (Mockups)
+### Student-Ansichten
 
 #### Dashboard
 ![Student Dashboard Mockup](doc/student/mockup/Student-Dashboard-Mockup.png)
 
-**Beschreibung:** Das Student-Dashboard ist die zentrale Anlaufstelle nach dem Login. Es bietet einen schnellen Überblick über alle relevanten Informationen.
+Das Student-Dashboard wurde als zentrale Anlaufstelle konzipiert. Die Überlegung war, dass Schüler:innen beim Öffnen der App sofort sehen sollen, was ansteht.
 
-**Geplante Elemente:**
-- **Begrüssung** mit Namen des Schülers/der Schülerin
-- **Statistik-Karten** in einer Reihe:
-  - Offene Aufgaben (mit Zahl und Link zur Aufgabenliste)
-  - Absolvierte Sessions (Gesamtzahl)
-  - Verdiente Badges (Anzahl und kleine Icon-Vorschau)
-- **Schnellzugriff-Buttons:**
-  - "Neues Training starten" → Direkter Einstieg in freies KI-Training
-  - "Aufgaben ansehen" → Zur Aufgabenübersicht
-- **Benachrichtigungsbereich:** Zeigt neues Feedback der letzten 7 Tage
-- **Badge-Vorschau:** Die zuletzt verdienten Badges als Icons
-
-**Navigation:** Seitenleiste mit Links zu Dashboard, Chat, Aufgaben, Bewerbungen, Notizen, Badges
-
----
-
-#### Chat-Übersicht (Session-Übersicht)
-![Student Session Übersicht Mockup](doc/student/mockup/Student-Session-Uebersicht.png)
-
-**Beschreibung:** Übersicht aller bisherigen Trainings-Sessions mit dem KI-Coach.
-
-**Geplante Elemente:**
-- **"Neue Session starten"**-Button prominent oben
-- **Session-Liste** als Karten oder Tabelle mit:
-  - Datum und Uhrzeit
-  - Dauer der Session
-  - Status-Badge (Offen / Geschlossen / Abgegeben)
-  - Anzahl Nachrichten
-  - Falls vorhanden: Verknüpfte Aufgabe
-- **Filter-Optionen:**
-  - Alle Sessions
-  - Nur offene (fortsetzen möglich)
-  - Nur abgeschlossene
-- **Sortierung:** Neueste zuerst (Standard)
-
-**Interaktionen:**
-- Klick auf offene Session → Session fortsetzen
-- Klick auf geschlossene Session → Verlauf lesen
-- "Neue Session" → Startet freies Training ohne Aufgabe
-
----
-
-#### Chat-Ansicht (Chatting)
-![Student Chatting Mockup](doc/student/mockup/Student-Chatting.png)
-
-**Beschreibung:** Das Herzstück der Anwendung – der Chat mit dem KI-Bewerbungscoach.
-
-**Geplante Elemente:**
-- **Header:** Session-Info (Datum, ggf. Aufgabentitel, Timer bei Aufgaben)
-- **Chat-Verlauf:**
-  - KI-Nachrichten links mit Coach-Avatar
-  - User-Nachrichten rechts
-  - Zeitstempel pro Nachricht
-  - Scroll-Bereich für lange Gespräche
-- **Eingabebereich:**
-  - Textfeld (mehrzeilig möglich)
-  - Sende-Button
-  - Enter zum Senden
-- **Aktions-Buttons:**
-  - "Session beenden" (bei freiem Training)
-  - "Als Abgabe einreichen" (bei Aufgaben-Training)
-
-**Besonderheiten:**
-- Automatisches Scrollen zu neuen Nachrichten
-- Loading-Indikator während KI antwortet
-- Bei Aufgaben: Timer-Anzeige mit verbleibender Zeit
-
----
+**Design-Entscheidungen:**
+- Begrüssung mit Name für persönliche Ansprache
+- "Aufgaben öffnen" Button prominent platziert, da dies die häufigste Aktion ist
+- Drei Hauptbereiche: Offene Aufgaben (wichtigste Info), erhaltenes Feedback (Motivation), Schnellzugriff (Navigation)
+- Navigation mit allen Bereichen: Dashboard, Aufgaben, Training, Notizen, Bewerbungen, Badges
 
 #### Aufgaben-Übersicht
 ![Student Aufgaben Mockup](doc/student/mockup/Student-Aufgaben-Uebersicht.png)
 
-**Beschreibung:** Zeigt alle Aufgaben, die der Klasse des Schülers zugewiesen wurden.
+Die Aufgaben-Übersicht zeigt alle Aufgaben der Lehrperson auf einen Blick.
 
-**Geplante Elemente:**
-- **Aufgaben-Liste** mit Karten oder Tabelle:
-  - Titel der Aufgabe
-  - Kurzbeschreibung (Vorschau)
-  - **Typ-Icon:** 🤖 KI-Interview, 📄 Dokument, ✍️ Selbstreflexion, 🎥 Video, 🔍 Recherche
-  - **Deadline** mit Farbcodierung:
-    - Normal: Mehr als 3 Tage
-    - Orange "Bald fällig": ≤ 3 Tage
-    - Rot "Überfällig!": Deadline überschritten
-  - **Status der eigenen Abgabe:**
-    - "Offen" – Noch nicht begonnen
-    - "Eingereicht" – Abgabe erfolgt
-    - "Bewertet" – Feedback vorhanden
-  - Geschätzte Dauer in Minuten
-- **Filter:**
-  - Alle / Offene / Erledigte
-- **Sortierung:** Nach Deadline (dringendste zuerst)
+**Design-Entscheidungen:**
+- Statistik-Karten oben für schnellen Überblick (Total, Abgegeben, Offen)
+- Aufgaben als Karten mit "öffnen" Button
+- Einfaches Layout ohne Ablenkung, Fokus auf die Aufgaben selbst
 
-**Interaktionen:**
-- Klick auf Aufgabe → Öffnet Aufgaben-Detail
-- Aufgaben mit Feedback haben "Feedback lesen"-Button
+#### Session-Übersicht
+![Student Sessions Mockup](doc/student/mockup/Student-Session-Uebersicht.png)
+
+Hier sieht der Schüler alle seine KI-Training-Sessions.
+
+**Design-Entscheidungen:**
+- "Neue Session starten" Button prominent oben platziert
+- Sessions als Karten mit zwei Aktionen: "Fortsetze" (weitermachen) und "Beenden" (abschliessen)
+- Einfache Darstellung ohne komplexe Filterung
+
+#### KI-Chat
+![Student Chat Mockup](doc/student/mockup/Student-Chatting.png)
+
+Das Chat-Interface für das KI-Bewerbungstraining.
+
+**Design-Entscheidungen:**
+- Klassisches Chat-Layout: KI-Nachrichten links, eigene Nachrichten rechts
+- Header mit Titel "KI-Bewerbungstraining" und "Beenden" Button
+- Eingabefeld unten mit "Senden" Button
+- Fokus auf den Gesprächsverlauf, keine Ablenkung durch andere Elemente
 
 ---
 
-### Teacher-Ansichten (Mockups)
+### Teacher-Ansichten
 
 #### Dashboard
 ![Teacher Dashboard Mockup](doc/teacher/mockup/Teacher-Dashboard-Mockup.png)
 
-**Beschreibung:** Das Teacher-Dashboard bietet Übersicht über Klassen, Aufgaben und ausstehende Bewertungen.
+Das Teacher-Dashboard fokussiert auf Klassenmanagement und ausstehende Aufgaben.
 
-**Geplante Elemente:**
-- **Statistik-Karten:**
-  - Anzahl Klassen
-  - Anzahl Aufgaben (gesamt)
-  - Ausstehende Bewertungen (Submissions ohne Feedback)
-- **Klassen-Schnellübersicht:**
-  - Liste der eigenen Klassen mit Schülerzahl
-  - Quick-Link zu jeder Klasse
-- **Letzte Aktivitäten:**
-  - Kürzlich eingereichte Abgaben
-  - "Jetzt bewerten"-Button
-- **Schnellzugriff:**
-  - "Neue Klasse erstellen"
-  - "Neue Aufgabe erstellen"
+**Design-Entscheidungen:**
+- Vier Statistik-Karten: Anzahl Klassen, Schüler, Aufgaben, Offene
+- Abgaben-Bereich für schnellen Zugriff auf zu bewertende Arbeiten
+- Schnellzugriff und "Meine Klassen" rechts für häufige Aktionen
+- Reduzierte Navigation (nur Dashboard, Klassen, Aufgaben) im Vergleich zu Student
 
-**Navigation:** Seitenleiste mit Links zu Dashboard, Klassen, Aufgaben
-
----
-
-#### Klassen-Übersicht
+#### Klassenverwaltung
 ![Teacher Klassen Mockup](doc/teacher/mockup/Teacher-Klassen-Mockup.png)
 
-**Beschreibung:** Verwaltung aller Schulklassen des Teachers.
+Verwaltung der Schulklassen mit Schülerzuordnung.
 
-**Geplante Elemente:**
-- **"Neue Klasse"**-Button
-- **Klassen-Liste** als Karten:
-  - Klassenname (z.B. "INF2024a")
-  - Anzahl Schüler:innen
-  - Anzahl Aufgaben
-  - Erstellungsdatum
-- **Aktionen pro Klasse:**
-  - "Öffnen" → Klassen-Detail mit Schülerliste
-  - "Bearbeiten" → Name ändern
-  - "Löschen" → Mit Bestätigung
-
-**Interaktionen:**
-- Klick auf Klasse → Öffnet Detail mit Schülerliste und Aufgaben
-- In Detail-Ansicht: Schüler per Email hinzufügen/entfernen
-
----
+**Design-Entscheidungen:**
+- Statistik-Karten für Übersicht (Anzahl Klassen, Anzahl Schüler)
+- Klassenliste als Hauptelement
+- Einfaches Layout für unkomplizierte Verwaltung
 
 #### Aufgaben-Übersicht
 ![Teacher Aufgaben Mockup](doc/teacher/mockup/Teacher-Aufgaben-Mockup.png)
 
-**Beschreibung:** Alle vom Teacher erstellten Aufgaben, gruppiert nach Klasse.
+Alle erstellten Aufgaben in tabellarischer Form.
 
-**Geplante Elemente:**
-- **"Neue Aufgabe"**-Button
-- **Aufgaben-Liste** gruppiert nach Klasse:
-  - Aufgabentitel
-  - Typ-Icon
-  - Deadline
-  - Status (ASSIGNED, IN_PROGRESS, etc.)
-  - Abgaben-Fortschritt (z.B. "5/12 abgegeben")
-- **Filter:**
-  - Nach Klasse
-  - Nach Status
-  - Nach Typ
-
-**Interaktionen:**
-- Klick auf Aufgabe → Öffnet Aufgaben-Detail mit Abgabenliste
-- "Neue Aufgabe" → Öffnet Erstellungsformular
-
----
+**Design-Entscheidungen:**
+- Tabellen-Layout für bessere Übersicht bei vielen Aufgaben
+- Alle relevanten Infos auf einen Blick (Klasse, Deadline, Status)
 
 #### Aufgabe erstellen
 ![Teacher Aufgabe erstellen Mockup](doc/teacher/mockup/Teacher-Create-Aufgabe-Mockup.png)
 
-**Beschreibung:** Formular zum Erstellen einer neuen Aufgabe.
+Formular zum Erstellen einer neuen Aufgabe.
 
-**Geplante Formularfelder:**
-| Feld | Typ | Pflicht | Beschreibung |
-|------|-----|---------|--------------|
-| **Klasse** | Dropdown | Ja | Auswahl aus eigenen Klassen |
-| **Titel** | Text | Ja | Kurze Bezeichnung der Aufgabe |
-| **Beschreibung** | Textarea | Nein | Detaillierte Anweisungen |
-| **Aufgabentyp** | Dropdown | Ja | AI_INTERVIEW, DOCUMENT_UPLOAD, etc. |
-| **Dauer (Minuten)** | Nummer | Nein | Empfohlene Bearbeitungszeit (relevant für Timer bei KI-Interview) |
-| **Deadline** | Datum + Zeit | Ja | Abgabefrist |
+**Design-Entscheidungen:**
+- Alle Felder untereinander für klare Struktur
+- Pflichtfelder: Titel, Klasse (Dropdown), Typ (Dropdown), Deadline
+- Optionales Beschreibungsfeld für Details
+- "Erstellen" Button am Ende des Formulars
 
-**Validierung:**
-- Titel ist Pflicht
-- Deadline muss in der Zukunft liegen
-- Bei AI_INTERVIEW sollte Dauer angegeben werden
-
-**Buttons:**
-- "Erstellen" → Speichert und zeigt Bestätigung
-- "Abbrechen" → Zurück zur Übersicht
-
----
-
-#### Aufgaben-Detail (mit Abgaben)
+#### Aufgaben-Detail
 ![Teacher Aufgaben Detail Mockup](doc/teacher/mockup/Teacher-Aufgaben-Detail-Mockup.png)
 
-**Beschreibung:** Detailansicht einer Aufgabe mit allen eingereichten Abgaben.
+Detailansicht einer Aufgabe mit allen Schülerabgaben.
 
-**Geplante Elemente:**
-- **Aufgaben-Info:**
-  - Titel, Beschreibung
-  - Typ, Dauer, Deadline
-  - Status
-- **Abgaben-Tabelle:**
-  - Schüler-Email
-  - Abgabe-Datum
-  - Status-Badge (Eingereicht, In Prüfung, Bewertet)
-  - Note (falls vorhanden)
-  - "Ansehen"-Button
-- **Filter:**
-  - Alle / Nur unbewertete / Nur bewertete
-- **Statistik:**
-  - X von Y Schüler:innen haben abgegeben
-  - Durchschnittsnote (falls vorhanden)
-
-**Interaktionen:**
-- "Ansehen" → Öffnet Abgabe-Detail zum Bewerten
-- Klick auf Schüler → Zeigt alle Abgaben dieses Schülers
+**Design-Entscheidungen:**
+- Vier Statistik-Karten für Abgabe-Status: Abgaben, Ausstehend, Feedback offen, Bewertet
+- Liste aller Abgaben pro Schüler darunter
+- Ermöglicht der Lehrperson, den Fortschritt der Klasse zu sehen
 
 ---
 
-### Design-Prinzipien
+### Umsetzung
 
-Die Mockups folgen diesen Design-Prinzipien:
+Die finalen Screenshots zeigen, dass die Grundstruktur der Mockups beibehalten wurde. Während der Implementierung wurden Details verfeinert:
 
-1. **Klarheit:** Wichtige Informationen sind sofort sichtbar (Statistiken, Status)
-2. **Konsistenz:** Gleiche Elemente sehen überall gleich aus (Buttons, Badges, Karten)
-3. **Farbcodierung:** Status wird durch Farben verdeutlicht (Grün=OK, Rot=Dringend, etc.)
-4. **Responsive:** Layout passt sich an verschiedene Bildschirmgrössen an
-5. **Zugänglichkeit:** Ausreichend Kontrast, lesbare Schriftgrössen, klare Icons
+- Farbschema (Lila/Orange) für bessere visuelle Hierarchie
+- Icons und Emojis für schnellere Orientierung
+- Responsive Anpassungen für verschiedene Bildschirmgrössen
+- Zusätzliche Features wie Filter und Sortierung wo sinnvoll
 
 ---
 
@@ -1226,101 +1104,46 @@ Die Mockups folgen diesen Design-Prinzipien:
 
 ## Technologie-Stack
 
-| Bereich | Technologie | Version |
-|---------|-------------|---------|
-| **Backend** | Spring Boot | 3.x |
-| **KI-Integration** | Spring AI + OpenAI | GPT-4 |
-| **Datenbank** | MongoDB | Atlas (Cloud) |
-| **Authentifizierung** | Auth0 | OAuth2/JWT |
-| **Frontend** | SvelteKit | Svelte 5 |
-| **Styling** | Eigenes CSS Design System | CSS Variables |
-| **HTTP Client** | Axios | - |
+| Bereich | Technologie |
+|---------|-------------|
+| **Backend** | Spring Boot 3.x, Java 17+ |
+| **KI-Integration** | Spring AI + OpenAI GPT-4 |
+| **Datenbank** | MongoDB Atlas |
+| **Authentifizierung** | Auth0 (OAuth2/JWT) |
+| **Frontend** | SvelteKit, Svelte 5 |
+| **Styling** | Eigenes CSS Design System |
+| **HTTP Client** | Axios |
 
 ---
 
 ## Frontend
 
-Das Frontend wurde mit **SvelteKit** und **Svelte 5** entwickelt. Es bietet separate Ansichten für Schüler:innen und Lehrkräfte, die rollenbasiert nach dem Login angezeigt werden. Das Design verwendet ein **eigenes CSS Design System** mit CSS Custom Properties.
-
-### Architektur
-
-```
-frontend/
-├── src/
-│   ├── routes/
-│   │   ├── student/          # Schüler-Ansichten
-│   │   │   ├── dashboard/
-│   │   │   ├── sessions/
-│   │   │   ├── assignments/
-│   │   │   ├── applications/
-│   │   │   ├── notes/
-│   │   │   └── badges/
-│   │   ├── teacher/          # Lehrer-Ansichten
-│   │   │   ├── dashboard/
-│   │   │   ├── classes/
-│   │   │   ├── assignments/
-│   │   │   └── sessions/
-│   │   ├── signup/           # Registrierung
-│   │   └── +page.svelte      # Login
-│   ├── lib/
-│   │   └── api/              # API-Aufrufe (Axios)
-│   └── styles/
-│       ├── theme.css         # CSS Variables
-│       └── components.css    # Komponenten-Styles
-└── svelte.config.js
-```
+Das Frontend bietet separate Ansichten für Schüler:innen und Lehrkräfte. Nach dem Login wird basierend auf der Rolle automatisch zum richtigen Dashboard weitergeleitet.
 
 ---
 
 ### Authentifizierung
 
-#### Login
-![Login](doc/login.png)
-
-Die Login-Seite verwendet ein **Split-Screen-Design** mit Branding links und Formular rechts.
-
-**Linke Seite (Gradient orange → lila):**
-- Praesto Logo (winkende Figur)
-- App-Name "Praesto"
-- Slogan: "Dein persönlicher Bewerbungscoach mit KI-Power"
-- Feature-Liste als Kacheln:
-  - 🎯 KI-Bewerbungstraining
-  - 📋 Aufgaben & Feedback  
-  - 🏆 Badges & Fortschritt
-
-**Rechte Seite (weiss):**
-- Überschrift: "Willkommen zurück! 👋"
-- Untertext: "Melde dich an, um fortzufahren"
-- E-Mail Eingabefeld (Placeholder: "deine@email.ch")
-- Passwort Eingabefeld
-- "Anmelden" Button (dunkel/lila)
-- Link: "Noch kein Konto? Jetzt registrieren"
-
----
-
 #### Registrierung
 ![Registrierung](doc/signIn.png)
 
-Die Registrierungs-Seite folgt dem gleichen Split-Screen-Design.
+Neue Benutzer können sich selbständig registrieren. Dazu müssen folgende Angaben gemacht werden:
 
-**Linke Seite:**
-- Praesto Logo
-- "Praesto"
-- "Starte jetzt mit deinem persönlichen Bewerbungscoach"
-- Feature-Liste:
-  - ✨ Kostenlos starten
-  - 🎯 Personalisiertes Training
-  - 📈 Verfolge deinen Fortschritt
+- **Vorname und Nachname:** Werden für die Anzeige in der App verwendet
+- **E-Mail-Adresse:** Dient als Login-Name und wird verwendet, um Schüler:innen einer Klasse zuzuordnen. Die Lehrperson fügt die E-Mail-Adresse zur Klasse hinzu, und sobald sich der Schüler mit dieser Adresse registriert, wird er automatisch der Klasse zugewiesen.
+- **Passwort:** Mindestens 8 Zeichen
 
-**Rechte Seite:**
-- Überschrift: "Konto erstellen 🚀"
-- Untertext: "Registriere dich und leg los"
-- Formularfelder:
-  - Vorname + Nachname (nebeneinander)
-  - E-Mail * (Pflichtfeld, Placeholder: "max.muster@schule.ch")
-  - Passwort * (Hinweis: "Mind. 8 Zeichen")
-- "Registrieren" Button (dunkel/lila)
-- Link: "Bereits ein Konto? Jetzt anmelden"
+Nach der Registrierung kann sich der Benutzer direkt anmelden.
+
+#### Login
+![Login](doc/login.png)
+
+Bestehende Benutzer melden sich mit E-Mail und Passwort an. Die Anwendung erkennt automatisch die Rolle des Benutzers (Student oder Teacher) und leitet zum entsprechenden Dashboard weiter.
+
+Die linke Seite zeigt die Kernfunktionen der App:
+- KI-Bewerbungstraining
+- Aufgaben & Feedback
+- Badges & Fortschritt
 
 ---
 
@@ -1329,390 +1152,272 @@ Die Registrierungs-Seite folgt dem gleichen Split-Screen-Design.
 #### Dashboard
 ![Student Dashboard](doc/student/schueler-dashboard.png)
 
-Das Dashboard ist die Startseite nach dem Login mit Übersicht und Schnellzugriff.
+Das Dashboard ist die Startseite für Schüler:innen und bietet einen Überblick über alle relevanten Informationen:
 
-**Header-Bereich (lila Hintergrund):**
-- Begrüssung: "Willkommen zurück 👋" + "Hi student@zhaw.ch"
-- Beschreibung: "Hier findest du alles, um dich optimal auf Bewerbungen vorzubereiten."
-- Zwei Buttons: "Zu den Aufgaben" (weiss) + "KI-Training starten" (dunkel)
-- Statistik-Karten rechts:
-  - Offene Aufgaben: **0**
-  - KI-Trainings: **55**
-  - 🏆 Badges: **7**
+**Statistik-Bereich (oben rechts):**
+- Anzahl offener Aufgaben
+- Anzahl absolvierter KI-Trainings
+- Anzahl verdiente Badges
 
-**Hauptbereich:**
-- **📚 Nächste Aufgaben** (mit "Alle ansehen →" Link)
-  - Zeigt: "Keine offenen Aufgaben! Du hast alles erledigt. Zeit für ein Training?"
-  - "KI-Training starten" Button (lila)
-- **🔔 Neues Feedback** (rechte Spalte)
-  - Liste mit Feedback-Einträgen
-  - Zeigt z.B. "Neues Feedback - Note: 5"
-  - "+1 weitere" wenn mehr vorhanden
-- **⚡ Schnellzugriff** (rechte Spalte)
-  - 🎯 KI-Training →
-  - 📁 Bewerbungen (Badge "2")
-  - 📝 Notizen →
-  - 🏆 Badges (Badge "7")
+**Nächste Aufgaben:**
+Zeigt die anstehenden Aufgaben mit Deadline. Wenn keine Aufgaben offen sind, wird ein Hinweis angezeigt mit der Möglichkeit, direkt ein KI-Training zu starten.
 
-**Navigation (Header):**
-- Praesto Logo + Name
-- Tabs: Dashboard | Aufgaben | Training | Notizen | Bewerbungen | 🏆 Badges
-- Rechts: student@zhaw.ch + "Logout" Button
+**Neues Feedback:**
+Liste der kürzlich erhaltenen Bewertungen von der Lehrperson. Ein Klick führt direkt zur bewerteten Aufgabe.
+
+**Schnellzugriff:**
+Direkte Links zu allen Bereichen der App mit Badges, die aktuelle Zahlen anzeigen (z.B. "2" bei Bewerbungen bedeutet 2 aktive Bewerbungen).
 
 ---
 
 #### Aufgaben-Übersicht
 ![Student Aufgaben](doc/student/schueler-aufgaben-uebersicht.png)
 
-Zeigt alle Aufgaben der Klasse des Schülers.
+Zeigt alle Aufgaben, die der Schüler von seiner Lehrperson erhalten hat.
 
-**Header:**
-- 📚 "Meine Aufgaben"
-- Klasse: **Informatik 3a** · "Hier findest du alle Aufgaben deiner Lehrperson."
+**Statistik:**
+- Aufgaben total
+- Offen (noch nicht bearbeitet)
+- Abgegeben (eingereicht, wartet auf Bewertung oder bereits bewertet)
 
-**Statistik-Karten:**
-- **2** Aufgaben total
-- **1** Offen
-- **1** Abgegeben (grün)
+**Aufgabenliste:**
+Jede Aufgabe zeigt:
+- **Typ-Badge:** Zeigt den Aufgabentyp (z.B. "KI-Bewerbungsgespräch", "Dokument einreichen", "Recherche")
+- **Status:** Offen, Abgegeben, oder Bewertet
+- **Titel und Beschreibung:** Was der Schüler tun soll
+- **Deadline:** Bis wann die Aufgabe erledigt sein muss
+- **Geschätzte Dauer:** Wie viel Zeit eingeplant werden sollte
 
-**Aufgaben-Liste:**
+Bei offenen Aufgaben gibt es einen Button zum direkten Starten (z.B. "Training starten" bei KI-Aufgaben).
 
-*Aufgabe 1 (offen):*
-- Badge: "🎯 KI-Bewerbungsgespräch" + "Offen"
-- Titel: **Interview-Training**
-- Beschreibung: "Führe ein simuliertes Vorstellungsgespräch mit dem KI-Coach durch."
-- 📅 Deadline: 20.12.2025 · ⏱ ca. 30 Min
-- Button: "Training starten" (lila)
-
-*Aufgabe 2 (abgegeben mit Feedback):*
-- Badge: "📄 Dokument einreichen" + "✓ Bewertet"
-- Titel: **aaaa**
-- 📤 Abgegeben am 12.12.2025, 15:21 · 💬 Feedback erhalten
-- Feedback-Box:
-  - "Feedback: Gute Reflexion! Du hast die wichtigsten Punkte erfasst."
-  - Note: **5** (lila Badge)
-- Link: "Details ansehen →"
-
----
+Bei bewerteten Aufgaben wird das Feedback und die Note direkt in der Übersicht angezeigt.
 
 #### Aufgabe Detail (offen)
 ![Student Aufgabe Detail](doc/student/schueler-aufgabe-detail.png)
 
-Detailansicht einer offenen Aufgabe vor der Bearbeitung.
+Die Detailansicht einer offenen Aufgabe zeigt:
 
-**Header:**
-- "← Zurück zu Aufgaben"
-- Titel: **Interview-Training**
-- Badges: "🎯 KI-Interview" (lila) + "Offen" + 📅 Deadline: 20.12.2025 + ⏱ 30 Min
+**Aufgaben-Info:**
+- Typ, Status, Deadline und Dauer im Header
+- Vollständige Beschreibung der Aufgabe
 
-**Beschreibung (Karte):**
-- 📄 **Beschreibung**
-- "Führe ein simuliertes Vorstellungsgespräch mit dem KI-Coach durch."
+**Bearbeiten-Bereich:**
+Je nach Aufgabentyp wird ein entsprechender Button angezeigt:
+- Bei KI-Interview: "Interview starten" - öffnet den KI-Chat
+- Bei Dokument: Upload-Bereich für Dateien
+- Bei Recherche/Selbstreflexion: Textfeld für die Eingabe
 
-**Aufgabe bearbeiten (Karte):**
-- 📝 **Aufgabe bearbeiten**
-- "Starte ein KI-Bewerbungsgespräch und reiche es als Abgabe ein."
-- Button: "🎯 Interview starten" (lila, volle Breite)
-
-**Tipps (rechte Spalte):**
-- 💡 **Tipps**
-- • Antworte in ganzen Sätzen
-- • Nimm dir Zeit zum Nachdenken
-- • Sei ehrlich und authentisch
-
----
+**Tipps:**
+Hilfreiche Hinweise für die Bearbeitung, z.B.:
+- "Antworte in ganzen Sätzen"
+- "Nimm dir Zeit zum Nachdenken"
+- "Sei ehrlich und authentisch"
 
 #### Aufgabe mit Feedback
-![Student Aufgabe Feedback](doc/student/schueler-aufgabe-mit-feedback.png)
+![Student Aufgabe mit Feedback](doc/student/schueler-aufgabe-mit-feedback.png)
 
-Ansicht einer abgegebenen und bewerteten Aufgabe.
+Nach der Bewertung durch die Lehrperson zeigt die Detailansicht:
 
-**Header:**
-- "← Zurück zu Aufgaben"
-- Titel: **aaaa**
-- Badges: "📄 Dokument" (orange) + "✓ Abgegeben" + 📅 Deadline: 19.12.2025
+**Deine Abgabe:**
+- Bestätigung dass die Aufgabe abgegeben wurde
+- Datum und Uhrzeit der Abgabe
 
-**Deine Abgabe (Karte, grüner Rand):**
-- ✅ **Deine Abgabe**
-- "Abgegeben am 12.12.2025, 15:21" (grüner Text)
-
-**Feedback (Karte):**
-- 💬 **Feedback** + Note **5** (lila Badge rechts)
-- "Gute Reflexion! Du hast die wichtigsten Punkte erfasst." (grüner Text)
-
-**Tipps (rechte Spalte):**
-- 💡 **Tipps**
-- • Lies die Aufgabe genau durch
-- • Plane genug Zeit ein
-- • Frag bei Unklarheiten nach
+**Feedback:**
+- Schriftliches Feedback der Lehrperson
+- Note (1-6) als Badge angezeigt
 
 ---
 
-#### KI-Training Sessions Übersicht
+#### KI-Training Sessions
 ![Student Sessions](doc/student/schueler-chat-übersicht.png)
 
-Übersicht aller KI-Trainings-Sessions.
+Übersicht aller KI-Trainings-Sessions des Schülers.
 
-**Header:**
-- 🎯 "KI-Training Sessions"
-- "Hier siehst du alle deine Trainings-Sessions. Setze offene Sessions fort oder starte eine neue."
-- Button: "+ Neue Session starten" (lila, rechts)
+**Statistik:**
+- Total: Alle jemals gestarteten Sessions
+- Offen: Noch nicht beendete Sessions (können fortgesetzt werden)
+- Abgeschlossen: Beendete Sessions
 
-**Statistik-Karten:**
-- **57** Total
-- **1** Offen (grün)
-- **56** Abgeschlossen
+**Session-Karten:**
+Jede Session zeigt:
+- Status (Offen oder Abgeschlossen)
+- Startdatum und ggf. Enddatum
+- Anzahl Nachrichten im Chat
+- Bei Aufgaben-Sessions: "Zu Aufgabe: Ja"
 
-**Sessions als Karten-Grid (2 Spalten):**
-
-*Offene Session:*
-- Status: "Offen" (grüner Text)
-- Datum: 14.12.2025, 21:05
-- Nachrichten: **1**
-- Buttons: "▶ Fortsetzen" (lila) + "⬛ Beenden" (weiss)
-
-*Abgeschlossene Sessions:*
-- Status: "Abgeschlossen" (grauer Text)
-- Datum + Beendet-Datum
-- Nachrichten: **1**
-- "Zu Aufgabe: Ja" (falls verknüpft)
-- Button: "👁 Ansehen"
-
----
+**Aktionen:**
+- "Fortsetzen": Öffnet eine offene Session zum Weitermachen
+- "Beenden": Schliesst eine offene Session ab
+- "Ansehen": Zeigt den Chat-Verlauf einer abgeschlossenen Session
+- "+ Neue Session starten": Startet ein neues freies Training
 
 #### KI-Chat (Freies Training)
 ![Student Chat ohne Abgabe](doc/student/schueler-chat-ohne-abgabe.png)
 
-Chat-Interface für freies Training ohne Aufgabe.
+Im freien Training kann der Schüler ohne Zeitdruck üben.
 
-**Header (lila Balken):**
-- "← Zurück"
-- 🎯 **KI-Bewerbungstraining**
-- "Übe Vorstellungsgespräche mit deinem persönlichen KI-Coach"
-- Button: "Beenden" (weiss/transparent)
+**Header:**
+- Titel "KI-Bewerbungstraining"
+- "Beenden" Button um die Session abzuschliessen
 
 **Chat-Bereich:**
-- KI-Nachricht (links, weisse Bubble):
-  - "Hallo! Ich bin dein Bewerbungscoach. Möchtest du ein Vorstellungsgespräch üben oder hast du eine Frage zur Bewerbung?"
-  - Zeitstempel: 21:04
+Der KI-Coach begrüsst den Schüler und bietet zwei Modi an:
+1. **Vorstellungsgespräch üben:** Die KI simuliert einen HR-Verantwortlichen und stellt typische Bewerbungsfragen
+2. **Fragen zur Bewerbung:** Der Schüler kann Fragen stellen und erhält Tipps
 
-**Eingabe-Bereich (unten):**
-- Textfeld: "Schreibe deine Antwort..."
-- Sende-Button (Pfeil, lila)
-- Hinweis: "💡 Drücke Enter zum Senden, Shift+Enter für neue Zeile"
+Die Nachrichten werden chronologisch angezeigt mit Zeitstempel. Die KI antwortet auf Deutsch und gibt nach jeder Antwort konstruktives Feedback.
 
----
+**Eingabe:**
+- Textfeld für die Antwort
+- Enter zum Senden, Shift+Enter für neue Zeile
 
 #### KI-Chat (mit Aufgabe)
 ![Student Chat mit Abgabe](doc/student/schueler-chat-mit-abgabe.png)
 
-Chat-Interface für aufgabengebundenes Training.
+Bei einer Aufgaben-gebundenen Session gibt es zusätzliche Elemente:
 
-**Header (lila Balken):**
-- "← Zurück"
-- 🎯 **Interview-Training**
-- "Aufgabe von deiner Lehrperson"
-- Button: "✓ Abgeben" (grün!)
+**Header:**
+- Aufgabentitel statt "KI-Bewerbungstraining"
+- Grüner "Abgeben" Button statt "Beenden"
 
-**Timer-Leiste:**
-- ⏱ "Noch 29:51" (grüner Text, Countdown)
-- "Ziel: 30 Min" (rechts)
+**Timer:**
+- Zeigt die verbleibende Zeit (z.B. "Noch 29:51")
+- Zielzeit wird rechts angezeigt (z.B. "Ziel: 30 Min")
+- Der Timer läuft ab Start und hilft dem Schüler, die Zeit im Blick zu behalten
 
-**Chat-Bereich:**
-- KI-Nachricht:
-  - "Willkommen zum Bewerbungsgespräch! Für welchen Beruf möchtest du heute üben?"
-  - Zeitstempel: 21:30
-
-**Eingabe-Bereich:** (gleich wie freies Training)
+**Ablauf:**
+1. Der Schüler startet das Interview
+2. Die KI führt durch ein strukturiertes Bewerbungsgespräch
+3. Nach Abschluss klickt der Schüler "Abgeben"
+4. Der gesamte Chat-Verlauf wird als Abgabe gespeichert
+5. Die Lehrperson kann den Verlauf einsehen und bewerten
 
 ---
 
 #### Bewerbungs-Tracker
 ![Student Bewerbungen](doc/student/schueler-bewerbungen-uebersicht.png)
 
-Verwaltung aller echten Bewerbungen.
+Hier verwaltet der Schüler seine echten Bewerbungen für Lehrstellen.
 
-**Header:**
-- 📊 "Bewerbungs-Tracker"
-- "Behalte den Überblick über deine Bewerbungen und deren Status."
-- Button: "+ Neue Bewerbung" (lila)
+**Statistik-Leiste:**
+- Total: Alle Bewerbungen
+- Beworben: Abgeschickte Bewerbungen
+- Eingeladen: Einladungen zum Gespräch
+- Zusagen: Erfolgreiche Bewerbungen
+- Absagen: Abgelehnte Bewerbungen
 
-**Statistik-Karten:**
-- **2** Total
-- **1** Beworben (blau)
-- **0** Eingeladen (gelb)
-- **0** Zusagen (grün)
-- **0** Absagen (rot)
-
-**Filter-Leiste:**
-- 🔍 Suchen...
-- Dropdown: "Alle Status"
-- Dropdown: "Neueste zuerst"
+**Filter:**
+- Suchfeld: Suche nach Firmenname
+- Status-Filter: Nur bestimmte Status anzeigen
+- Sortierung: Neueste zuerst oder älteste zuerst
 
 **Bewerbungs-Tabelle:**
+Spalten: Firma, Position, Status, Beworben am, Gespräch am, Aktionen
 
-| FIRMA | POSITION | STATUS | BEWORBEN AM | GESPRÄCH | AKTIONEN |
-|-------|----------|--------|-------------|----------|----------|
-| Beispiel AG 📝 | Informatiker EFZ | 📤 Beworben ▼ | 15.12.2025 | - | ✏️ 🗑️ |
-| EWZ | Informatikerin EFZ | ✅ Gespräch absolviert ▼ | 12.11.2025 | - | ✏️ 🗑️ |
+Der **Status kann direkt in der Tabelle geändert werden** per Dropdown - so muss nicht jede Bewerbung einzeln geöffnet werden.
 
-**Status-Dropdown:** Direkt in der Tabelle klickbar zum Ändern
+**Aktionen:**
+- Stift-Icon: Bewerbung bearbeiten
+- Papierkorb-Icon: Bewerbung löschen
 
----
-
-#### Bewerbung erstellen (Modal)
+#### Bewerbung erstellen
 ![Student Bewerbung erstellen](doc/student/schueler-bewerbung-erstellen.png)
 
-Modal zum Erstellen einer neuen Bewerbung.
+Modal zum Erfassen einer neuen Bewerbung:
 
-**Modal-Header:**
-- "Neue Bewerbung"
-- X zum Schliessen
+- **Firma (Pflichtfeld):** Name des Unternehmens
+- **Position:** Lehrberuf oder Stelle
+- **Status:** Aktueller Stand (standardmässig "Geplant")
+- **Beworben am:** Datum der Bewerbung
+- **Gespräch am:** Datum eines allfälligen Vorstellungsgesprächs
+- **Notizen:** Zusätzliche Informationen (z.B. Kontaktperson, Telefonnummer)
 
-**Formularfelder:**
-- **Firma *** (Pflicht) - Placeholder: "z.B. Google"
-- **Position** - Placeholder: "z.B. Software Engineer"
-- **Status** - Dropdown mit "📝 Geplant" vorausgewählt
-- **Beworben am** - Datumsfeld (tt.mm.jjjj)
-- **Gespräch am** - Datumsfeld (tt.mm.jjjj)
-- **Notizen** - Textarea "Zusätzliche Informationen..."
-
-**Buttons:**
-- "Abbrechen" (weiss)
-- "Hinzufügen" (lila)
-
----
-
-#### Bewerbung bearbeiten (Modal)
+#### Bewerbung bearbeiten
 ![Student Bewerbung bearbeiten](doc/student/schueler-bewerbung-bearbeiten.png)
 
-Modal zum Bearbeiten einer bestehenden Bewerbung.
+Alle Felder einer bestehenden Bewerbung können angepasst werden. Typische Anwendungsfälle:
+- Status aktualisieren nach Rückmeldung
+- Gesprächstermin eintragen nach Einladung
+- Notizen ergänzen nach Telefongespräch
 
-**Modal-Header:**
-- "Bewerbung bearbeiten"
-- X zum Schliessen
-
-**Formularfelder (ausgefüllt):**
-- **Firma *** - "Beispiel AG"
-- **Position** - "Informatiker EFZ"
-- **Status** - "📤 Beworben" (Dropdown)
-- **Beworben am** - "15.12.2025"
-- **Gespräch am** - (leer)
-- **Notizen** - "Online beworben am 15.12."
-
-**Buttons:**
-- "Abbrechen" (weiss)
-- "Speichern" (lila)
-
----
-
-#### Bewerbungsstatus ändern
+#### Status ändern
 ![Student Status ändern](doc/student/schueler-bewerbungsstatus-aendern.png)
 
-Status-Dropdown direkt in der Bewerbungsliste.
+Die verfügbaren Status bilden den typischen Bewerbungsprozess ab:
 
-**Dropdown-Optionen:**
-- 📝 Geplant
-- ✓ 📤 Beworben (aktuell ausgewählt)
-- 📅 Eingeladen
-- ✅ Gespräch absolviert
-- 🎉 Zusage
-- ❌ Absage
-- 🔙 Zurückgezogen
+| Status | Bedeutung |
+|--------|-----------|
+| 📝 Geplant | Bewerbung ist geplant, aber noch nicht abgeschickt |
+| 📤 Beworben | Bewerbung wurde abgeschickt |
+| 📅 Eingeladen | Einladung zum Vorstellungsgespräch erhalten |
+| ✅ Gespräch absolviert | Vorstellungsgespräch hat stattgefunden |
+| 🎉 Zusage | Lehrstelle erhalten |
+| ❌ Absage | Absage erhalten |
+| 🔙 Zurückgezogen | Bewerbung selbst zurückgezogen |
 
 ---
 
-#### Notizen-Übersicht
+#### Notizen
 ![Student Notizen](doc/student/schueler-notizen-übersicht.png)
 
-Persönliche Notizen zu Firmen und Bewerbungen.
+Persönliche Notizen zu Firmen und dem Bewerbungsprozess.
 
-**Header:**
-- 📝 "Meine Notizen"
-- "Halte wichtige Informationen zu Unternehmen und deinem Bewerbungsprozess fest."
-- Button: "+ Neue Notiz" (lila)
+**Filter:**
+- Anzahl Notizen total
+- Suchfeld für Volltextsuche
+- Filter nach Firma
+- Sortierung
 
-**Filter-Leiste:**
-- Badge: "2 Total"
-- 🔍 Suchen...
-- Dropdown: "Alle Firmen"
-- Dropdown: "Neueste zuerst"
+**Notiz-Karten:**
+Jede Notiz zeigt:
+- Firma und Position (falls zugeordnet) als Badges
+- Notiztext (Vorschau)
+- Erstelldatum
+- Bearbeiten/Löschen Icons
 
-**Notizen als Karten (2 Spalten):**
+Notizen können einer Firma/Position zugeordnet werden, um später alle Infos zu einem Unternehmen schnell zu finden.
 
-*Notiz 1:*
-- 🏢 Beispiel AG + 💼 Informatiker EFZ (Badges)
-- "Guter Eindruck beim Telefongespräch. Firma hat moderne Büros."
-- Datum: 14.12.2025, 13:26
-- Icons: ✏️ 🗑️
-
-*Notiz 2:*
-- 🏢 ZKB + 💼 Informatikerin EFZ
-- "Lehrstellen ende juni"
-- Datum: 11.12.2025, 19:05
-- Icons: ✏️ 🗑️
-
----
-
-#### Notiz erstellen (Modal)
+#### Notiz erstellen
 ![Student Notiz erstellen](doc/student/schueler-notiz-erstellen.png)
 
-Modal zum Erstellen einer neuen Notiz.
+Modal zum Erstellen einer neuen Notiz:
 
-**Modal-Header:**
-- "Neue Notiz"
-- X zum Schliessen
+- **Firma (optional):** Zuordnung zu einer Firma
+- **Position (optional):** Zuordnung zu einer Position
+- **Notiz (Pflichtfeld):** Der eigentliche Notiztext
 
-**Formularfelder:**
-- **Firma (optional)** - Placeholder: "z.B. Google"
-- **Position (optional)** - Placeholder: "z.B. Software Engineer"
-- **Notiz *** (Pflicht) - Textarea "Deine Notiz..."
-
-**Buttons:**
-- "Abbrechen" (weiss)
-- "Erstellen" (lila)
+Anwendungsbeispiele:
+- Eindruck nach Schnuppertag
+- Infos von Berufsmesse
+- Gesprächsnotizen nach Telefonat
+- Recherche-Ergebnisse zu Firma
 
 ---
 
-#### Badges-Übersicht
+#### Badges
 ![Student Badges](doc/student/schueler-badges-uebersicht.png)
 
-Gamification-Übersicht mit allen Badges.
+Das Gamification-System motiviert zur regelmässigen Nutzung der App.
 
-**Header:**
-- 🏆 "Meine Badges"
-- "Sammle Badges durch deine Aktivitäten!"
-- Badge-Counter rechts: **7/9** Badges verdient (lila Kreis)
-
-**Fortschrittsbalken:**
-- Grüner Balken zeigt 78% abgeschlossen
+**Fortschrittsanzeige:**
+- Anzahl verdiente Badges (z.B. "7/9")
+- Fortschrittsbalken in Prozent
 
 **Badge-Kategorien:**
 
-**🎯 KI-Training:**
-| Badge | Beschreibung | Status |
-|-------|--------------|--------|
-| Erste Session | Dein erstes KI-Training absolviert! | ✓ Verdient am 11.12.2025 |
-| Fleissig | 5 KI-Trainings gemacht | ✓ Verdient am 11.12.2025 |
-| Training-Profi | 10 KI-Trainings absolviert | ✓ Verdient am 11.12.2025 |
+| Kategorie | Badges |
+|-----------|--------|
+| **KI-Training** | Erste Session, Fleissig (5x), Training-Profi (10x) |
+| **Notizen** | Notizen-Starter (1x), Notizen-Sammler (10x) |
+| **Bewerbungen** | Bewerber (1x), Aktiv (5x) |
+| **Meilensteine** | Einladung erhalten, Zusage erhalten |
 
-**📝 Notizen:**
-| Badge | Beschreibung | Status |
-|-------|--------------|--------|
-| Notizen-Starter | Erste Notiz erstellt | ✓ Verdient am 11.12.2025 |
-| Notizen-Sammler | 10 Notizen gesammelt | 🔒 Noch nicht freigeschaltet |
+**Badge-Anzeige:**
+- Farbiges Icon und Name bei verdienten Badges
+- Ausgegraut bei noch nicht freigeschalteten
+- Datum der Freischaltung bei verdienten Badges
 
-**📁 Bewerbungen:**
-| Badge | Beschreibung | Status |
-|-------|--------------|--------|
-| Bewerber | Erste Bewerbung eingetragen | ✓ Verdient am 11.12.2025 |
-| Aktiv | 5 Bewerbungen eingetragen | 🔒 Noch nicht freigeschaltet |
-
-**🎯 Bewerbungs-Meilensteine:**
-| Badge | Beschreibung | Status |
-|-------|--------------|--------|
-| Einladung | Zum Gespräch eingeladen | ✓ Verdient am 11.12.2025 |
-| Erfolg | Erste Zusage erhalten | ✓ Verdient am 11.12.2025 |
+Badges werden **automatisch vergeben** sobald die Bedingung erfüllt ist (z.B. 5. KI-Training abgeschlossen).
 
 ---
 
@@ -1721,190 +1426,154 @@ Gamification-Übersicht mit allen Badges.
 #### Dashboard
 ![Teacher Dashboard](doc/teacher/teacher-dashboard.png)
 
-Startseite für Lehrkräfte mit Klassenübersicht.
+Das Dashboard für Lehrkräfte fokussiert auf Klassenmanagement und ausstehende Bewertungen.
 
-**Header:**
-- "Hallo, teacher@zhaw.ch 👋"
-- "Hier ist deine Übersicht."
-
-**Alert-Banner (gelb):**
-- 📋 "1 Abgabe wartet auf dein Feedback"
-- "Schüler freuen sich über zeitnahes Feedback!"
-- Button: "Jetzt bewerten →" (lila)
+**Alert-Banner:**
+Zeigt prominent an, wenn Abgaben auf Feedback warten. Ein Klick auf "Jetzt bewerten" führt direkt zur entsprechenden Aufgabe.
 
 **Statistik-Karten:**
-- **1** Klassen
-- **1** Schüler
-- **3** Aufgaben
-- **1** Offen (grün)
+- Anzahl Klassen
+- Anzahl Schüler (über alle Klassen)
+- Anzahl Aufgaben
+- Davon offen (noch nicht alle abgegeben)
 
-**Hauptbereich:**
+**Abgaben ohne Feedback:**
+Liste der Schülerabgaben, die noch nicht bewertet wurden. Zeigt Schülername, Aufgabe und wie lange die Abgabe her ist.
 
-*Linke Spalte - Abgaben ohne Feedback:*
-- 📤 "Abgaben ohne Feedback" + "Alle ansehen →"
-- Karte: Avatar "S" + "student" + "rech"
-- Badge: "🔍 Recherche"
-- "vor 2 Tagen"
+**Schnellzugriff:**
+- Neue Aufgabe erstellen
+- Klassen verwalten
+- Alle Aufgaben anzeigen
 
-*Rechte Spalte:*
-- **⚡ Schnellzugriff**
-  - ➕ Neue Aufgabe
-  - 👥 Klassen verwalten
-  - 📋 Alle Aufgaben
-
-- **🎓 Meine Klassen** + "Alle →"
-  - Informatik 3a · 1 Schüler
-
-**Navigation:**
-- Tabs: Dashboard | Klassen | Aufgaben
+**Meine Klassen:**
+Kompakte Übersicht der eigenen Klassen mit Schülerzahl.
 
 ---
 
 #### Klassenverwaltung
 ![Teacher Klassen](doc/teacher/teacher-klassen-uebersicht.png)
 
-Verwaltung der Schulklassen.
+Hier erstellt und verwaltet die Lehrperson ihre Schulklassen.
 
-**Header:**
-- 🎓 "Klassenverwaltung"
-- "Erstelle Klassen und ordne Schüler zu."
-- Button: "+ Neue Klasse" (lila)
+**Statistik:**
+- Anzahl Klassen
+- Anzahl Schüler total
 
-**Statistik-Karten:**
-- **1** Klassen
-- **1** Schüler total
+**Klassen-Karten:**
+Jede Klasse zeigt:
+- Klassenname
+- Anzahl Schüler
+- Erstelldatum
+- Aktionen: Bearbeiten, Löschen
 
-**Klassen-Karte (aufgeklappt):**
-- **Informatik 3a**
-- "1 Schüler · Erstellt am 14.12.2025"
-- Icons: ▲ (zuklappen) + ✏️ (bearbeiten) + 🗑️ (löschen)
+**Schüler hinzufügen:**
+Die Karte kann aufgeklappt werden und zeigt:
+- Liste der aktuellen Schüler (E-Mail-Adressen)
+- Eingabefeld für neue E-Mail-Adresse
+- "Hinzufügen" Button
 
-**Schüler in dieser Klasse:**
-- Eingabefeld: "Schüler-Email eingeben"
-- Button: "+ Hinzufügen" (lila)
-- Liste: "student@zhaw.ch" mit X zum Entfernen
+**Wichtig:** Schüler werden über ihre E-Mail-Adresse hinzugefügt. Sobald sich jemand mit dieser E-Mail registriert, wird er automatisch der Klasse zugewiesen und sieht die Aufgaben.
 
----
-
-#### Klasse bearbeiten (Modal)
+#### Klasse bearbeiten
 ![Teacher Klasse bearbeiten](doc/teacher/teacher-klasse-erstellen.png)
 
-Modal zum Bearbeiten des Klassennamens.
-
-**Modal:**
-- "Klasse bearbeiten"
-- X zum Schliessen
-- **Klassenname** - Textfeld mit "Informatik 3a"
-- Buttons: "Abbrechen" (weiss) + "Speichern" (lila)
+Modal zum Ändern des Klassennamens. Der Name kann jederzeit angepasst werden (z.B. "Informatik 3a" → "Informatik 3a 2025").
 
 ---
 
 #### Aufgaben-Übersicht
 ![Teacher Aufgaben](doc/teacher/teacher-aufgaben-uebersicht.png)
 
-Alle erstellten Aufgaben mit Abgabe-Status.
-
-**Header:**
-- 📚 "Aufgaben"
-- Button: "+ Neue Aufgabe" (lila)
+Zeigt alle erstellten Aufgaben mit aktuellem Status.
 
 **Filter-Tabs:**
-- "Alle (3)" (dunkel, aktiv)
-- "🟢 Offen (3)"
-- "🔔 Feedback nötig (1)" (mit Badge)
-- "✓ Beendet"
+- Alle: Sämtliche Aufgaben
+- Offen: Aufgaben wo noch Abgaben ausstehen
+- Feedback nötig: Aufgaben mit unbewerteten Abgaben
+- Beendet: Vollständig bewertete Aufgaben
 
-**Filter-Leiste:**
-- 🔍 "Aufgabe suchen..."
-- Dropdown: "Alle Klassen"
-- Dropdown: "Alle Typen"
-- Dropdown: "Nach Deadline"
+**Filter:**
+- Suchfeld für Aufgabentitel
+- Filter nach Klasse
+- Filter nach Typ
+- Sortierung nach Deadline
 
 **Aufgaben-Tabelle:**
 
-| AUFGABE | KLASSE | DEADLINE | ABGABEN | STATUS | AKTIONEN |
-|---------|--------|----------|---------|--------|----------|
-| **rech** | Unbekannt | **3d** | 1/0 abgegeben | 🔔 Feedback nötig | 👁️ ✏️ 🗑️ |
-| 🔍 Recherche | 0 Schüler | 17.12.2025 | 1 warten auf Feedback | (orange) | |
-| **aaaa** | Informatik 3a | **5d** | 1/1 abgegeben | ✅ Abgeschlossen | 👁️ ✏️ 🗑️ |
-| 📄 Dokument | 1 Schüler | 19.12.2025 | ✓ Alle bewertet | (grün) | |
-| **Interview-Training** | Informatik 3a | **7d** | 0/1 abgegeben | ⏳ Wartet | 👁️ ✏️ 🗑️ |
-| 🎯 KI-Interview ⏱30 Min | 1 Schüler | 20.12.2025 | Noch keine Abgaben | (gelb) | |
+| Spalte | Inhalt |
+|--------|--------|
+| Aufgabe | Titel + Typ-Badge + ggf. Dauer |
+| Klasse | Klassenname + Schülerzahl |
+| Deadline | Datum + Tage bis Deadline (farbcodiert) |
+| Abgaben | "X / Y abgegeben" + Hinweis wenn Feedback fehlt |
+| Status | Wartet / Feedback nötig / Abgeschlossen |
+| Aktionen | Ansehen, Bearbeiten, Löschen |
 
----
+**Farbcodierung Deadline:**
+- Grün: Mehr als 7 Tage
+- Orange: 3-7 Tage
+- Rot: Weniger als 3 Tage oder überfällig
 
-#### Aufgabe erstellen (Modal)
+#### Aufgabe erstellen
 ![Teacher Aufgabe erstellen](doc/teacher/teacher-aufgabe-erstellen.png)
 
-Modal zum Erstellen einer neuen Aufgabe.
+Modal zum Erstellen einer neuen Aufgabe:
 
-**Modal:**
-- "Neue Aufgabe"
-- X zum Schliessen
+- **Titel (Pflichtfeld):** Bezeichnung der Aufgabe
+- **Klasse (Pflichtfeld):** Für welche Klasse die Aufgabe ist
+- **Typ (Pflichtfeld):** Art der Aufgabe (bestimmt wie Schüler abgeben)
+  - KI-Bewerbungsgespräch
+  - Selbstreflexion
+  - Recherche
+  - Dokument einreichen
+  - Video-Bewerbung
+- **Deadline (Pflichtfeld):** Bis wann die Aufgabe erledigt sein muss
+- **Beschreibung (optional):** Detaillierte Anweisungen für die Schüler
 
-**Formularfelder:**
-- **Titel *** - Placeholder: "z.B. Bewerbungsgespräch üben"
-- **Klasse *** - Dropdown "Wählen..."
-- **Typ *** - Dropdown "Wählen..."
-- **Deadline *** - Datum/Zeit-Picker (z.B. "21.12.2025, 20:26")
-- **Beschreibung** - Textarea "Optional: Weitere Details..."
-
-**Buttons:**
-- "Abbrechen" (weiss)
-- "Erstellen" (lila)
-
----
+Nach dem Erstellen ist die Aufgabe sofort für alle Schüler der Klasse sichtbar.
 
 #### Aufgaben-Detail
 ![Teacher Aufgaben Detail](doc/teacher/teacher-aufgaben-detail.png)
 
-Detailansicht mit allen Abgaben einer Aufgabe.
-
-**Header:**
-- "← Zurück zu Aufgaben"
-- Titel: **rech**
-- Badges: "🔍 Recherche" + 📅 Deadline: 17.12.2025
+Detailansicht einer Aufgabe mit allen Abgaben.
 
 **Statistik-Karten:**
-- **1** Abgaben
-- **0** Ausstehend
-- **1** Feedback offen (rot)
-- **0** Bewertet (grün)
+- Abgaben: Wie viele Schüler haben abgegeben
+- Ausstehend: Wie viele fehlen noch
+- Feedback offen: Abgaben ohne Bewertung
+- Bewertet: Bereits bewertete Abgaben
 
 **Filter-Tabs:**
-- "Alle (1)"
-- "🔔 Offen (1)"
-- "✓ Bewertet (0)"
+- Alle: Sämtliche Abgaben
+- Offen: Noch nicht bewertet
+- Bewertet: Bereits bewertet
 
-**Abgabe-Karte:**
-- Avatar "S" + **student** + student@zhaw.ch
-- Datum: 12.12.2025, 14:59
-- **Abgabe:** (Box mit dem eingereichten Text)
-- Status: "Offen" (grüner Badge)
-- Button: "Feedback geben" (lila)
+**Abgaben-Liste:**
+Jede Abgabe zeigt:
+- Schüler-Avatar und Name
+- E-Mail-Adresse
+- Abgabedatum und -zeit
+- Inhalt der Abgabe (Text oder Chat-Zusammenfassung)
+- Status-Badge (Offen/Bewertet)
+- "Feedback geben" Button bei offenen Abgaben
 
----
-
-#### Feedback geben (Modal)
+#### Feedback geben
 ![Teacher Feedback](doc/teacher/teacher-aufgaben-feedback-geben.png)
 
-Modal zum Bewerten einer Abgabe.
+Modal zum Bewerten einer Schülerabgabe:
 
-**Modal:**
-- "Feedback geben"
-- X zum Schliessen
+**Abgabe-Anzeige:**
+- Schülername
+- Eingereichte Inhalte (bei KI-Interview: der gesamte Chat-Verlauf)
 
-**Info-Box (grau):**
-- **Schüler:** student@zhaw.ch
-- **Abgabe:** (zeigt den eingereichten Text)
+**Feedback-Formular:**
+- **Feedback-Text:** Schriftliche Rückmeldung an den Schüler
+- **Note (optional):** Bewertung von 1-6 (Schweizer Notensystem)
 
-**Formularfelder:**
-- **Dein Feedback** - Textarea "Schreibe hier dein Feedback..."
-- **Note (optional, 1-6)** - Zahlenfeld mit Placeholder "z.B. 4.5"
-
-**Buttons:**
-- "Abbrechen" (weiss)
-- "Speichern" (lila)
+Nach dem Speichern:
+- Der Schüler sieht das Feedback in seiner Aufgabenansicht
+- Die Abgabe wird als "Bewertet" markiert
+- Bei neuen Feedbacks erscheint eine Benachrichtigung im Schüler-Dashboard
 
 ---
 
@@ -2305,11 +1974,6 @@ spring:
 - **System Messages:** Für Persona/Verhalten des Coaches
 - **Konversationshistorie:** Für kontextbezogene Antworten
 
-**Kosten-Überlegungen:**
-- GPT-4 ist teurer als GPT-3.5
-- Pro Session ca. 0.05-0.15 CHF (je nach Länge)
-- Für Schulprojekt akzeptabel
-
 ---
 
 ## Optionale Anforderungen
@@ -2553,7 +2217,6 @@ public ApplicationStats getStats(String studentId) {
 | Services | 9 | Geschäftslogik |
 | Config | 2 | OpenAI, JWT |
 | Model | 5 | Validation, Enums, Exceptions |
-| **Total** | **26** | **>80%** |
 
 **Test-Technologien:**
 - JUnit 5
