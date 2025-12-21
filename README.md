@@ -2274,7 +2274,7 @@ Alle Pflichtanforderungen wurden erfolgreich umgesetzt. Die Anwendung ist funkti
 
 ## Nächste Schritte
 
-Das Projekt wurde in mehreren Iterationen im [GitHub Project Board](https://github.com/users/pericjul/projects/praesto) geplant und umgesetzt. Alle geplanten Issues wurden erfolgreich abgeschlossen.
+Das Projekt wurde in mehreren Iterationen im [GitHub Project Board](https://github.com/users/pericjul/projects/4/views/6?visibleFields=%5B%22Title%22%2C%22Linked+pull+requests%22%2C239687378%2C239687380%2C%22Labels%22%5D) geplant und umgesetzt. Alle geplanten Issues wurden erfolgreich abgeschlossen.
 
 Für zukünftige Weiterentwicklungen sind folgende Features geplant und im Backlog hinterlegt:
 - Email-Benachrichtigungen bei neuen Aufgaben/Feedback
