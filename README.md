@@ -6,6 +6,12 @@
 
 Praesto ist eine KI-gestützte Webplattform, die Schüler:innen im Bewerbungsprozess unterstützt. Lehrkräfte können Aufgaben erstellen (z. B. „20 Minuten Bewerbungstraining") und die KI simuliert realistische Bewerbungsgespräche. Die Schüler:innen erhalten dabei individuelles Feedback und sammeln Badges für ihre Fortschritte.
 
+| Ressource | Link |
+|-----------|------|
+| **Live-Anwendung** | [praesto.azurewebsites.net](https://praesto.azurewebsites.net/login) |
+| **SonarCloud Dashboard** | [sonarcloud.io/praesto](https://sonarcloud.io/summary/new_code?id=pericjul_praesto-original) |
+| **Postman API-Dokumentation** | [documenter.getpostman.com](https://documenter.getpostman.com/view/48903716/2sB3dTs7qG) |
+
 # Inhaltsverzeichnis
 - [Einleitung](#einleitung)
     - [Explore-Board](#explore-board)
@@ -16,6 +22,7 @@ Praesto ist eine KI-gestützte Webplattform, die Schüler:innen im Bewerbungspro
     - [Use-Case Diagramm](#use-case-diagramm)
     - [Use-Case Beschreibung](#use-case-beschreibung)
     - [Fachliches Datenmodell](#fachliches-datenmodell)
+    - [Zustandsdiagramme](#zustandsdiagramme)
     - [UI-Mockup](#ui-mockup)
 - [Implementation](#implementation)
     - [Frontend](#frontend)
@@ -24,6 +31,7 @@ Praesto ist eine KI-gestützte Webplattform, die Schüler:innen im Bewerbungspro
     - [Optionale Anforderungen](#optionale-anforderungen)
 - [Fazit](#fazit)
     - [Stand der Implementation](#stand-der-implementation)
+    - [Nächste Schritte](#nächste-schritte)
 
 ---
 
@@ -159,12 +167,12 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 ### Voice-Chat und Video-Upload
 **Feedback:** Es wurde gefragt, ob ein Voice-Chat integriert werden könnte oder ob Videos hochgeladen werden können, um Feedback zum Auftreten zu erhalten.
 
-**Einordnung:** Diese Features würden den Realitätsgrad des Trainings erhöhen. Im aktuellen Scope wurde jedoch bewusst auf Text-Chat gesetzt, da dies technisch einfacher umzusetzen ist und Schüler:innen auch schriftliche Kommunikation üben (z.B. für E-Mail-Bewerbungen). Voice/Video sind als optionale Erweiterungen im Backlog notiert.
+**Einordnung:** Diese Features würden den Realitätsgrad des Trainings erhöhen. Im aktuellen Scope wurde jedoch bewusst auf Text-Chat gesetzt, da dies technisch einfacher umzusetzen ist und Schüler:innen auch schriftliche Kommunikation üben (z.B. für E-Mail-Bewerbungen).
 
 ### Gamification / Belohnungssystem
-**Feedback:** Eine Teilnehmerin schlug vor, ein Belohnungssystem mit Abzeichen einzubauen – ähnlich wie bei Duolingo.
+**Feedback:** Eine Teilnehmerin schlug vor, ein Belohnungssystem mit Abzeichen einzubauen.
 
-**Einordnung:** Dieses Feedback wurde direkt umgesetzt! Praesto enthält ein Badge-System mit verschiedenen Kategorien (KI-Training, Notizen, Bewerbungen, Meilensteine, Abgaben, Feedback, Bewertungen). Schüler:innen werden so motiviert, regelmässig zu üben.
+**Einordnung:** Dieses Feedback wurde direkt umgesetzt. Praesto enthält ein Badge-System mit 37 Badges in 7 Kategorien (KI-Training, Notizen, Bewerbungen, Meilensteine, Abgaben, Feedback, Bewertungen). Schüler:innen werden so motiviert, regelmässig zu üben.
 
 ### Barrierefreiheit
 **Feedback:** Wie können Schüler:innen mit Leseschwäche die App effizient nutzen?
@@ -193,32 +201,36 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 
 | Akteur | Beschreibung |
 |--------|--------------|
-| **Student** | Schüler:in auf Lehrstellensuche, die das KI-Bewerbungstraining nutzt |
-| **Teacher** | Lehrkraft im Berufswahlunterricht, die Klassen und Aufgaben verwaltet |
+| **Student** | Schüler:in auf Lehrstellensuche, die das KI-Bewerbungstraining nutzt. Authentifiziert sich via Auth0 und erhält die Rolle `STUDENT`. Kann nur eigene Daten (Sessions, Bewerbungen, Notizen) sehen und bearbeiten. |
+| **Teacher** | Lehrkraft im Berufswahlunterricht, die Klassen und Aufgaben verwaltet. Authentifiziert sich via Auth0 und erhält die Rolle `TEACHER`. Kann nur eigene Klassen und deren Aufgaben/Abgaben verwalten. |
 
 ### Use-Case Übersicht
 
-| ID | Use Case | Akteur(e) | Beschreibung |
-|----|----------|-----------|--------------|
-| UC01 | Einloggen | Student, Teacher | Authentifizierung via Auth0 |
-| UC02 | Dashboard anzeigen | Student | Übersicht mit Fortschritt und offenen Aufgaben |
-| UC03 | Mit KI-Coach chatten | Student | Freies Bewerbungstraining mit der KI |
-| UC04 | KI-Session für Aufgabe | Student | Aufgabengebundenes KI-Training |
-| UC05 | Bewerbungen verwalten | Student | CRUD für Bewerbungen mit Status-Tracking |
-| UC06 | Notizen erstellen | Student | Persönliche Notizen zu Firmen/Stellen |
-| UC07 | Badges ansehen | Student | Gamification-Fortschritt einsehen |
-| UC08 | Aufgaben ansehen | Student | Klassenaufgaben mit Deadlines |
-| UC09 | Abgabe einreichen | Student | Verschiedene Abgabetypen |
-| UC10 | Dashboard anzeigen | Teacher | Übersicht Klassen und offene Bewertungen |
-| UC11 | Klassen verwalten | Teacher | Klassen erstellen und bearbeiten |
-| UC12 | Schüler hinzufügen | Teacher | Schüler per Email zur Klasse hinzufügen |
-| UC13 | Aufgaben erstellen | Teacher | 5 verschiedene Aufgabentypen |
-| UC14 | Abgaben einsehen | Teacher | Schülerabgaben prüfen |
-| UC15 | Feedback geben | Teacher | Bewertung und Rückmeldung |
+| UC-ID | Name | Akteur(e) | Priorität |
+|-------|------|-----------|-----------|
+| UC01 | Einloggen | Student, Teacher | Must |
+| UC02 | Dashboard anzeigen (Student) | Student | Must |
+| UC03 | Mit KI-Coach chatten (freies Training) | Student | Must |
+| UC04 | Aufgabe mit KI bearbeiten | Student | Must |
+| UC05 | Bewerbung verwalten | Student | Should |
+| UC06 | Notizen erstellen | Student | Should |
+| UC07 | Badges ansehen | Student | Should |
+| UC08 | Aufgaben ansehen (Student) | Student | Must |
+| UC09 | Abgabe einreichen | Student | Must |
+| UC10 | Dashboard anzeigen (Teacher) | Teacher | Must |
+| UC11 | Klasse erstellen | Teacher | Must |
+| UC12 | Schüler zur Klasse hinzufügen | Teacher | Must |
+| UC13 | Aufgabe erstellen | Teacher | Must |
+| UC14 | Abgaben einsehen | Teacher | Must |
+| UC15 | Feedback geben | Teacher | Must |
 
 ---
 
 ## Use-Case Beschreibungen
+
+Die folgenden Use-Cases sind aus dem tatsächlichen Code (Controller, Services) abgeleitet und beschreiben die implementierten Funktionen.
+
+---
 
 ### UC01: Einloggen
 
@@ -227,10 +239,12 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 | **ID** | UC01 |
 | **Titel** | Einloggen |
 | **Akteure** | Student, Teacher |
-| **Vorbedingung** | Benutzer hat ein gültiges Konto (via OAuth2/Auth0) |
-| **Nachbedingung** | Benutzer ist authentifiziert und wird zum rollenspezifischen Dashboard weitergeleitet |
-| **Standardablauf** | 1. Benutzer öffnet die Praesto-Webseite<br>2. System zeigt Login-Seite mit "Sign In"-Button<br>3. Benutzer klickt auf "Sign In"<br>4. System leitet zu Auth0-Login weiter<br>5. Benutzer gibt Credentials ein<br>6. System authentifiziert und ermittelt Rolle (Student/Teacher)<br>7. System leitet zum entsprechenden Dashboard weiter |
-| **Ausnahmen** | 5a. Ungültige Credentials → Auth0 zeigt Fehlermeldung |
+| **Beschreibung** | Benutzer authentifiziert sich über Auth0 und erhält Zugang zur rollenspezifischen Ansicht |
+| **Vorbedingung** | Benutzer hat ein Auth0-Konto mit zugewiesener Rolle (`STUDENT` oder `TEACHER`) |
+| **Nachbedingung** | JWT-Token mit Rolle wird im Frontend gespeichert; rollenspezifisches Dashboard wird angezeigt |
+| **Standardablauf** | 1. Benutzer öffnet die Anwendung unter `praesto.azurewebsites.net`<br>2. System zeigt Login-Seite mit "Anmelden"-Button<br>3. Benutzer klickt auf "Anmelden"<br>4. System leitet zu Auth0 Login-Seite weiter<br>5. Benutzer gibt Email und Passwort ein<br>6. Auth0 validiert Credentials und prüft zugewiesene Rolle<br>7. Auth0 gibt JWT-Token mit Rollen-Claim `https://praesto.ch/roles` zurück<br>8. Frontend speichert Token im LocalStorage<br>9. System liest Rolle aus Token und leitet weiter:<br>   - `STUDENT` → `/student/dashboard`<br>   - `TEACHER` → `/teacher/dashboard` |
+| **Alternativablauf** | 5a. Falsche Credentials → Auth0 zeigt Fehlermeldung, zurück zu Schritt 5<br>7a. Keine Rolle zugewiesen → Zugriff verweigert |
+| **Technische Details** | **Backend:** `SecurityConfig.java` konfiguriert OAuth2 Resource Server mit JWT-Validierung. `JwtRoleConverter.java` extrahiert Rollen aus dem Custom-Claim `https://praesto.ch/roles`.<br>**Frontend:** SvelteKit Auth-Integration speichert Token und stellt `isAuthenticated` und `userRole` bereit. |
 
 ---
 
@@ -240,54 +254,63 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 |----------|--------------|
 | **ID** | UC02 |
 | **Titel** | Dashboard anzeigen (Student) |
-| **Akteure** | Student |
-| **Vorbedingung** | Student ist eingeloggt |
-| **Nachbedingung** | Student sieht Übersicht mit Fortschritt und offenen Aufgaben |
-| **Standardablauf** | 1. System lädt Student-Dashboard<br>2. System zeigt Begrüssungstext mit Namen<br>3. System zeigt Fortschrittsanzeige (Badges, abgeschlossene Aufgaben)<br>4. System zeigt Liste der offenen Aufgaben mit Deadlines<br>5. System zeigt Quick-Actions (Chat starten, Bewerbungen, Notizen) |
+| **Akteur** | Student |
+| **Beschreibung** | Student sieht eine Übersicht mit persönlichen Statistiken, offenen Aufgaben, Badges und Benachrichtigungen |
+| **Vorbedingung** | Student ist eingeloggt mit Rolle `STUDENT` |
+| **Nachbedingung** | Dashboard mit aktuellen Daten wird angezeigt |
+| **Standardablauf** | 1. Student navigiert zum Dashboard (automatisch nach Login oder via Navigation)<br>2. Frontend ruft `GET /api/student/dashboard` auf<br>3. Backend (`StudentDashboardService`) sammelt Daten aus verschiedenen Repositories:<br>   - Anzahl offene Aufgaben aus `AssignmentRepository`<br>   - Anzahl Sessions aus `SessionRepository`<br>   - Anzahl und Icons der Badges aus `UserBadgeRepository` + `BadgeRepository`<br>   - Benachrichtigungen (Feedback der letzten 7 Tage) aus `SubmissionRepository`<br>4. Backend gibt `StudentDashboardResponse` zurück<br>5. Frontend zeigt Dashboard mit Statistik-Karten, Badge-Icons und Benachrichtigungsliste |
+| **Angezeigte Daten** | `studentName` (Vorname extrahiert aus Email), `openAssignmentsCount`, `totalSessionsCount`, `badgesCount`, `earnedBadgeIcons[]` (Array der Emoji-Icons), `notifications[]` (Feedback der letzten 7 Tage mit Aufgabentitel und Datum) |
+| **Technische Details** | **Endpoint:** `GET /api/student/dashboard`<br>**Controller:** `StudentDashboardController.java`<br>**Service:** `StudentDashboardService.getDashboardForCurrentStudent()`<br>**Response-DTO:** `StudentDashboardResponse.java` |
 
 ---
 
-### UC03: Mit KI-Coach chatten
+### UC03: Mit KI-Coach chatten (freies Training)
 
 | Attribut | Beschreibung |
 |----------|--------------|
 | **ID** | UC03 |
-| **Titel** | Mit KI-Coach chatten |
-| **Akteure** | Student |
+| **Titel** | Mit KI-Coach chatten (freies Training) |
+| **Akteur** | Student |
+| **Beschreibung** | Student führt ein freies Übungs-Bewerbungsgespräch mit dem KI-Coach ohne Zeitlimit und ohne Abgabe |
 | **Vorbedingung** | Student ist eingeloggt |
-| **Nachbedingung** | Chat-Session ist gespeichert, ggf. Badges wurden vergeben |
-| **Standardablauf** | 1. Student öffnet Chat-Bereich<br>2. System zeigt Chat-Interface mit Eingabefeld<br>3. Student gibt Nachricht ein (z.B. Antwort auf Interviewfrage)<br>4. System sendet Nachricht an Spring AI Backend<br>5. KI generiert kontextbezogene Antwort (Rückfrage oder Feedback)<br>6. System zeigt KI-Antwort im Chat<br>7. Schritte 3-6 wiederholen sich<br>8. Student beendet Session |
-| **Ausnahmen** | 4a. KI-Service nicht erreichbar → Fehlermeldung anzeigen |
-| **Data Definitions** | Eine **Session** besteht aus mehreren **Messages** (role: user/assistant, content, timestamp). Die KI nutzt zwei Modi: freies Training oder Assignment-Modus. |
+| **Nachbedingung** | Chat-Session mit KI existiert; alle Nachrichten sind in MongoDB gespeichert |
+| **Standardablauf** | 1. Student öffnet Chat-Übersicht<br>2. Student klickt "Neue Session starten"<br>3. Frontend ruft `POST /api/sessions` mit `{ assignmentId: null }` auf<br>4. Backend erstellt neue Session mit Status `OPEN` und `startedAt = now()`<br>5. Backend generiert KI-Begrüssung via OpenAI mit System-Prompt<br>6. Frontend zeigt Chat-Interface mit Begrüssungsnachricht<br>7. Student tippt Nachricht und klickt Senden<br>8. Frontend ruft `POST /api/sessions/{id}/messages` mit `{ content: "..." }` auf<br>9. Backend fügt User-Nachricht zu Session hinzu<br>10. Backend sendet kompletten Chat-Verlauf an OpenAI<br>11. OpenAI generiert Antwort basierend auf System-Prompt<br>12. Backend fügt KI-Antwort zu Session hinzu und speichert<br>13. Frontend zeigt neue Nachricht an<br>14. Schritte 7-13 wiederholen sich beliebig oft<br>15. Student klickt "Session beenden"<br>16. Frontend ruft `PUT /api/sessions/{id}/close` auf<br>17. Backend setzt Status auf `CLOSED` und `closedAt = now()`<br>18. Backend ruft `BadgeService.checkAndAwardBadges()` auf |
+| **System-Prompt** | Der KI-Coach agiert als "erfahrener HR-Verantwortlicher eines mittelständischen Schweizer Unternehmens" und stellt realistische Interviewfragen aus 5 Kategorien:<br>1. **Motivation & Berufswahl** (z.B. "Warum möchtest du diesen Beruf erlernen?")<br>2. **Persönlichkeit & Stärken** (z.B. "Was sind deine Stärken und Schwächen?")<br>3. **Arbeitsweise & Teamfähigkeit** (z.B. "Wie gehst du mit Konflikten um?")<br>4. **Praktische Erfahrung** (z.B. "Erzähl von einem Schnupperpraktikum")<br>5. **Culture Fit / Kreative Fragen** (z.B. "Wenn du ein Tier wärst, welches?")<br><br>Nach jeder Antwort gibt die KI konstruktives Feedback mit konkreten Verbesserungsvorschlägen. |
+| **Technische Details** | **Endpoints:** `POST /api/sessions`, `POST /api/sessions/{id}/messages`, `PUT /api/sessions/{id}/close`<br>**Controller:** `SessionController.java`<br>**Service:** `SessionService.java` mit `SYSTEM_PROMPT` (ca. 100 Zeilen)<br>**KI-Integration:** Spring AI `ChatClient` → OpenAI GPT-4 |
 
 ---
 
-### UC04: KI-Session für Aufgabe starten
+### UC04: Aufgabe mit KI bearbeiten
 
 | Attribut | Beschreibung |
 |----------|--------------|
 | **ID** | UC04 |
-| **Titel** | KI-Session für Aufgabe starten |
-| **Akteure** | Student |
-| **Vorbedingung** | Student ist eingeloggt, Aufgabe vom Typ AI_INTERVIEW existiert |
-| **Nachbedingung** | Session ist mit Assignment verknüpft, Submission wird erstellt |
-| **Standardablauf** | 1. Student öffnet Aufgabendetails<br>2. System zeigt Aufgabenbeschreibung und "Training starten"-Button<br>3. Student klickt "Training starten"<br>4. System erstellt neue Session mit Assignment-Referenz<br>5. System lädt Assignment-spezifischen System-Prompt<br>6. KI begrüsst Student mit aufgabenspezifischem Kontext<br>7. Student führt Übung durch (siehe UC03)<br>8. Nach Abschluss erstellt System Submission |
-| **Data Definitions** | Ein **Assignment** hat einen Typ (AI_INTERVIEW, DOCUMENT_UPLOAD, etc.), Titel, Beschreibung und Deadline. Eine **Submission** verknüpft Student, Assignment und Session. |
+| **Titel** | Aufgabe mit KI bearbeiten |
+| **Akteur** | Student |
+| **Beschreibung** | Student bearbeitet eine vom Teacher erstellte KI-Interview-Aufgabe mit Timer und reicht sie als Abgabe ein |
+| **Vorbedingung** | Aufgabe vom Typ `AI_INTERVIEW` existiert; Student ist einer Klasse zugeordnet, die diese Aufgabe hat |
+| **Nachbedingung** | Session ist mit Aufgabe verknüpft; Submission mit Status `SUBMITTED` wurde erstellt |
+| **Standardablauf** | 1. Student öffnet Aufgaben-Übersicht (siehe UC08)<br>2. Student wählt eine Aufgabe vom Typ "KI-Bewerbungsgespräch"<br>3. Frontend zeigt Aufgaben-Details (Titel, Beschreibung, Dauer, Deadline)<br>4. Student klickt "Training starten"<br>5. Frontend ruft `POST /api/sessions` mit `{ assignmentId: "..." }` auf<br>6. Backend erstellt Session mit `assignmentId`, `assignmentTitle`, `targetDurationMin`<br>7. Frontend startet Timer basierend auf `targetDurationMin`<br>8. Chat-Ablauf wie in UC03 (Schritte 5-13)<br>9. Timer zeigt verbleibende Zeit an<br>10. Bei Timer-Ablauf: Modal erscheint "Zeit abgelaufen!"<br>11. Student wählt "Abgeben" oder "Weiter üben"<br>12. Bei "Abgeben": Frontend ruft `PUT /api/sessions/{id}/submit` auf<br>13. Backend ruft `SessionService.closeAndSubmitAsAssignment()` auf:<br>    - Setzt Session-Status auf `CLOSED`<br>    - Erstellt neue Submission mit `chatSessionId` Referenz<br>    - Setzt Submission-Status auf `SUBMITTED`<br>14. Backend ruft `BadgeService.checkAndAwardBadges()` auf<br>15. Frontend zeigt Bestätigung und leitet zur Aufgaben-Übersicht |
+| **Timer-Logik** | Frontend berechnet `elapsedSeconds = now() - session.startedAt`. Bei Überschreitung von `targetDurationMin * 60` erscheint Modal mit zwei Buttons:<br>- "Abgeben" → ruft Submit-Endpoint auf<br>- "Weiter üben" → Timer läuft weiter (wird rot), Abgabe später möglich |
+| **Technische Details** | **Endpoints:** `POST /api/sessions`, `PUT /api/sessions/{id}/submit`<br>**Service:** `SessionService.closeAndSubmitAsAssignment()` erstellt automatisch `Submission` mit `chatSessionId` |
 
 ---
 
-### UC05: Bewerbungen verwalten
+### UC05: Bewerbung verwalten
 
 | Attribut | Beschreibung |
 |----------|--------------|
 | **ID** | UC05 |
-| **Titel** | Bewerbungen verwalten |
-| **Akteure** | Student |
+| **Titel** | Bewerbung verwalten |
+| **Akteur** | Student |
+| **Beschreibung** | Student erfasst, bearbeitet und verfolgt seine echten Bewerbungen bei Firmen |
 | **Vorbedingung** | Student ist eingeloggt |
-| **Nachbedingung** | Bewerbung ist erstellt/aktualisiert/gelöscht |
-| **Standardablauf** | 1. Student öffnet Bewerbungs-Bereich<br>2. System zeigt Liste aller Bewerbungen mit Status<br>3. Student wählt "Neue Bewerbung"<br>4. System zeigt Formular (Firma, Beruf, Status, Notizen)<br>5. Student füllt Formular aus und speichert<br>6. System speichert Bewerbung und aktualisiert Liste |
-| **Ausnahmen** | 3a. Student wählt bestehende Bewerbung → System zeigt Detailansicht mit Bearbeitungsmöglichkeit |
-| **Data Definitions** | Eine **Application** enthält: id, company, jobTitle, status (PLANNED, APPLIED, INTERVIEW, ACCEPTED, REJECTED), notes, appliedDate, userId. |
+| **Nachbedingung** | Bewerbung ist erstellt/bearbeitet/gelöscht; Badge-Prüfung wurde ausgelöst |
+| **Standardablauf (Erstellen)** | 1. Student öffnet Bewerbungen-Übersicht<br>2. Student klickt "Neue Bewerbung"<br>3. Frontend zeigt Formular mit Feldern<br>4. Student füllt Pflichtfelder aus:<br>   - Firmenname (Pflicht)<br>   - Position (optional)<br>   - Status (Dropdown, Default: PLANNED)<br>   - Bewerbungsdatum (optional)<br>   - Gesprächstermin (optional)<br>   - Notizen (optional)<br>5. Student klickt "Speichern"<br>6. Frontend ruft `POST /api/applications` mit `ApplicationDTO` auf<br>7. Backend speichert mit `studentId` aus JWT-Token<br>8. Backend ruft `BadgeService.checkAndAwardBadges()` auf<br>9. Frontend zeigt aktualisierte Übersicht |
+| **Standardablauf (Status ändern)** | 1. Student sieht Bewerbungsliste<br>2. Student klickt auf Status-Badge einer Bewerbung<br>3. Dropdown öffnet sich mit allen Status-Werten<br>4. Student wählt neuen Status<br>5. Frontend ruft `PUT /api/applications/{id}/status` auf<br>6. Backend aktualisiert Status und prüft Badges |
+| **Standardablauf (Löschen)** | 1. Student öffnet Bewerbung zum Bearbeiten<br>2. Student klickt "Löschen"<br>3. Bestätigungsdialog erscheint<br>4. Student bestätigt<br>5. Frontend ruft `DELETE /api/applications/{id}` auf |
+| **Angezeigte Statistiken** | `GET /api/applications/stats` liefert: `total`, `applied`, `invited`, `accepted`, `rejected` – wird als Balkendiagramm oben in der Übersicht angezeigt |
+| **Technische Details** | **Endpoints:** `POST /api/applications`, `GET /api/applications`, `GET /api/applications/{id}`, `PUT /api/applications/{id}`, `PUT /api/applications/{id}/status`, `DELETE /api/applications/{id}`, `GET /api/applications/stats`<br>**Controller:** `ApplicationController.java`<br>**Security:** Alle Endpoints prüfen `studentId == currentUser` |
 
 ---
 
@@ -297,11 +320,14 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 |----------|--------------|
 | **ID** | UC06 |
 | **Titel** | Notizen erstellen |
-| **Akteure** | Student |
+| **Akteur** | Student |
+| **Beschreibung** | Student erstellt persönliche Notizen zu Firmen, Stellen oder allgemeinen Themen |
 | **Vorbedingung** | Student ist eingeloggt |
-| **Nachbedingung** | Notiz ist gespeichert |
-| **Standardablauf** | 1. Student öffnet Notizen-Bereich<br>2. System zeigt Liste bestehender Notizen<br>3. Student klickt "Neue Notiz"<br>4. System zeigt Editor (Titel, Inhalt)<br>5. Student schreibt Notiz und speichert<br>6. System speichert mit Zeitstempel |
-| **Data Definitions** | Eine **Note** enthält: id, title, content, createdAt, updatedAt, userId. |
+| **Nachbedingung** | Notiz ist gespeichert und dem Student zugeordnet |
+| **Standardablauf** | 1. Student öffnet Notizen-Übersicht<br>2. Student klickt "Neue Notiz"<br>3. Frontend zeigt Formular:<br>   - Firmenname (optional)<br>   - Position (optional)<br>   - Text (Pflicht)<br>4. Student füllt Felder aus und klickt "Speichern"<br>5. Frontend ruft `POST /api/notes` auf<br>6. Backend speichert mit `studentId`, `createdAt`, `lastUpdated`<br>7. Backend ruft `BadgeService.checkAndAwardBadges()` auf<br>8. Frontend zeigt aktualisierte Übersicht |
+| **Standardablauf (Bearbeiten)** | 1. Student klickt auf bestehende Notiz<br>2. Frontend zeigt Formular mit vorausgefüllten Werten<br>3. Student bearbeitet und klickt "Speichern"<br>4. Frontend ruft `PUT /api/notes/{id}` auf<br>5. Backend aktualisiert `lastUpdated` |
+| **Standardablauf (Löschen)** | 1. Student klickt "Löschen" bei einer Notiz<br>2. Bestätigungsdialog erscheint<br>3. Frontend ruft `DELETE /api/notes/{id}` auf |
+| **Technische Details** | **Endpoints:** `POST /api/notes`, `GET /api/notes`, `GET /api/notes/{id}`, `PUT /api/notes/{id}`, `DELETE /api/notes/{id}`<br>**Controller:** `NoteController.java`<br>**Security:** Notizen sind privat – nur eigener `studentId` sichtbar |
 
 ---
 
@@ -311,11 +337,14 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 |----------|--------------|
 | **ID** | UC07 |
 | **Titel** | Badges ansehen |
-| **Akteure** | Student |
+| **Akteur** | Student |
+| **Beschreibung** | Student sieht alle verfügbaren Badges und welche er bereits verdient hat |
 | **Vorbedingung** | Student ist eingeloggt |
 | **Nachbedingung** | - |
-| **Standardablauf** | 1. Student öffnet Badge-Übersicht<br>2. System lädt alle verfügbaren Badges<br>3. System lädt bereits verdiente Badges des Students<br>4. System zeigt Badges gruppiert nach Kategorie<br>5. Verdiente Badges werden farbig angezeigt, nicht verdiente ausgegraut<br>6. Bei Klick auf Badge zeigt System Details (Name, Beschreibung, Kriterium) |
-| **Data Definitions** | Ein **Badge** hat: id, name, description, icon, category (KI_TRAINING, NOTES, APPLICATIONS, MILESTONES, SUBMISSIONS, FEEDBACK, RATINGS). Ein **UserBadge** verknüpft Badge mit User und enthält earnedAt-Timestamp. |
+| **Standardablauf** | 1. Student öffnet Badges-Übersicht<br>2. Frontend ruft `GET /api/badges` (alle Badges) und `GET /api/badges/my` (verdiente) auf<br>3. Frontend zeigt zwei Bereiche:<br>   - **Verdiente Badges:** Farbig mit Icon, Titel, Beschreibung, Datum<br>   - **Noch nicht verdiente:** Ausgegraut mit Fortschrittsanzeige |
+| **Badge-Kategorien** | **KI-Training (8 Badges):** 1, 3, 5, 10, 15, 25, 50, 100 Sessions<br>**Notizen (5 Badges):** 1, 5, 10, 25, 50 Notizen<br>**Bewerbungen (6 Badges):** 1, 3, 5, 10, 15, 25 Bewerbungen<br>**Bewerbungs-Meilensteine (4 Badges):** Erste Bewerbung abgeschickt, Einladung erhalten, Gespräch geführt, Zusage erhalten<br>**Aufgaben-Abgaben (6 Badges):** 1, 3, 5, 10, 20, 50 Abgaben<br>**Feedback (4 Badges):** 1, 5, 10, 25 Feedbacks erhalten<br>**Bewertungen (4 Badges):** 1, 5, 10, 25 Noten erhalten |
+| **Automatische Vergabe** | Badges werden automatisch vergeben wenn ein Schwellwert erreicht wird. Der `BadgeService.checkAndAwardBadges(studentId)` wird aufgerufen nach: Session beenden, Bewerbung erstellen/ändern, Notiz erstellen, Abgabe einreichen, Feedback erhalten. |
+| **Technische Details** | **Endpoints:** `GET /api/badges`, `GET /api/badges/my`, `GET /api/badges/my/count`<br>**Controller:** `BadgeController.java`<br>**Service:** `BadgeService.java` mit `checkBadgeRule()` Switch-Statement<br>**Seeder:** `BadgeDataSeeder.java` erstellt 37 Badge-Definitionen beim Start |
 
 ---
 
@@ -324,11 +353,15 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 | Attribut | Beschreibung |
 |----------|--------------|
 | **ID** | UC08 |
-| **Titel** | Aufgaben ansehen |
-| **Akteure** | Student |
-| **Vorbedingung** | Student ist eingeloggt und einer Klasse zugewiesen |
+| **Titel** | Aufgaben ansehen (Student) |
+| **Akteur** | Student |
+| **Beschreibung** | Student sieht alle Aufgaben seiner Klasse mit Deadlines, Typ und eigenem Abgabe-Status |
+| **Vorbedingung** | Student ist eingeloggt; Student ist einer Klasse zugeordnet (via Email in `SchoolClass.studentEmails`) |
 | **Nachbedingung** | - |
-| **Standardablauf** | 1. Student öffnet Aufgaben-Bereich<br>2. System ermittelt Klasse des Students<br>3. System lädt alle Aufgaben der Klasse<br>4. System zeigt Aufgaben mit Titel, Typ, Deadline und Status<br>5. Student kann Aufgabe auswählen für Details |
+| **Standardablauf** | 1. Student öffnet Aufgaben-Übersicht<br>2. Frontend ruft `GET /api/classes/my` auf um Klasse des Students zu ermitteln<br>3. Frontend ruft `GET /api/assignments/class/{classId}` auf<br>4. Backend gibt alle Aufgaben der Klasse zurück<br>5. Frontend ruft `GET /api/submissions/my` auf für eigene Abgaben<br>6. Frontend zeigt Aufgabenliste mit:<br>   - Titel und Kurzbeschreibung<br>   - Typ-Icon (🤖 KI, 📄 Dokument, ✍️ Selbstreflexion, 🎥 Video, 🔍 Recherche)<br>   - Deadline mit Farbcodierung (Normal / Orange "Bald fällig" / Rot "Überfällig!")<br>   - Eigener Status: "Offen", "Eingereicht", "Bewertet"<br>   - Geschätzte Dauer |
+| **Filter und Sortierung** | - **Filter:** Alle / Offene / Erledigte<br>- **Sortierung:** Nach Deadline (dringendste zuerst) |
+| **Aufgaben-Detail** | Bei Klick auf Aufgabe zeigt Frontend:<br>- Vollständige Beschreibung<br>- Typ mit Erklärung<br>- Deadline und verbleibende Zeit<br>- Eigene Abgabe (falls vorhanden) mit Feedback<br>- Button zum Starten/Fortsetzen |
+| **Technische Details** | **Endpoints:** `GET /api/classes/my`, `GET /api/assignments/class/{classId}`, `GET /api/assignments/{id}`, `GET /api/submissions/my`, `GET /api/submissions/check/{assignmentId}`<br>**Controller:** `AssignmentController.java`, `SubmissionController.java` |
 
 ---
 
@@ -338,10 +371,17 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 |----------|--------------|
 | **ID** | UC09 |
 | **Titel** | Abgabe einreichen |
-| **Akteure** | Student |
-| **Vorbedingung** | Student ist eingeloggt, Aufgabe existiert |
-| **Nachbedingung** | Submission ist erstellt und für Lehrkraft sichtbar |
-| **Standardablauf** | 1. Student öffnet Aufgabendetails<br>2. System zeigt Aufgabe mit Typ-spezifischem Eingabebereich<br>3a. Bei AI_INTERVIEW: Student führt KI-Session durch (UC04)<br>3b. Bei DOCUMENT_UPLOAD: Student lädt Datei hoch<br>3c. Bei SELF_REFLECTION: Student schreibt Text<br>4. Student klickt "Abgeben"<br>5. System erstellt Submission mit Zeitstempel<br>6. System prüft Badge-Kriterien und vergibt ggf. Badges |
+| **Akteur** | Student |
+| **Beschreibung** | Student reicht eine Lösung für eine Aufgabe ein (verschiedene Typen möglich) |
+| **Vorbedingung** | Student ist eingeloggt; Aufgabe existiert; Deadline nicht überschritten |
+| **Nachbedingung** | Submission ist erstellt mit Status `SUBMITTED`; Badge-Prüfung wurde ausgelöst |
+| **Standardablauf (AI_INTERVIEW)** | Siehe UC04 – Session wird automatisch als Submission eingereicht |
+| **Standardablauf (SELF_REFLECTION)** | 1. Student öffnet Aufgabe vom Typ "Selbstreflexion"<br>2. Frontend zeigt Texteditor<br>3. Student schreibt Text (mind. 50 Zeichen)<br>4. Student klickt "Abgeben"<br>5. Frontend ruft `POST /api/submissions` auf mit:<br>   - `assignmentId`<br>   - `type: SELF_REFLECTION`<br>   - `textContent: "..."`<br>6. Backend validiert (Text ≥ 50 Zeichen)<br>7. Backend erstellt Submission |
+| **Standardablauf (RESEARCH)** | 1. Student öffnet Aufgabe vom Typ "Recherche"<br>2. Frontend zeigt Texteditor + Link-Eingabefeld<br>3. Student schreibt Zusammenfassung und fügt Links hinzu<br>4. Student klickt "Abgeben"<br>5. Frontend ruft `POST /api/submissions` auf mit `textContent` und `links[]` |
+| **Standardablauf (DOCUMENT_UPLOAD)** | 1. Student öffnet Aufgabe vom Typ "Dokument einreichen"<br>2. Frontend zeigt Datei-Upload-Bereich<br>3. Student wählt Datei (PDF, Word)<br>4. Frontend lädt Datei hoch und erhält `fileUrl`<br>5. Frontend ruft `POST /api/submissions` auf mit `fileUrl` und `fileName` |
+| **Standardablauf (VIDEO_PITCH)** | Analog zu DOCUMENT_UPLOAD mit Video-Datei |
+| **Validierung** | Backend prüft je nach Typ:<br>- `AI_INTERVIEW`: `chatSessionId` muss vorhanden sein<br>- `SELF_REFLECTION` / `RESEARCH`: `textContent` ≥ 50 Zeichen<br>- `DOCUMENT_UPLOAD` / `VIDEO_PITCH`: `fileUrl` muss vorhanden sein |
+| **Technische Details** | **Endpoint:** `POST /api/submissions`<br>**Controller:** `SubmissionController.java`<br>**DTO:** `SubmissionCreateDTO.java`<br>**Validierung:** Im Service mit Fehlermeldungen |
 
 ---
 
@@ -351,24 +391,30 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 |----------|--------------|
 | **ID** | UC10 |
 | **Titel** | Dashboard anzeigen (Teacher) |
-| **Akteure** | Teacher |
-| **Vorbedingung** | Teacher ist eingeloggt |
-| **Nachbedingung** | - |
-| **Standardablauf** | 1. System lädt Teacher-Dashboard<br>2. System zeigt Übersicht der verwalteten Klassen<br>3. System zeigt Anzahl offener Abgaben zur Bewertung<br>4. System zeigt Quick-Actions (Klassen, Aufgaben, Abgaben) |
+| **Akteur** | Teacher |
+| **Beschreibung** | Lehrkraft sieht eine Übersicht mit eigenen Klassen, erstellten Aufgaben und ausstehenden Bewertungen |
+| **Vorbedingung** | Teacher ist eingeloggt mit Rolle `TEACHER` |
+| **Nachbedingung** | Dashboard mit Klassenübersicht wird angezeigt |
+| **Standardablauf** | 1. Teacher navigiert zum Dashboard<br>2. Frontend ruft `GET /api/classes/my` auf<br>3. Backend gibt alle Klassen des Teachers zurück<br>4. Frontend ruft `GET /api/assignments/teacher` auf<br>5. Backend gibt alle Aufgaben des Teachers zurück<br>6. Frontend berechnet ausstehende Bewertungen (Submissions mit Status `SUBMITTED`)<br>7. Frontend zeigt Übersicht mit:<br>   - Anzahl Klassen mit Gesamtzahl Schüler:innen<br>   - Anzahl Aufgaben nach Status<br>   - Anzahl ausstehende Bewertungen (prominent hervorgehoben)<br>   - Liste der letzten Abgaben |
+| **Quick-Actions** | - "Neue Klasse erstellen" → UC11<br>- "Neue Aufgabe erstellen" → UC13<br>- "Offene Bewertungen" → Filtert Abgaben nach unbewerteten |
+| **Technische Details** | **Endpoints:** `GET /api/classes/my`, `GET /api/assignments/teacher`<br>**Controller:** `SchoolClassController.java`, `AssignmentController.java` |
 
 ---
 
-### UC11: Klassen verwalten
+### UC11: Klasse erstellen
 
 | Attribut | Beschreibung |
 |----------|--------------|
 | **ID** | UC11 |
-| **Titel** | Klassen verwalten |
-| **Akteure** | Teacher |
-| **Vorbedingung** | Teacher ist eingeloggt |
-| **Nachbedingung** | Klasse ist erstellt/aktualisiert |
-| **Standardablauf** | 1. Teacher öffnet Klassen-Bereich<br>2. System zeigt Liste aller Klassen des Teachers<br>3. Teacher wählt "Neue Klasse erstellen"<br>4. System zeigt Formular (Name, Beschreibung)<br>5. Teacher füllt aus und speichert<br>6. System erstellt Klasse und zeigt in Liste |
-| **Data Definitions** | Eine **Class** enthält: id, name, description, teacherId, studentIds[], createdAt. |
+| **Titel** | Klasse erstellen |
+| **Akteur** | Teacher |
+| **Beschreibung** | Lehrkraft erstellt eine neue Schulklasse |
+| **Vorbedingung** | Teacher ist eingeloggt mit Rolle `TEACHER` |
+| **Nachbedingung** | Klasse existiert mit `teacherId` des Erstellers und leerer Schülerliste |
+| **Standardablauf** | 1. Teacher öffnet Klassen-Übersicht<br>2. Teacher klickt "Neue Klasse"<br>3. Frontend zeigt Formular mit Namensfeld<br>4. Teacher gibt Klassennamen ein (z.B. "INF2024a", "KV2023b")<br>5. Teacher klickt "Erstellen"<br>6. Frontend ruft `POST /api/classes` auf mit `{ "name": "INF2024a" }`<br>7. Backend erstellt `SchoolClass` mit:<br>   - `name` aus Request<br>   - `teacherId` aus JWT-Token<br>   - `studentEmails`: leere Liste<br>   - `createdAt`: aktueller Zeitstempel<br>8. Frontend zeigt aktualisierte Klassenliste |
+| **Standardablauf (Bearbeiten)** | 1. Teacher klickt "Bearbeiten" bei einer Klasse<br>2. Frontend zeigt Formular mit aktuellem Namen<br>3. Teacher ändert Namen<br>4. Frontend ruft `PUT /api/classes/{id}` auf |
+| **Standardablauf (Löschen)** | 1. Teacher klickt "Löschen"<br>2. Bestätigungsdialog warnt: "Alle Aufgaben dieser Klasse werden ebenfalls gelöscht"<br>3. Frontend ruft `DELETE /api/classes/{id}` auf |
+| **Technische Details** | **Endpoints:** `POST /api/classes`, `GET /api/classes`, `GET /api/classes/my`, `GET /api/classes/{id}`, `PUT /api/classes/{id}`, `DELETE /api/classes/{id}`<br>**Controller:** `SchoolClassController.java`<br>**DTO:** `SchoolClassDTO.java` |
 
 ---
 
@@ -378,24 +424,30 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 |----------|--------------|
 | **ID** | UC12 |
 | **Titel** | Schüler zur Klasse hinzufügen |
-| **Akteure** | Teacher |
-| **Vorbedingung** | Teacher ist eingeloggt, Klasse existiert |
-| **Nachbedingung** | Student ist der Klasse zugewiesen |
-| **Standardablauf** | 1. Teacher öffnet Klassendetails<br>2. System zeigt aktuelle Schülerliste<br>3. Teacher klickt "Schüler hinzufügen"<br>4. System zeigt verfügbare Studenten<br>5. Teacher wählt Student(en) aus<br>6. System fügt Student(en) zur Klasse hinzu |
+| **Akteur** | Teacher |
+| **Beschreibung** | Lehrkraft fügt Schüler:innen per Email-Adresse zur Klasse hinzu |
+| **Vorbedingung** | Teacher ist eingeloggt; Klasse existiert und gehört dem Teacher |
+| **Nachbedingung** | Email ist in `studentEmails` Liste der Klasse; Schüler:in sieht Aufgaben beim nächsten Login |
+| **Standardablauf (Hinzufügen)** | 1. Teacher öffnet Klassen-Detail<br>2. System zeigt aktuelle Schülerliste (Emails)<br>3. Teacher gibt Email-Adresse in Eingabefeld ein<br>4. Teacher klickt "Hinzufügen"<br>5. Frontend ruft `POST /api/classes/{id}/students` auf mit `{ "email": "max.muster@schule.ch" }`<br>6. Backend normalisiert Email (lowercase, trim)<br>7. Backend prüft ob Email bereits in Liste<br>8. Backend fügt Email zu `studentEmails` hinzu<br>9. Frontend zeigt aktualisierte Schülerliste |
+| **Standardablauf (Entfernen)** | 1. Teacher klickt "X" neben einer Schüler-Email<br>2. Frontend ruft `DELETE /api/classes/{id}/students/{email}` auf<br>3. Backend entfernt Email aus `studentEmails`<br>4. Schüler:in sieht Aufgaben dieser Klasse nicht mehr |
+| **Mehrere Schüler hinzufügen** | Teacher kann mehrere Emails durch Komma getrennt eingeben; Frontend splittet und ruft Endpoint mehrfach auf |
+| **Technische Details** | **Endpoints:** `POST /api/classes/{id}/students`, `DELETE /api/classes/{id}/students/{email}`<br>**Controller:** `SchoolClassController.java`<br>**Model-Methoden:** `SchoolClass.addStudent()`, `SchoolClass.removeStudent()`, `SchoolClass.hasStudent()` |
 
 ---
 
-### UC13: Aufgaben erstellen
+### UC13: Aufgabe erstellen
 
 | Attribut | Beschreibung |
 |----------|--------------|
 | **ID** | UC13 |
-| **Titel** | Aufgaben erstellen |
-| **Akteure** | Teacher |
-| **Vorbedingung** | Teacher ist eingeloggt, mindestens eine Klasse existiert |
-| **Nachbedingung** | Aufgabe ist erstellt und für Klasse sichtbar |
-| **Standardablauf** | 1. Teacher öffnet Aufgaben-Bereich<br>2. Teacher klickt "Neue Aufgabe"<br>3. System zeigt Formular<br>4. Teacher wählt Typ (AI_INTERVIEW, DOCUMENT_UPLOAD, SELF_REFLECTION, VIDEO_PITCH, RESEARCH)<br>5. Teacher gibt Titel, Beschreibung, Deadline ein<br>6. Teacher wählt Zielklasse(n)<br>7. Teacher speichert<br>8. System erstellt Assignment und benachrichtigt Klasse |
-| **Data Definitions** | Ein **Assignment** enthält: id, title, description, type, dueDate, classId, teacherId, createdAt. |
+| **Titel** | Aufgabe erstellen |
+| **Akteur** | Teacher |
+| **Beschreibung** | Lehrkraft erstellt eine neue Aufgabe für eine Klasse |
+| **Vorbedingung** | Teacher ist eingeloggt; mindestens eine Klasse existiert |
+| **Nachbedingung** | Aufgabe ist erstellt mit Status `ASSIGNED` und der Klasse zugeordnet |
+| **Standardablauf** | 1. Teacher öffnet Aufgaben-Übersicht<br>2. Teacher klickt "Neue Aufgabe"<br>3. Frontend zeigt Formular mit Feldern:<br>   - **Klasse** (Dropdown mit eigenen Klassen, Pflicht)<br>   - **Titel** (Text, Pflicht)<br>   - **Beschreibung** (Textarea, optional)<br>   - **Typ** (Dropdown, Pflicht) – siehe AssignmentType Enum<br>   - **Dauer in Minuten** (Nummer, optional, relevant für AI_INTERVIEW Timer)<br>   - **Deadline** (Datum + Uhrzeit, Pflicht)<br>4. Teacher füllt aus und klickt "Erstellen"<br>5. Frontend ruft `POST /api/assignment` auf mit `AssignmentCreateDTO`<br>6. Backend validiert:<br>   - Titel ist Pflicht<br>   - Deadline liegt in der Zukunft<br>   - Klasse gehört dem Teacher<br>7. Backend erstellt Assignment mit:<br>   - `status: ASSIGNED`<br>   - `createdByTeacherId` aus JWT<br>   - `createdAt: now()`<br>8. Frontend zeigt Bestätigung und aktualisierte Liste |
+| **Aufgabentypen** | Siehe Enum `AssignmentType`:<br>- 🤖 `AI_INTERVIEW`: KI-Bewerbungsgespräch<br>- 📄 `DOCUMENT_UPLOAD`: Dokument einreichen<br>- ✍️ `SELF_REFLECTION`: Selbstreflexion<br>- 🎥 `VIDEO_PITCH`: Video-Bewerbung<br>- 🔍 `RESEARCH`: Recherche |
+| **Technische Details** | **Endpoint:** `POST /api/assignment`<br>**Controller:** `AssignmentController.java`<br>**DTO:** `AssignmentCreateDTO.java` |
 
 ---
 
@@ -405,10 +457,14 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 |----------|--------------|
 | **ID** | UC14 |
 | **Titel** | Abgaben einsehen |
-| **Akteure** | Teacher |
-| **Vorbedingung** | Teacher ist eingeloggt, Submissions existieren |
+| **Akteur** | Teacher |
+| **Beschreibung** | Lehrkraft sieht alle eingereichten Abgaben zu einer Aufgabe |
+| **Vorbedingung** | Teacher ist eingeloggt; Aufgabe existiert und gehört dem Teacher; Abgaben wurden eingereicht |
 | **Nachbedingung** | - |
-| **Standardablauf** | 1. Teacher öffnet Abgaben-Bereich<br>2. System zeigt Liste aller Submissions für Teacher's Klassen<br>3. Teacher filtert nach Klasse/Aufgabe/Status<br>4. Teacher wählt Submission<br>5. System zeigt Details (bei AI_INTERVIEW: Chat-Verlauf, bei DOCUMENT_UPLOAD: Datei) |
+| **Standardablauf** | 1. Teacher öffnet Aufgaben-Detail (aus Aufgabenliste)<br>2. Frontend ruft `GET /api/submissions/assignment/{assignmentId}` auf<br>3. Backend prüft: `assignment.createdByTeacherId == currentUserId`<br>4. Backend gibt Liste aller Submissions zurück<br>5. Frontend zeigt Tabelle mit:<br>   - Schüler-Email<br>   - Abgabe-Datum und -Uhrzeit<br>   - Status-Badge (farbcodiert): Eingereicht 🟡, In Prüfung 🟠, Bewertet 🟢<br>   - Note (falls vorhanden)<br>   - Button "Ansehen"<br>6. Frontend zeigt Statistik: "X von Y Schüler:innen haben abgegeben" |
+| **Abgabe-Details je nach Typ** | **AI_INTERVIEW:**<br>- Frontend ruft `GET /api/sessions/{chatSessionId}` auf<br>- Zeigt kompletten Chat-Verlauf mit allen Nachrichten<br>- Zeitstempel und Dauer der Session<br><br>**SELF_REFLECTION / RESEARCH:**<br>- Zeigt `textContent` formatiert an<br>- Bei Research zusätzlich die Links<br><br>**DOCUMENT_UPLOAD / VIDEO_PITCH:**<br>- Zeigt Dateiname an<br>- Download-Button mit `fileUrl` |
+| **Filter** | - Alle / Nur unbewertete / Nur bewertete<br>- Sortierung: Nach Datum (neueste zuerst) |
+| **Technische Details** | **Endpoints:** `GET /api/submissions/assignment/{assignmentId}`, `GET /api/submissions/{id}`, `GET /api/sessions/{id}`<br>**Controller:** `SubmissionController.java`, `SessionController.java`<br>**Security:** Nur Aufgaben des eigenen Teachers sichtbar |
 
 ---
 
@@ -418,406 +474,751 @@ Beim Pitch wurden verschiedene Fragen und Anregungen aus dem Publikum gesammelt.
 |----------|--------------|
 | **ID** | UC15 |
 | **Titel** | Feedback geben |
-| **Akteure** | Teacher |
-| **Vorbedingung** | Teacher ist eingeloggt, Submission existiert |
-| **Nachbedingung** | Feedback ist gespeichert, Student kann es einsehen |
-| **Standardablauf** | 1. Teacher öffnet Submission-Details (UC14)<br>2. Teacher liest/prüft Abgabe<br>3. Teacher gibt schriftliches Feedback ein<br>4. Teacher vergibt optional Bewertung/Punkte<br>5. Teacher speichert<br>6. System aktualisiert Submission-Status<br>7. System prüft Badge-Kriterien für Student |
+| **Akteur** | Teacher |
+| **Beschreibung** | Lehrkraft bewertet eine Abgabe mit Feedback und optional einer Note |
+| **Vorbedingung** | Teacher ist eingeloggt; Submission existiert mit Status `SUBMITTED` oder `IN_REVIEW`; Aufgabe gehört dem Teacher |
+| **Nachbedingung** | Feedback und Note sind gespeichert; Status ist `REVIEWED`; Student kann Feedback sehen; Badge-Prüfung wurde ausgelöst |
+| **Standardablauf** | 1. Teacher öffnet Abgabe-Detail (UC14)<br>2. Teacher liest/prüft Inhalt:<br>   - Bei AI_INTERVIEW: Liest Chat-Verlauf durch<br>   - Bei Text: Liest geschriebenen Text<br>   - Bei Datei: Lädt Datei herunter und prüft<br>3. Teacher gibt Feedback in Textfeld ein (z.B. Stärken, Verbesserungsvorschläge)<br>4. Teacher wählt optional Note (1.0-6.0) aus Dropdown oder Eingabefeld<br>5. Teacher klickt "Speichern"<br>6. Frontend ruft `PUT /api/submissions/{id}/feedback` auf mit:<br>   - `feedback`: Feedback-Text<br>   - `grade`: Note (optional)<br>7. Backend setzt:<br>   - `teacherFeedback` = Feedback-Text<br>   - `grade` = Note (optional)<br>   - `status` = `REVIEWED`<br>   - `reviewedAt` = aktueller Zeitstempel<br>   - `reviewedByTeacherId` = Teacher aus JWT<br>8. Backend ruft `BadgeService.checkAndAwardBadges(studentId)` auf<br>   - Prüft `FEEDBACK_RECEIVED` Badges<br>   - Prüft `GRADES_RECEIVED` Badges (falls Note vergeben)<br>9. Frontend zeigt Bestätigung<br>10. Student sieht Feedback auf Dashboard (Benachrichtigung) und in Aufgaben-Detail |
+| **Feedback-Richtlinien** | Das Feedback sollte enthalten:<br>- Was war gut?<br>- Was könnte verbessert werden?<br>- Konkrete Tipps für die Zukunft |
+| **Technische Details** | **Endpoint:** `PUT /api/submissions/{id}/feedback`<br>**Controller:** `SubmissionController.giveFeedback()`<br>**Security:** Nur Aufgaben des eigenen Teachers bewertbar<br>**Badge-Trigger:** `FEEDBACK_RECEIVED`, `GRADES_RECEIVED` |
 
 ---
 
 ## Fachliches Datenmodell
 
-![ER-Diagramm](doc/ER-diagram.drawio.svg)
+Das fachliche Datenmodell zeigt die Entitäten der Anwendung ohne technische Details wie IDs oder Timestamps. Die Beziehungen zwischen den Entitäten bilden die Geschäftslogik ab.
+
+```mermaid
+erDiagram
+    USER ||--o{ SCHOOLCLASS : "verwaltet (Teacher)"
+    USER ||--o{ SESSION : "führt durch"
+    USER ||--o{ APPLICATION : "erstellt"
+    USER ||--o{ NOTE : "schreibt"
+    USER ||--o{ USERBADGE : "verdient"
+    
+    SCHOOLCLASS ||--o{ ASSIGNMENT : "enthält"
+    SCHOOLCLASS }o--o{ USER : "hat Schüler"
+    
+    ASSIGNMENT ||--o{ SUBMISSION : "erhält"
+    ASSIGNMENT ||--o{ SESSION : "gehört zu"
+    
+    SESSION ||--o| SUBMISSION : "wird zu"
+    
+    BADGE ||--o{ USERBADGE : "wird verliehen"
+
+    USER {
+        string email PK
+        enum rolle "STUDENT oder TEACHER"
+    }
+    
+    SCHOOLCLASS {
+        string name "z.B. INF2024a"
+        string lehrkraft FK
+        list schuelerEmails
+    }
+    
+    ASSIGNMENT {
+        string titel
+        string beschreibung
+        enum typ "AssignmentType"
+        enum status "AssignmentStatus"
+        int dauerMinuten
+        date deadline
+        string klasse FK
+        string erstelltVon FK
+    }
+    
+    SUBMISSION {
+        string aufgabe FK
+        string schueler FK
+        enum typ "AssignmentType"
+        enum status "SubmissionStatus"
+        string textInhalt "für Text-Aufgaben"
+        string dateiUrl "für Uploads"
+        string chatSession FK "für KI-Interview"
+        string lehrerFeedback
+        int note "1-6"
+    }
+    
+    SESSION {
+        string schueler FK
+        string aufgabe FK "optional"
+        list nachrichten "eingebettet"
+        enum status "SessionStatus"
+        int punktzahl
+    }
+    
+    APPLICATION {
+        string schueler FK
+        string firmenname
+        string position
+        enum status "ApplicationStatus"
+        date beworbenAm
+        date gespraechAm
+        string notizen
+    }
+    
+    NOTE {
+        string schueler FK
+        string firmenname "optional"
+        string position "optional"
+        string text
+    }
+    
+    BADGE {
+        string icon "Emoji"
+        string titel
+        string beschreibung
+        enum regelTyp "BadgeRuleType"
+        int schwellwert
+    }
+    
+    USERBADGE {
+        string schueler FK
+        string badge FK
+        date verdientAm
+    }
+```
+
+---
 
 ### Entitäten und Attribute
 
-#### SchoolClass (Schulklasse)
-Repräsentiert eine Schulklasse, die von einer Lehrkraft verwaltet wird.
+#### User (extern in Auth0)
+Der User wird vollständig von Auth0 verwaltet und existiert nicht als eigene Collection in der MongoDB. Die Authentifizierung erfolgt via JWT-Token.
 
 | Attribut | Typ | Beschreibung |
 |----------|-----|--------------|
-| id | String | Eindeutige ID (MongoDB ObjectId) |
-| name | String | Klassenbezeichnung (z.B. "INF2024a") |
-| teacherId | String | Auth0-ID der Lehrkraft |
-| studentEmails | List&lt;String&gt; | Email-Adressen der Schüler:innen |
-| createdAt | Instant | Erstellungszeitpunkt |
-| updatedAt | Instant | Letzte Änderung |
+| **Email** | String | Eindeutige E-Mail-Adresse des Benutzers, dient als Identifikator |
+| **Rolle** | Enum | `STUDENT` oder `TEACHER`|
+
+---
+
+#### SchoolClass (Schulklasse)
+Eine Schulklasse wird von einer Lehrkraft erstellt und enthält Schüler:innen.
+
+| Attribut | Typ | Beschreibung |
+|----------|-----|--------------|
+| **Name** | String | Bezeichnung der Klasse (z.B. "INF2024a", "KV2023b") |
+| **Lehrkraft** | Referenz | Die Lehrkraft, die diese Klasse verwaltet |
+| **Schüler-Emails** | Liste | E-Mail-Adressen aller Schüler:innen in dieser Klasse |
+
+**Besonderheit:** Schüler:innen werden nicht als User-Objekte gespeichert, sondern nur als Email-Liste. Beim Login wird geprüft, ob die Email in einer Klasse vorkommt.
 
 ---
 
 #### Assignment (Aufgabe)
-Eine von der Lehrkraft erstellte Übungsaufgabe für eine Klasse.
+Eine Aufgabe wird von einer Lehrkraft für eine Klasse erstellt.
 
 | Attribut | Typ | Beschreibung |
 |----------|-----|--------------|
-| id | String | Eindeutige ID |
-| title | String | Aufgabentitel |
-| description | String | Detaillierte Beschreibung |
-| durationMin | Integer | Vorgesehene Dauer in Minuten |
-| dueDate | Instant | Abgabefrist |
-| type | AssignmentType | Art der Aufgabe (siehe Enum) |
-| status | AssignmentStatus | Aktueller Status (siehe Enum) |
-| classId | String | Referenz zur Klasse |
-| createdByTeacherId | String | Ersteller (Lehrkraft) |
-| createdAt | Instant | Erstellungszeitpunkt |
-
-**AssignmentType (Enum):**
-
-| Wert | Anzeigename | Beschreibung |
-|------|-------------|--------------|
-| AI_INTERVIEW | KI-Bewerbungsgespräch | Übe ein Bewerbungsgespräch mit der KI |
-| DOCUMENT_UPLOAD | Dokument einreichen | Lade ein Dokument hoch (PDF, Word) |
-| SELF_REFLECTION | Selbstreflexion | Schreibe eine Reflexion zu einem Thema |
-| VIDEO_PITCH | Video-Bewerbung | Nimm ein kurzes Bewerbungsvideo auf |
-| RESEARCH | Recherche | Recherchiere zu einem Thema und fasse zusammen |
-
-**AssignmentStatus (Enum):**
-
-| Wert | Beschreibung |
-|------|--------------|
-| ASSIGNED | Aufgabe zugewiesen, noch nicht begonnen |
-| IN_PROGRESS | Schüler:in arbeitet daran |
-| SUBMITTED | Abgegeben |
-| REVIEWED | Vom Lehrer bewertet |
-| CLOSED | Geschlossen (keine Abgaben mehr möglich) |
+| **Titel** | String | Bezeichnung der Aufgabe (z.B. "Bewerbungsgespräch üben") |
+| **Beschreibung** | String | Detaillierte Anweisungen für die Schüler:innen |
+| **Typ** | Enum | Art der Aufgabe (siehe `AssignmentType`) |
+| **Status** | Enum | Aktueller Zustand (siehe `AssignmentStatus`) |
+| **Dauer (Minuten)** | Integer | Empfohlene/maximale Bearbeitungszeit |
+| **Deadline** | Datum | Abgabefrist der Aufgabe |
+| **Klasse** | Referenz | Die Schulklasse, der diese Aufgabe zugewiesen ist |
+| **Erstellt von** | Referenz | Die Lehrkraft, die diese Aufgabe erstellt hat |
 
 ---
 
 #### Submission (Abgabe)
-Eine eingereichte Lösung eines Schülers zu einer Aufgabe.
+Eine Abgabe wird von einem Schüler für eine Aufgabe eingereicht.
 
 | Attribut | Typ | Beschreibung |
 |----------|-----|--------------|
-| id | String | Eindeutige ID |
-| assignmentId | String | Referenz zur Aufgabe |
-| studentEmail | String | Email der/des Schüler:in |
-| type | AssignmentType | Typ (übernommen von Assignment) |
-| textContent | String | Textinhalt (für SELF_REFLECTION, RESEARCH) |
-| links | List&lt;String&gt; | Links (für RESEARCH) |
-| fileUrl | String | Datei-URL (für DOCUMENT_UPLOAD, VIDEO_PITCH) |
-| fileName | String | Original-Dateiname |
-| comment | String | Optionaler Kommentar |
-| chatSessionId | String | Referenz zur KI-Session (für AI_INTERVIEW) |
-| status | SubmissionStatus | Bearbeitungsstatus |
-| submittedAt | Instant | Abgabezeitpunkt |
-| teacherFeedback | String | Rückmeldung der Lehrkraft |
-| grade | Integer | Note/Punkte (optional) |
-| reviewedAt | Instant | Bewertungszeitpunkt |
-| reviewedByTeacherId | String | Bewertende Lehrkraft |
-
-**SubmissionStatus (Enum):**
-
-| Wert | Anzeigename |
-|------|-------------|
-| SUBMITTED | Eingereicht |
-| IN_REVIEW | In Prüfung |
-| REVIEWED | Bewertet |
-| RETURNED | Zurückgegeben |
+| **Aufgabe** | Referenz | Die zugehörige Aufgabe |
+| **Schüler** | String | Email der/des Schüler:in |
+| **Typ** | Enum | Übernommen von der Aufgabe (siehe `AssignmentType`) |
+| **Status** | Enum | Bearbeitungsstatus (siehe `SubmissionStatus`) |
+| **Textinhalt** | String | Bei Selbstreflexion/Recherche: Der geschriebene Text |
+| **Links** | Liste | Bei Recherche: Gesammelte Links |
+| **Datei-URL** | String | Bei Dokument/Video: URL zur hochgeladenen Datei |
+| **Dateiname** | String | Original-Dateiname |
+| **Kommentar** | String | Optionaler Kommentar des Schülers |
+| **Chat-Session** | Referenz | Bei KI-Interview: Verweis auf die Chat-Session |
+| **Lehrkraft-Feedback** | String | Rückmeldung der Lehrkraft |
+| **Note** | Integer | Bewertung (1-6, optional) |
 
 ---
 
 #### Session (KI-Chat-Session)
-Eine Trainingseinheit mit dem KI-Coach.
+Eine Chat-Session repräsentiert ein Gespräch zwischen Schüler:in und KI.
 
 | Attribut | Typ | Beschreibung |
 |----------|-----|--------------|
-| id | String | Eindeutige ID |
-| studentId | String | Auth0-ID des Schülers |
-| studentEmail | String | Email (für Submission-Verknüpfung) |
-| assignmentId | String | Optionale Referenz zur Aufgabe |
-| assignmentTitle | String | Aufgabentitel (wenn vorhanden) |
-| targetDurationMin | Integer | Soll-Dauer von der Aufgabe |
-| messages | List&lt;SessionMessage&gt; | Chat-Verlauf (Embedded Document) |
-| score | Integer | Auswertung (für spätere Erweiterung) |
-| status | SessionStatus | OPEN oder CLOSED |
-| startedAt | Instant | Startzeitpunkt |
-| closedAt | Instant | Endzeitpunkt |
-| submittedAsAssignment | Boolean | Als Aufgabe eingereicht? |
+| **Schüler** | Referenz | Der/die Schüler:in, der/die chattet |
+| **Aufgabe** | Referenz | Optional: Die zugehörige Aufgabe (null bei freiem Training) |
+| **Aufgabentitel** | String | Titel der Aufgabe (wenn vorhanden) |
+| **Soll-Dauer** | Integer | Minuten von der Aufgabe (für Timer) |
+| **Nachrichten** | Liste | Alle Nachrichten im Chat (eingebettete Dokumente) |
+| **Punktzahl** | Integer | Von der KI berechnete Bewertung |
+| **Status** | Enum | Siehe `SessionStatus` |
+| **Als Aufgabe abgegeben** | Boolean | Wurde diese Session als Submission eingereicht? |
 
-**SessionMessage (Embedded Document):**
+**SessionMessage (eingebettetes Dokument):**
 
 | Attribut | Typ | Beschreibung |
 |----------|-----|--------------|
-| role | String | "user" oder "assistant" |
-| content | String | Nachrichtentext |
-| createdAt | Instant | Zeitstempel |
+| **Rolle** | String | `"user"` oder `"assistant"` |
+| **Inhalt** | String | Nachrichtentext |
 
 ---
 
 #### Application (Bewerbung)
-Tracking einer echten Bewerbung des Schülers.
+Eine Bewerbung dokumentiert den Bewerbungsprozess eines Schülers bei einer Firma.
 
 | Attribut | Typ | Beschreibung |
 |----------|-----|--------------|
-| id | String | Eindeutige ID |
-| studentId | String | Auth0-ID |
-| companyName | String | Firmenname |
-| position | String | Stelle/Position |
-| status | ApplicationStatus | Aktueller Stand |
-| appliedAt | LocalDate | Bewerbungsdatum |
-| interviewDate | LocalDate | Gesprächstermin (optional) |
-| notes | String | Persönliche Notizen |
-| createdAt | Instant | Erstellungszeitpunkt |
-| updatedAt | Instant | Letzte Änderung |
-
-**ApplicationStatus (Enum):**
-
-| Wert | Beschreibung |
-|------|--------------|
-| PLANNED | Geplant, noch nicht beworben |
-| APPLIED | Bewerbung abgeschickt |
-| INVITED | Zum Gespräch eingeladen |
-| INTERVIEW_DONE | Gespräch absolviert |
-| ACCEPTED | Zusage erhalten 🎉 |
-| REJECTED | Absage erhalten |
-| WITHDRAWN | Zurückgezogen |
+| **Schüler** | Referenz | Der/die Schüler:in |
+| **Firmenname** | String | Name des Unternehmens (z.B. "Swisscom", "Migros") |
+| **Position** | String | Die angestrebte Stelle (z.B. "Informatiker EFZ") |
+| **Status** | Enum | Aktueller Stand (siehe `ApplicationStatus`) |
+| **Beworben am** | Datum | Datum der Bewerbung |
+| **Gespräch am** | Datum | Datum des Vorstellungsgesprächs (optional) |
+| **Notizen** | String | Persönliche Anmerkungen |
 
 ---
 
 #### Note (Notiz)
-Persönliche Notizen zu Firmen oder Stellen.
+Eine Notiz ist eine persönliche Aufzeichnung eines Schülers.
 
 | Attribut | Typ | Beschreibung |
 |----------|-----|--------------|
-| id | String | Eindeutige ID |
-| studentId | String | Auth0-ID |
-| companyName | String | Firmenname (optional) |
-| position | String | Stelle (optional) |
-| text | String | Notizinhalt |
-| createdAt | Instant | Erstellungszeitpunkt |
-| lastUpdated | Instant | Letzte Änderung |
+| **Schüler** | Referenz | Der/die Schüler:in |
+| **Firmenname** | String | Optional: Zugehörige Firma |
+| **Position** | String | Optional: Zugehörige Stelle |
+| **Text** | String | Der Inhalt der Notiz |
 
 ---
 
 #### Badge (Abzeichen-Definition)
-Definition eines erreichbaren Badges.
+Ein Badge ist eine Auszeichnung, die Schüler:innen für bestimmte Leistungen erhalten können.
 
 | Attribut | Typ | Beschreibung |
 |----------|-----|--------------|
-| id | String | Eindeutige ID |
-| icon | String | Emoji (🎯, 🔥, 🏆, etc.) |
-| title | String | Badge-Name (z.B. "Erste Session") |
-| description | String | Beschreibung (z.B. "Dein erstes KI-Training!") |
-| ruleType | BadgeRuleType | Vergaberegel (siehe Enum) |
-| threshold | Integer | Schwellwert für Vergabe |
-| sortOrder | Integer | Anzeigereihenfolge |
-
-**BadgeRuleType (Enum):**
-
-| Wert | Beschreibung |
-|------|--------------|
-| SESSIONS_COMPLETED | Anzahl abgeschlossene KI-Sessions |
-| NOTES_CREATED | Anzahl erstellte Notizen |
-| APPLICATIONS_CREATED | Anzahl erstellte Bewerbungen |
-| APPLICATION_STATUS | Bewerbung mit bestimmtem Status erreicht |
-| SUBMISSIONS_COMPLETED | Anzahl abgegebene Aufgaben |
-| FEEDBACK_RECEIVED | Anzahl erhaltenes Feedback |
-| GRADES_RECEIVED | Anzahl erhaltene Bewertungen |
+| **Icon** | String | Emoji des Badges (🎯, 🔥, 🏆, etc.) |
+| **Titel** | String | Bezeichnung (z.B. "Erste Session", "Interview-Profi") |
+| **Beschreibung** | String | Erklärung, wie der Badge verdient wird |
+| **Regel-Typ** | Enum | Art der Vergaberegel (siehe `BadgeRuleType`) |
+| **Schwellwert** | Integer | Anzahl, die erreicht werden muss |
 
 ---
 
 #### UserBadge (Verdientes Badge)
-Verknüpfung zwischen Schüler:in und verdientem Badge.
+Verknüpfungstabelle zwischen Schüler:innen und ihren verdienten Badges.
 
 | Attribut | Typ | Beschreibung |
 |----------|-----|--------------|
-| id | String | Eindeutige ID |
-| studentId | String | Auth0-ID |
-| badgeId | String | Referenz zum Badge |
-| earnedAt | Instant | Zeitpunkt der Vergabe |
+| **Schüler** | Referenz | Der/die Schüler:in |
+| **Badge** | Referenz | Der verdiente Badge |
+| **Verdient am** | Datum | Zeitpunkt der Vergabe |
 
-*Hinweis: Compound Index auf (studentId, badgeId) verhindert doppelte Vergabe.*
+**Besonderheit:** Compound Index auf (Schüler, Badge) verhindert doppelte Vergabe.
 
 ---
 
 ### Beziehungen
 
-```
-SchoolClass 1 ──────< * Assignment      (Eine Klasse hat viele Aufgaben)
-SchoolClass 1 ──────< * Student         (Eine Klasse hat viele Schüler via Email)
-Teacher     1 ──────< * SchoolClass     (Ein Lehrer verwaltet viele Klassen)
-
-Assignment  1 ──────< * Submission      (Eine Aufgabe hat viele Abgaben)
-Student     1 ──────< * Submission      (Ein Schüler macht viele Abgaben)
-
-Student     1 ──────< * Session         (Ein Schüler hat viele KI-Sessions)
-Assignment  1 ──────< * Session         (Eine Aufgabe kann viele Sessions haben)
-Session     1 ──────< * SessionMessage  (Eine Session hat viele Nachrichten)
-
-Student     1 ──────< * Application     (Ein Schüler hat viele Bewerbungen)
-Student     1 ──────< * Note            (Ein Schüler hat viele Notizen)
-Student     1 ──────< * UserBadge       (Ein Schüler hat viele verdiente Badges)
-Badge       1 ──────< * UserBadge       (Ein Badge kann von vielen verdient werden)
-```
+| Beziehung | Kardinalität | Beschreibung |
+|-----------|--------------|--------------|
+| User → SchoolClass | 1:n | Eine Lehrkraft verwaltet mehrere Klassen |
+| SchoolClass → User | n:m | Schüler:innen gehören zu Klassen (via Email-Liste) |
+| SchoolClass → Assignment | 1:n | Eine Klasse enthält mehrere Aufgaben |
+| User → Assignment | 1:n | Eine Lehrkraft erstellt mehrere Aufgaben |
+| Assignment → Submission | 1:n | Eine Aufgabe erhält mehrere Abgaben (von verschiedenen Schülern) |
+| User → Submission | 1:n | Ein:e Schüler:in macht mehrere Abgaben |
+| User → Session | 1:n | Ein:e Schüler:in führt mehrere Chat-Sessions |
+| Assignment → Session | 1:n | Eine Aufgabe kann mehrere Sessions haben (optional) |
+| Session → Submission | 1:1 | Eine Session kann zu genau einer Abgabe werden |
+| User → Application | 1:n | Ein:e Schüler:in hat mehrere Bewerbungen |
+| User → Note | 1:n | Ein:e Schüler:in erstellt mehrere Notizen |
+| User → UserBadge | 1:n | Ein:e Schüler:in verdient mehrere Badges |
+| Badge → UserBadge | 1:n | Ein Badge wird an mehrere Schüler:innen vergeben |
 
 ---
 
-### Zustandsübergänge
+## Enumerationen (Enums)
 
-Die folgenden Entitäten durchlaufen mehrere Zustände während ihres Lebenszyklus:
+Die folgenden Enums definieren die gültigen Werte für verschiedene Attribute im Datenmodell.
 
-#### Assignment (Aufgabe)
+### AssignmentType (Aufgabentyp)
 
-```
-┌──────────┐     Schüler      ┌─────────────┐     Schüler      ┌───────────┐
-│ ASSIGNED │ ──── beginnt ───▶│ IN_PROGRESS │ ──── gibt ab ───▶│ SUBMITTED │
-└──────────┘                  └─────────────┘                  └───────────┘
-                                                                     │
-                                                              Lehrer bewertet
-                                                                     ▼
-┌──────────┐     Lehrer       ┌──────────┐
-│  CLOSED  │◀─── schliesst ───│ REVIEWED │
-└──────────┘                  └──────────┘
-```
+Definiert die verschiedenen Arten von Aufgaben, die eine Lehrkraft erstellen kann.
 
-| Status | Beschreibung |
-|--------|--------------|
-| ASSIGNED | Aufgabe wurde der Klasse zugewiesen |
-| IN_PROGRESS | Mindestens ein Schüler arbeitet daran |
-| SUBMITTED | Abgabe wurde eingereicht |
-| REVIEWED | Lehrkraft hat Feedback gegeben |
-| CLOSED | Keine weiteren Abgaben möglich |
+| Wert | Anzeigename | Icon | Beschreibung | Abgabe-Anforderung |
+|------|-------------|------|--------------|-------------------|
+| `AI_INTERVIEW` | KI-Bewerbungsgespräch | 🤖 | Übe ein Bewerbungsgespräch mit der KI | `chatSessionId` muss vorhanden sein |
+| `DOCUMENT_UPLOAD` | Dokument einreichen | 📄 | Lade ein Dokument hoch (PDF, Word) | `fileUrl` muss vorhanden sein |
+| `SELF_REFLECTION` | Selbstreflexion | ✍️ | Schreibe eine Reflexion zu einem Thema | `textContent` ≥ 50 Zeichen |
+| `VIDEO_PITCH` | Video-Bewerbung | 🎥 | Nimm ein kurzes Bewerbungsvideo auf | `fileUrl` muss vorhanden sein |
+| `RESEARCH` | Recherche | 🔍 | Recherchiere zu einem Thema und fasse zusammen | `textContent` ≥ 50 Zeichen |
+
+**Code-Referenz:** `AssignmentType.java` enthält `displayName` und `description` als Attribute.
 
 ---
 
-#### Submission (Abgabe)
+### AssignmentStatus (Aufgabenstatus)
 
-```
-┌───────────┐     Lehrer      ┌───────────┐     Lehrer      ┌──────────┐
-│ SUBMITTED │ ──── prüft ────▶│ IN_REVIEW │ ──── bewertet ─▶│ REVIEWED │
-└───────────┘                 └───────────┘                 └──────────┘
-                                                                  │
-                                                           bei Mängeln
-                                                                  ▼
-                                                            ┌──────────┐
-                                                            │ RETURNED │
-                                                            └──────────┘
-```
+Definiert den Lebenszyklus einer Aufgabe.
 
-| Status | Beschreibung |
-|--------|--------------|
-| SUBMITTED | Schüler hat Abgabe eingereicht |
-| IN_REVIEW | Lehrkraft prüft die Abgabe |
-| REVIEWED | Feedback und Note wurden vergeben |
-| RETURNED | Zurück an Schüler zur Überarbeitung |
+| Wert | Beschreibung | Übergang von | Übergang zu |
+|------|--------------|--------------|-------------|
+| `ASSIGNED` | Aufgabe wurde der Klasse zugewiesen, noch nicht begonnen | - | `IN_PROGRESS` |
+| `IN_PROGRESS` | Mindestens ein:e Schüler:in arbeitet an der Aufgabe | `ASSIGNED` | `SUBMITTED` |
+| `SUBMITTED` | Abgabe wurde eingereicht | `IN_PROGRESS` | `REVIEWED` |
+| `REVIEWED` | Lehrkraft hat Feedback gegeben | `SUBMITTED` | `CLOSED` |
+| `CLOSED` | Aufgabe geschlossen, keine weiteren Abgaben möglich | `REVIEWED` | - |
 
 ---
 
-#### Application (Bewerbung)
+### SubmissionStatus (Abgabestatus)
 
-```
-┌─────────┐     Bewerbung     ┌─────────┐     Einladung     ┌─────────┐
-│ PLANNED │ ──── senden ─────▶│ APPLIED │ ──── erhalten ───▶│ INVITED │
-└─────────┘                   └─────────┘                   └─────────┘
-                                   │                             │
-                               Absage                       Gespräch
-                                   ▼                             ▼
-                              ┌──────────┐               ┌────────────────┐
-                              │ REJECTED │               │ INTERVIEW_DONE │
-                              └──────────┘               └────────────────┘
-                                                               │
-                                              ┌────────────────┼────────────────┐
-                                              ▼                ▼                ▼
-                                        ┌──────────┐    ┌──────────┐    ┌───────────┐
-                                        │ ACCEPTED │    │ REJECTED │    │ WITHDRAWN │
-                                        └──────────┘    └──────────┘    └───────────┘
-```
+Definiert den Bewertungs-Workflow einer Abgabe.
 
-| Status | Beschreibung |
-|--------|--------------|
-| PLANNED | Bewerbung geplant, noch nicht gesendet |
-| APPLIED | Bewerbung wurde abgeschickt |
-| INVITED | Einladung zum Vorstellungsgespräch |
-| INTERVIEW_DONE | Gespräch wurde geführt |
-| ACCEPTED | Zusage erhalten 🎉 |
-| REJECTED | Absage erhalten |
-| WITHDRAWN | Bewerbung zurückgezogen |
+| Wert | Anzeigename | Farbe | Beschreibung |
+|------|-------------|-------|--------------|
+| `SUBMITTED` | Eingereicht | 🟡 Gelb | Schüler:in hat abgegeben, wartet auf Bewertung |
+| `IN_REVIEW` | In Prüfung | 🟠 Orange | Lehrkraft hat die Abgabe geöffnet und prüft |
+| `REVIEWED` | Bewertet | 🟢 Grün | Feedback und/oder Note wurden vergeben |
+| `RETURNED` | Zurückgegeben | 🔵 Blau | Feedback wurde an Schüler:in kommuniziert |
+
+**Code-Referenz:** `SubmissionStatus.java` enthält `displayName` für die Anzeige im Frontend.
 
 ---
 
-#### Session (KI-Chat)
+### SessionStatus (Session-Status)
 
-```
-┌──────┐     Schüler beendet     ┌────────┐
-│ OPEN │ ────── oder gibt ab ───▶│ CLOSED │
-└──────┘                         └────────┘
-```
+Definiert den Zustand einer KI-Chat-Session.
 
-| Status | Beschreibung |
-|--------|--------------|
-| OPEN | Aktive Chat-Session |
-| CLOSED | Session beendet (manuell oder durch Abgabe) |
+| Wert | Beschreibung | Aktionen möglich |
+|------|--------------|------------------|
+| `OPEN` | Session ist aktiv, Chat läuft | Nachrichten senden, Session beenden oder abgeben |
+| `CLOSED` | Session wurde beendet | Nur noch lesen, nicht mehr fortsetzen |
+
+**Besonderheit:** Wenn eine Session als Aufgabe abgegeben wird (`submittedAsAssignment = true`), wechselt der Status zu `CLOSED` und eine `Submission` wird automatisch erstellt.
 
 ---
 
-## UI-Mockups
+### ApplicationStatus (Bewerbungsstatus)
 
-Die folgenden Mockups wurden in der Planungsphase erstellt, um die Kernfunktionen und das Nutzererlebnis zu definieren. Sie dienten als Grundlage für die Implementierung des Frontends.
+Definiert den Fortschritt einer echten Bewerbung bei einer Firma.
 
-### Student-Ansichten
+| Wert | Anzeigename | Emoji | Farbe | Beschreibung | Typischer nächster Schritt |
+|------|-------------|-------|-------|--------------|---------------------------|
+| `PLANNED` | Geplant | 📝 | Grau | Bewerbung ist vorgemerkt, noch nicht abgeschickt | Bewerbung schreiben und abschicken |
+| `APPLIED` | Beworben | 📤 | Blau | Bewerbung wurde abgeschickt, wartet auf Antwort | Auf Rückmeldung warten |
+| `INVITED` | Eingeladen | 📅 | Gelb | Einladung zum Vorstellungsgespräch erhalten | Termin vorbereiten |
+| `INTERVIEW_DONE` | Gespräch absolviert | ✅ | Orange | Vorstellungsgespräch wurde geführt | Auf Entscheidung warten |
+| `ACCEPTED` | Zusage | 🎉 | Grün | Lehrstelle erhalten! | Vertrag unterschreiben |
+| `REJECTED` | Absage | ❌ | Rot | Absage erhalten | Weiter bewerben |
+| `WITHDRAWN` | Zurückgezogen | 🔙 | Grau | Bewerbung selbst zurückgezogen | - |
 
-#### Student Dashboard
+**Verwendung im Frontend:** Status-Badges werden farblich und mit Emoji dargestellt. Dropdown in der Tabelle ermöglicht schnelle Statusänderung.
+
+---
+
+### BadgeRuleType (Badge-Regeltyp)
+
+Definiert, nach welcher Regel ein Badge vergeben wird.
+
+| Wert | Beschreibung | Schwellwert-Bedeutung | Beispiel |
+|------|--------------|----------------------|----------|
+| `SESSIONS_COMPLETED` | Anzahl abgeschlossener KI-Sessions | Anzahl Sessions | "5 Sessions" → threshold: 5 |
+| `NOTES_CREATED` | Anzahl erstellter Notizen | Anzahl Notizen | "10 Notizen" → threshold: 10 |
+| `APPLICATIONS_CREATED` | Anzahl erstellter Bewerbungen | Anzahl Bewerbungen | "3 Bewerbungen" → threshold: 3 |
+| `APPLICATION_STATUS` | Bewerbung mit bestimmtem Status erreicht | Ordinal des Status | "Erste Einladung" → threshold: 2 (INVITED) |
+| `SUBMISSIONS_COMPLETED` | Anzahl abgegebener Aufgaben | Anzahl Submissions | "5 Abgaben" → threshold: 5 |
+| `FEEDBACK_RECEIVED` | Anzahl erhaltenes Feedback von Lehrkraft | Anzahl Feedbacks | "10 Feedbacks" → threshold: 10 |
+| `GRADES_RECEIVED` | Anzahl erhaltener Noten | Anzahl Noten | "5 Noten" → threshold: 5 |
+
+**Badge-Übersicht (37 Badges gesamt):**
+
+| Kategorie | Regel-Typ | Schwellwerte | Anzahl |
+|-----------|-----------|--------------|--------|
+| KI-Training | `SESSIONS_COMPLETED` | 1, 3, 5, 10, 15, 25, 50, 100 | 8 |
+| Notizen | `NOTES_CREATED` | 1, 5, 10, 25, 50 | 5 |
+| Bewerbungen | `APPLICATIONS_CREATED` | 1, 3, 5, 10, 15, 25 | 6 |
+| Bewerbungs-Meilensteine | `APPLICATION_STATUS` | APPLIED, INVITED, INTERVIEW_DONE, ACCEPTED | 4 |
+| Aufgaben-Abgaben | `SUBMISSIONS_COMPLETED` | 1, 3, 5, 10, 20, 50 | 6 |
+| Feedback | `FEEDBACK_RECEIVED` | 1, 5, 10, 25 | 4 |
+| Bewertungen | `GRADES_RECEIVED` | 1, 5, 10, 25 | 4 |
+
+---
+
+## Zustandsdiagramme
+
+Die folgenden Entitäten durchlaufen mehrere Zustände während ihres Lebenszyklus.
+
+### Assignment (Aufgabe)
+
+```mermaid
+stateDiagram-v2
+    [*] --> ASSIGNED : Aufgabe erstellt
+    ASSIGNED --> IN_PROGRESS : Schüler beginnt
+    IN_PROGRESS --> SUBMITTED : Schüler gibt ab
+    SUBMITTED --> REVIEWED : Lehrer bewertet
+    REVIEWED --> CLOSED : Lehrer schliesst
+    CLOSED --> [*]
+    
+    note right of ASSIGNED : Aufgabe sichtbar für Klasse
+    note right of IN_PROGRESS : Mindestens ein Schüler arbeitet
+    note right of SUBMITTED : Wartet auf Bewertung
+    note right of REVIEWED : Feedback vorhanden
+    note right of CLOSED : Keine Abgaben mehr möglich
+```
+
+**Zustandsübergänge im Detail:**
+
+| Von | Nach | Trigger | Aktion im Backend |
+|-----|------|---------|-------------------|
+| - | `ASSIGNED` | Lehrkraft erstellt Aufgabe | `POST /api/assignment` |
+| `ASSIGNED` | `IN_PROGRESS` | Schüler startet Session | Automatisch bei erster Session |
+| `IN_PROGRESS` | `SUBMITTED` | Schüler gibt ab | `PUT /api/sessions/{id}/submit` |
+| `SUBMITTED` | `REVIEWED` | Lehrkraft gibt Feedback | `PUT /api/submissions/{id}/feedback` |
+| `REVIEWED` | `CLOSED` | Lehrkraft schliesst | `PUT /api/assignments/{id}/status` |
+
+---
+
+### Submission (Abgabe)
+
+```mermaid
+stateDiagram-v2
+    [*] --> SUBMITTED : Schüler gibt ab
+    SUBMITTED --> IN_REVIEW : Lehrer öffnet
+    IN_REVIEW --> REVIEWED : Lehrer bewertet
+    REVIEWED --> RETURNED : Feedback gesendet
+    RETURNED --> [*]
+    
+    note right of SUBMITTED : Wartet auf Bewertung
+    note right of IN_REVIEW : Lehrer prüft Inhalt
+    note right of REVIEWED : Feedback + Note vergeben
+    note right of RETURNED : Schüler kann lesen
+```
+
+**Zustandsübergänge im Detail:**
+
+| Von | Nach | Trigger | Aktion im Backend |
+|-----|------|---------|-------------------|
+| - | `SUBMITTED` | Schüler gibt ab | `POST /api/submissions` oder `PUT /api/sessions/{id}/submit` |
+| `SUBMITTED` | `IN_REVIEW` | Lehrkraft öffnet Abgabe | Automatisch beim Öffnen |
+| `IN_REVIEW` | `REVIEWED` | Lehrkraft speichert Feedback | `PUT /api/submissions/{id}/feedback` |
+| `REVIEWED` | `RETURNED` | System benachrichtigt Schüler | Automatisch nach Feedback |
+
+---
+
+### Session (KI-Chat-Session)
+
+```mermaid
+stateDiagram-v2
+    [*] --> OPEN : Session gestartet
+    OPEN --> OPEN : Nachricht gesendet
+    OPEN --> CLOSED : Session beendet (freies Training)
+    OPEN --> CLOSED : Session als Aufgabe abgegeben
+    CLOSED --> [*]
+    
+    note right of OPEN : Chat aktiv, Nachrichten möglich
+    note right of CLOSED : Nur noch lesbar
+```
+
+**Zustandsübergänge im Detail:**
+
+| Von | Nach | Trigger | Aktion im Backend |
+|-----|------|---------|-------------------|
+| - | `OPEN` | Schüler startet Session | `POST /api/sessions` |
+| `OPEN` | `OPEN` | Nachricht senden | `POST /api/sessions/{id}/messages` |
+| `OPEN` | `CLOSED` | Session beenden (frei) | `PUT /api/sessions/{id}/close` |
+| `OPEN` | `CLOSED` | Als Aufgabe abgeben | `PUT /api/sessions/{id}/submit` (setzt auch `submittedAsAssignment = true`) |
+
+**Besonderheit:** Bei Abgabe als Aufgabe wird automatisch eine `Submission` mit Referenz auf die Session erstellt.
+
+---
+
+### Application (Bewerbung)
+
+```mermaid
+stateDiagram-v2
+    [*] --> PLANNED : Bewerbung geplant
+    PLANNED --> APPLIED : Bewerbung abgeschickt
+    APPLIED --> INVITED : Einladung erhalten
+    APPLIED --> REJECTED : Absage erhalten
+    INVITED --> INTERVIEW_DONE : Gespräch geführt
+    INTERVIEW_DONE --> ACCEPTED : Zusage erhalten
+    INTERVIEW_DONE --> REJECTED : Absage nach Gespräch
+    
+    PLANNED --> WITHDRAWN : Zurückgezogen
+    APPLIED --> WITHDRAWN : Zurückgezogen
+    INVITED --> WITHDRAWN : Zurückgezogen
+    
+    ACCEPTED --> [*]
+    REJECTED --> [*]
+    WITHDRAWN --> [*]
+```
+
+**Zustandsübergänge im Detail:**
+
+| Von | Nach | Trigger | Badge-Prüfung |
+|-----|------|---------|---------------|
+| - | `PLANNED` | Bewerbung erfasst | `APPLICATIONS_CREATED` |
+| `PLANNED` | `APPLIED` | Status geändert | `APPLICATION_STATUS` (APPLIED) |
+| `APPLIED` | `INVITED` | Einladung eingetragen | `APPLICATION_STATUS` (INVITED) |
+| `INVITED` | `INTERVIEW_DONE` | Gespräch markiert | `APPLICATION_STATUS` (INTERVIEW_DONE) |
+| `INTERVIEW_DONE` | `ACCEPTED` | Zusage erhalten | `APPLICATION_STATUS` (ACCEPTED) 🎉 |
+| * | `REJECTED` | Absage erhalten | - |
+| * | `WITHDRAWN` | Selbst zurückgezogen | - |
+
+**Hinweis:** Jeder Statuswechsel löst `BadgeService.checkAndAwardBadges()` aus, um Meilenstein-Badges zu vergeben.
+
+---
+
+## UI-Mockup
+
+Die folgenden Mockups wurden in der Entwurfsphase erstellt und zeigen die geplante Benutzeroberfläche. Sie dienten als Grundlage für die Implementation des Frontends.
+
+---
+
+### Student-Ansichten (Mockups)
+
+#### Dashboard
 ![Student Dashboard Mockup](doc/student/mockup/Student-Dashboard-Mockup.png)
 
-**Konzept:** Das Dashboard ist der zentrale Einstiegspunkt für Schüler:innen. Es zeigt auf einen Blick die wichtigsten Informationen: offene Aufgaben mit Deadlines, den Fortschritt (verdiente Badges), und ermöglicht den schnellen Zugriff auf das KI-Training. Die Gestaltung ist bewusst übersichtlich gehalten, um Jugendliche nicht zu überfordern und zur Nutzung zu motivieren.
+**Beschreibung:** Das Student-Dashboard ist die zentrale Anlaufstelle nach dem Login. Es bietet einen schnellen Überblick über alle relevanten Informationen.
+
+**Geplante Elemente:**
+- **Begrüssung** mit Namen des Schülers/der Schülerin
+- **Statistik-Karten** in einer Reihe:
+  - Offene Aufgaben (mit Zahl und Link zur Aufgabenliste)
+  - Absolvierte Sessions (Gesamtzahl)
+  - Verdiente Badges (Anzahl und kleine Icon-Vorschau)
+- **Schnellzugriff-Buttons:**
+  - "Neues Training starten" → Direkter Einstieg in freies KI-Training
+  - "Aufgaben ansehen" → Zur Aufgabenübersicht
+- **Benachrichtigungsbereich:** Zeigt neues Feedback der letzten 7 Tage
+- **Badge-Vorschau:** Die zuletzt verdienten Badges als Icons
+
+**Navigation:** Seitenleiste mit Links zu Dashboard, Chat, Aufgaben, Bewerbungen, Notizen, Badges
 
 ---
 
-#### Aufgaben-Übersicht (Student)
-![Student Aufgaben Übersicht](doc/student/mockup/Student-Aufgaben-Uebersicht.png)
+#### Chat-Übersicht (Session-Übersicht)
+![Student Session Übersicht Mockup](doc/student/mockup/Student-Session-Uebersicht.png)
 
-**Konzept:** Hier sehen Schüler:innen alle Aufgaben ihrer Klasse. Jede Aufgabe zeigt den Typ (KI-Training, Dokument, etc.), die Deadline und den aktuellen Status. Überfällige Aufgaben werden visuell hervorgehoben. Von hier kann direkt eine Aufgabe gestartet oder eine Abgabe eingereicht werden.
+**Beschreibung:** Übersicht aller bisherigen Trainings-Sessions mit dem KI-Coach.
+
+**Geplante Elemente:**
+- **"Neue Session starten"**-Button prominent oben
+- **Session-Liste** als Karten oder Tabelle mit:
+  - Datum und Uhrzeit
+  - Dauer der Session
+  - Status-Badge (Offen / Geschlossen / Abgegeben)
+  - Anzahl Nachrichten
+  - Falls vorhanden: Verknüpfte Aufgabe
+- **Filter-Optionen:**
+  - Alle Sessions
+  - Nur offene (fortsetzen möglich)
+  - Nur abgeschlossene
+- **Sortierung:** Neueste zuerst (Standard)
+
+**Interaktionen:**
+- Klick auf offene Session → Session fortsetzen
+- Klick auf geschlossene Session → Verlauf lesen
+- "Neue Session" → Startet freies Training ohne Aufgabe
 
 ---
 
-#### KI-Chat Interface
-![Student Chat](doc/student/mockup/Student-Chatting.png)
+#### Chat-Ansicht (Chatting)
+![Student Chatting Mockup](doc/student/mockup/Student-Chatting.png)
 
-**Konzept:** Das Chat-Interface ist das Herzstück der Anwendung. Es simuliert ein echtes Bewerbungsgespräch mit einer freundlichen, aber professionellen KI. Die Darstellung als Chat-Verlauf ist Jugendlichen aus Messaging-Apps vertraut. Die KI stellt Fragen, gibt Feedback und passt sich dem Kontext an (freies Training vs. Aufgabe).
+**Beschreibung:** Das Herzstück der Anwendung – der Chat mit dem KI-Bewerbungscoach.
+
+**Geplante Elemente:**
+- **Header:** Session-Info (Datum, ggf. Aufgabentitel, Timer bei Aufgaben)
+- **Chat-Verlauf:**
+  - KI-Nachrichten links mit Coach-Avatar
+  - User-Nachrichten rechts
+  - Zeitstempel pro Nachricht
+  - Scroll-Bereich für lange Gespräche
+- **Eingabebereich:**
+  - Textfeld (mehrzeilig möglich)
+  - Sende-Button
+  - Enter zum Senden
+- **Aktions-Buttons:**
+  - "Session beenden" (bei freiem Training)
+  - "Als Abgabe einreichen" (bei Aufgaben-Training)
+
+**Besonderheiten:**
+- Automatisches Scrollen zu neuen Nachrichten
+- Loading-Indikator während KI antwortet
+- Bei Aufgaben: Timer-Anzeige mit verbleibender Zeit
 
 ---
 
-#### Session-Übersicht
-![Student Sessions](doc/student/mockup/Student-Session-Uebersicht.png)
+#### Aufgaben-Übersicht
+![Student Aufgaben Mockup](doc/student/mockup/Student-Aufgaben-Uebersicht.png)
 
-**Konzept:** Schüler:innen können ihre vergangenen KI-Trainings einsehen und nachvollziehen. Dies ermöglicht Reflexion über den eigenen Fortschritt und das Wiederholen von Übungen. Sessions, die zu einer Aufgabe gehören, sind entsprechend markiert.
+**Beschreibung:** Zeigt alle Aufgaben, die der Klasse des Schülers zugewiesen wurden.
+
+**Geplante Elemente:**
+- **Aufgaben-Liste** mit Karten oder Tabelle:
+  - Titel der Aufgabe
+  - Kurzbeschreibung (Vorschau)
+  - **Typ-Icon:** 🤖 KI-Interview, 📄 Dokument, ✍️ Selbstreflexion, 🎥 Video, 🔍 Recherche
+  - **Deadline** mit Farbcodierung:
+    - Normal: Mehr als 3 Tage
+    - Orange "Bald fällig": ≤ 3 Tage
+    - Rot "Überfällig!": Deadline überschritten
+  - **Status der eigenen Abgabe:**
+    - "Offen" – Noch nicht begonnen
+    - "Eingereicht" – Abgabe erfolgt
+    - "Bewertet" – Feedback vorhanden
+  - Geschätzte Dauer in Minuten
+- **Filter:**
+  - Alle / Offene / Erledigte
+- **Sortierung:** Nach Deadline (dringendste zuerst)
+
+**Interaktionen:**
+- Klick auf Aufgabe → Öffnet Aufgaben-Detail
+- Aufgaben mit Feedback haben "Feedback lesen"-Button
 
 ---
 
-### Teacher-Ansichten
+### Teacher-Ansichten (Mockups)
 
-#### Teacher Dashboard
+#### Dashboard
 ![Teacher Dashboard Mockup](doc/teacher/mockup/Teacher-Dashboard-Mockup.png)
 
-**Konzept:** Das Lehrer-Dashboard bietet einen Überblick über alle verwalteten Klassen und zeigt an, wie viele Abgaben noch bewertet werden müssen. Quick-Actions ermöglichen den schnellen Zugriff auf häufige Aufgaben. Die Ansicht ist effizienzorientiert gestaltet, um Lehrkräften Zeit zu sparen.
+**Beschreibung:** Das Teacher-Dashboard bietet Übersicht über Klassen, Aufgaben und ausstehende Bewertungen.
+
+**Geplante Elemente:**
+- **Statistik-Karten:**
+  - Anzahl Klassen
+  - Anzahl Aufgaben (gesamt)
+  - Ausstehende Bewertungen (Submissions ohne Feedback)
+- **Klassen-Schnellübersicht:**
+  - Liste der eigenen Klassen mit Schülerzahl
+  - Quick-Link zu jeder Klasse
+- **Letzte Aktivitäten:**
+  - Kürzlich eingereichte Abgaben
+  - "Jetzt bewerten"-Button
+- **Schnellzugriff:**
+  - "Neue Klasse erstellen"
+  - "Neue Aufgabe erstellen"
+
+**Navigation:** Seitenleiste mit Links zu Dashboard, Klassen, Aufgaben
 
 ---
 
-#### Klassen-Verwaltung
-![Teacher Klassen](doc/teacher/mockup/Teacher-Klassen-Mockup.png)
+#### Klassen-Übersicht
+![Teacher Klassen Mockup](doc/teacher/mockup/Teacher-Klassen-Mockup.png)
 
-**Konzept:** Lehrkräfte können hier ihre Klassen verwalten, neue Klassen erstellen und Schüler:innen per Email-Adresse hinzufügen. Die Anzahl der Schüler:innen pro Klasse ist auf einen Blick ersichtlich. Das Design erlaubt die einfache Verwaltung mehrerer Klassen parallel.
+**Beschreibung:** Verwaltung aller Schulklassen des Teachers.
+
+**Geplante Elemente:**
+- **"Neue Klasse"**-Button
+- **Klassen-Liste** als Karten:
+  - Klassenname (z.B. "INF2024a")
+  - Anzahl Schüler:innen
+  - Anzahl Aufgaben
+  - Erstellungsdatum
+- **Aktionen pro Klasse:**
+  - "Öffnen" → Klassen-Detail mit Schülerliste
+  - "Bearbeiten" → Name ändern
+  - "Löschen" → Mit Bestätigung
+
+**Interaktionen:**
+- Klick auf Klasse → Öffnet Detail mit Schülerliste und Aufgaben
+- In Detail-Ansicht: Schüler per Email hinzufügen/entfernen
 
 ---
 
-#### Aufgaben-Übersicht (Teacher)
-![Teacher Aufgaben](doc/teacher/mockup/Teacher-Aufgaben-Mockup.png)
+#### Aufgaben-Übersicht
+![Teacher Aufgaben Mockup](doc/teacher/mockup/Teacher-Aufgaben-Mockup.png)
 
-**Konzept:** Übersicht aller erstellten Aufgaben mit Status-Anzeige: Wie viele Schüler:innen haben bereits abgegeben? Ist die Deadline überschritten? Von hier können neue Aufgaben erstellt oder bestehende bearbeitet werden.
+**Beschreibung:** Alle vom Teacher erstellten Aufgaben, gruppiert nach Klasse.
+
+**Geplante Elemente:**
+- **"Neue Aufgabe"**-Button
+- **Aufgaben-Liste** gruppiert nach Klasse:
+  - Aufgabentitel
+  - Typ-Icon
+  - Deadline
+  - Status (ASSIGNED, IN_PROGRESS, etc.)
+  - Abgaben-Fortschritt (z.B. "5/12 abgegeben")
+- **Filter:**
+  - Nach Klasse
+  - Nach Status
+  - Nach Typ
+
+**Interaktionen:**
+- Klick auf Aufgabe → Öffnet Aufgaben-Detail mit Abgabenliste
+- "Neue Aufgabe" → Öffnet Erstellungsformular
 
 ---
 
 #### Aufgabe erstellen
-![Teacher Aufgabe erstellen](doc/teacher/mockup/Teacher-Create-Aufgabe-Mockup.png)
+![Teacher Aufgabe erstellen Mockup](doc/teacher/mockup/Teacher-Create-Aufgabe-Mockup.png)
 
-**Konzept:** Formular zur Erstellung einer neuen Aufgabe. Lehrkräfte wählen den Aufgabentyp (KI-Interview, Dokument-Upload, Selbstreflexion, etc.), geben Titel und Beschreibung ein, setzen eine Deadline und weisen die Aufgabe einer Klasse zu. Die Dauer-Angabe hilft Schüler:innen bei der Zeitplanung.
+**Beschreibung:** Formular zum Erstellen einer neuen Aufgabe.
+
+**Geplante Formularfelder:**
+| Feld | Typ | Pflicht | Beschreibung |
+|------|-----|---------|--------------|
+| **Klasse** | Dropdown | Ja | Auswahl aus eigenen Klassen |
+| **Titel** | Text | Ja | Kurze Bezeichnung der Aufgabe |
+| **Beschreibung** | Textarea | Nein | Detaillierte Anweisungen |
+| **Aufgabentyp** | Dropdown | Ja | AI_INTERVIEW, DOCUMENT_UPLOAD, etc. |
+| **Dauer (Minuten)** | Nummer | Nein | Empfohlene Bearbeitungszeit (relevant für Timer bei KI-Interview) |
+| **Deadline** | Datum + Zeit | Ja | Abgabefrist |
+
+**Validierung:**
+- Titel ist Pflicht
+- Deadline muss in der Zukunft liegen
+- Bei AI_INTERVIEW sollte Dauer angegeben werden
+
+**Buttons:**
+- "Erstellen" → Speichert und zeigt Bestätigung
+- "Abbrechen" → Zurück zur Übersicht
 
 ---
 
-#### Aufgaben-Detail / Abgaben einsehen
-![Teacher Aufgaben Detail](doc/teacher/mockup/Teacher-Aufgaben-Detail-Mockup.png)
+#### Aufgaben-Detail (mit Abgaben)
+![Teacher Aufgaben Detail Mockup](doc/teacher/mockup/Teacher-Aufgaben-Detail-Mockup.png)
 
-**Konzept:** Detailansicht einer Aufgabe mit allen eingereichten Abgaben. Lehrkräfte sehen den Status jeder Abgabe (eingereicht, bewertet), können die Inhalte prüfen (Chat-Verlauf bei KI-Interviews, hochgeladene Dokumente, etc.) und Feedback sowie Bewertungen vergeben. Die Ansicht unterstützt den effizienten Bewertungs-Workflow.
+**Beschreibung:** Detailansicht einer Aufgabe mit allen eingereichten Abgaben.
+
+**Geplante Elemente:**
+- **Aufgaben-Info:**
+  - Titel, Beschreibung
+  - Typ, Dauer, Deadline
+  - Status
+- **Abgaben-Tabelle:**
+  - Schüler-Email
+  - Abgabe-Datum
+  - Status-Badge (Eingereicht, In Prüfung, Bewertet)
+  - Note (falls vorhanden)
+  - "Ansehen"-Button
+- **Filter:**
+  - Alle / Nur unbewertete / Nur bewertete
+- **Statistik:**
+  - X von Y Schüler:innen haben abgegeben
+  - Durchschnittsnote (falls vorhanden)
+
+**Interaktionen:**
+- "Ansehen" → Öffnet Abgabe-Detail zum Bewerten
+- Klick auf Schüler → Zeigt alle Abgaben dieses Schülers
+
+---
+
+### Design-Prinzipien
+
+Die Mockups folgen diesen Design-Prinzipien:
+
+1. **Klarheit:** Wichtige Informationen sind sofort sichtbar (Statistiken, Status)
+2. **Konsistenz:** Gleiche Elemente sehen überall gleich aus (Buttons, Badges, Karten)
+3. **Farbcodierung:** Status wird durch Farben verdeutlicht (Grün=OK, Rot=Dringend, etc.)
+4. **Responsive:** Layout passt sich an verschiedene Bildschirmgrössen an
+5. **Zugänglichkeit:** Ausreichend Kontrast, lesbare Schriftgrössen, klare Icons
 
 ---
 
@@ -832,51 +1233,94 @@ Die folgenden Mockups wurden in der Planungsphase erstellt, um die Kernfunktione
 | **Datenbank** | MongoDB | Atlas (Cloud) |
 | **Authentifizierung** | Auth0 | OAuth2/JWT |
 | **Frontend** | SvelteKit | Svelte 5 |
-| **Styling** | Tailwind CSS | 3.x |
+| **Styling** | Eigenes CSS Design System | CSS Variables |
+| **HTTP Client** | Axios | - |
 
 ---
 
 ## Frontend
 
-Das Frontend wurde mit SvelteKit und Svelte 5 entwickelt. Es bietet separate Ansichten für Schüler:innen und Lehrkräfte, die rollenbasiert nach dem Login angezeigt werden. Das Design verwendet Tailwind CSS und ist responsive für Desktop und Mobile optimiert.
+Das Frontend wurde mit **SvelteKit** und **Svelte 5** entwickelt. Es bietet separate Ansichten für Schüler:innen und Lehrkräfte, die rollenbasiert nach dem Login angezeigt werden. Das Design verwendet ein **eigenes CSS Design System** mit CSS Custom Properties.
 
-### Authentifizierung
+### Architektur
 
-#### Landing Page / Sign In
-![Sign In](doc/signIn.png)
-
-Die Startseite von Praesto begrüsst Besucher und bietet den Einstieg in die Anwendung.
-
-**Angezeigte Elemente:**
-- Praesto Logo und Slogan
-- Kurze Beschreibung der Anwendung
-- "Sign In"-Button für bestehende Benutzer
-- Optionaler Link zur Registrierung
-
-**Mögliche Aktionen:**
-- Klick auf "Sign In" leitet zu Auth0 weiter
-- Informationen über die Plattform lesen
+```
+frontend/
+├── src/
+│   ├── routes/
+│   │   ├── student/          # Schüler-Ansichten
+│   │   │   ├── dashboard/
+│   │   │   ├── sessions/
+│   │   │   ├── assignments/
+│   │   │   ├── applications/
+│   │   │   ├── notes/
+│   │   │   └── badges/
+│   │   ├── teacher/          # Lehrer-Ansichten
+│   │   │   ├── dashboard/
+│   │   │   ├── classes/
+│   │   │   ├── assignments/
+│   │   │   └── sessions/
+│   │   ├── signup/           # Registrierung
+│   │   └── +page.svelte      # Login
+│   ├── lib/
+│   │   └── api/              # API-Aufrufe (Axios)
+│   └── styles/
+│       ├── theme.css         # CSS Variables
+│       └── components.css    # Komponenten-Styles
+└── svelte.config.js
+```
 
 ---
 
-#### Auth0 Login
+### Authentifizierung
+
+#### Login
 ![Login](doc/login.png)
 
-Die Anmeldung erfolgt über Auth0, einen externen Authentifizierungsdienst.
+Die Login-Seite verwendet ein **Split-Screen-Design** mit Branding links und Formular rechts.
 
-**Angezeigte Elemente:**
-- Auth0 Login-Formular
-- Email-Eingabefeld
-- Passwort-Eingabefeld
-- "Continue" / "Login"-Button
-- Link für "Passwort vergessen"
+**Linke Seite (Gradient orange → lila):**
+- Praesto Logo (winkende Figur)
+- App-Name "Praesto"
+- Slogan: "Dein persönlicher Bewerbungscoach mit KI-Power"
+- Feature-Liste als Kacheln:
+  - 🎯 KI-Bewerbungstraining
+  - 📋 Aufgaben & Feedback  
+  - 🏆 Badges & Fortschritt
 
-**Mögliche Aktionen:**
-- Email und Passwort eingeben
-- Anmelden mit bestehenden Credentials
-- Passwort zurücksetzen falls vergessen
+**Rechte Seite (weiss):**
+- Überschrift: "Willkommen zurück! 👋"
+- Untertext: "Melde dich an, um fortzufahren"
+- E-Mail Eingabefeld (Placeholder: "deine@email.ch")
+- Passwort Eingabefeld
+- "Anmelden" Button (dunkel/lila)
+- Link: "Noch kein Konto? Jetzt registrieren"
 
-**Besonderheit:** Nach erfolgreicher Anmeldung wird die Rolle (Student/Teacher) aus dem JWT-Token ausgelesen und der Benutzer zum entsprechenden Dashboard weitergeleitet.
+---
+
+#### Registrierung
+![Registrierung](doc/signIn.png)
+
+Die Registrierungs-Seite folgt dem gleichen Split-Screen-Design.
+
+**Linke Seite:**
+- Praesto Logo
+- "Praesto"
+- "Starte jetzt mit deinem persönlichen Bewerbungscoach"
+- Feature-Liste:
+  - ✨ Kostenlos starten
+  - 🎯 Personalisiertes Training
+  - 📈 Verfolge deinen Fortschritt
+
+**Rechte Seite:**
+- Überschrift: "Konto erstellen 🚀"
+- Untertext: "Registriere dich und leg los"
+- Formularfelder:
+  - Vorname + Nachname (nebeneinander)
+  - E-Mail * (Pflichtfeld, Placeholder: "max.muster@schule.ch")
+  - Passwort * (Hinweis: "Mind. 8 Zeichen")
+- "Registrieren" Button (dunkel/lila)
+- Link: "Bereits ein Konto? Jetzt anmelden"
 
 ---
 
@@ -885,380 +1329,390 @@ Die Anmeldung erfolgt über Auth0, einen externen Authentifizierungsdienst.
 #### Dashboard
 ![Student Dashboard](doc/student/schueler-dashboard.png)
 
-Das Dashboard ist die Startseite für Schüler:innen nach dem Login. Es bietet einen schnellen Überblick über alle relevanten Informationen:
+Das Dashboard ist die Startseite nach dem Login mit Übersicht und Schnellzugriff.
 
-**Angezeigte Elemente:**
-- Persönliche Begrüssung mit dem Namen des Schülers
-- Anzahl der offenen Aufgaben mit nächster Deadline
-- Gesamtzahl der verdienten Badges als Motivationselement
-- Liste der aktuell offenen Aufgaben mit Titel, Typ und Fälligkeitsdatum
-- Benachrichtigungen über neues Feedback von Lehrkräften
+**Header-Bereich (lila Hintergrund):**
+- Begrüssung: "Willkommen zurück 👋" + "Hi student@zhaw.ch"
+- Beschreibung: "Hier findest du alles, um dich optimal auf Bewerbungen vorzubereiten."
+- Zwei Buttons: "Zu den Aufgaben" (weiss) + "KI-Training starten" (dunkel)
+- Statistik-Karten rechts:
+  - Offene Aufgaben: **0**
+  - KI-Trainings: **55**
+  - 🏆 Badges: **7**
 
-**Mögliche Aktionen:**
-- Direkt zu einer Aufgabe navigieren durch Klick auf die Aufgabenkarte
-- Neues KI-Training starten über den Quick-Action-Button
-- Zu Bewerbungen, Notizen oder Badges wechseln über die Navigation
+**Hauptbereich:**
+- **📚 Nächste Aufgaben** (mit "Alle ansehen →" Link)
+  - Zeigt: "Keine offenen Aufgaben! Du hast alles erledigt. Zeit für ein Training?"
+  - "KI-Training starten" Button (lila)
+- **🔔 Neues Feedback** (rechte Spalte)
+  - Liste mit Feedback-Einträgen
+  - Zeigt z.B. "Neues Feedback - Note: 5"
+  - "+1 weitere" wenn mehr vorhanden
+- **⚡ Schnellzugriff** (rechte Spalte)
+  - 🎯 KI-Training →
+  - 📁 Bewerbungen (Badge "2")
+  - 📝 Notizen →
+  - 🏆 Badges (Badge "7")
+
+**Navigation (Header):**
+- Praesto Logo + Name
+- Tabs: Dashboard | Aufgaben | Training | Notizen | Bewerbungen | 🏆 Badges
+- Rechts: student@zhaw.ch + "Logout" Button
 
 ---
 
 #### Aufgaben-Übersicht
-![Student Aufgaben Übersicht](doc/student/schueler-aufgaben-uebersicht.png)
+![Student Aufgaben](doc/student/schueler-aufgaben-uebersicht.png)
 
-Diese Ansicht zeigt alle Aufgaben, die der Klasse des Schülers zugewiesen wurden. Aufgaben werden von der Lehrkraft erstellt und haben eine Deadline.
+Zeigt alle Aufgaben der Klasse des Schülers.
 
-**Angezeigte Elemente:**
-- Liste aller Aufgaben mit Titel und kurzer Beschreibung
-- **Aufgabentyp als Icon:**
-  - 🤖 **KI-Bewerbungsgespräch** - Bewerbungsgespräch mit der KI üben
-  - 📄 **Dokument einreichen** - Eine Datei hochladen (z.B. Lebenslauf)
-  - ✍️ **Selbstreflexion** - Einen Text schreiben
-  - 🎥 **Video-Bewerbung** - Ein Video aufnehmen
-  - 🔍 **Recherche** - Ein Thema recherchieren und zusammenfassen
-- **Deadline mit Farbcodierung:**
-  - Normal: Mehr als 3 Tage Zeit
-  - Orange ("Bald fällig"): 3 Tage oder weniger
-  - Rot ("Überfällig!"): Deadline überschritten
-- **Status der eigenen Abgabe:**
-  - "Offen" - Noch nicht begonnen
-  - "Eingereicht" - Abgabe erfolgt, wartet auf Bewertung
-  - "Bewertet" - Lehrkraft hat Feedback gegeben
-- Geschätzte Dauer in Minuten
+**Header:**
+- 📚 "Meine Aufgaben"
+- Klasse: **Informatik 3a** · "Hier findest du alle Aufgaben deiner Lehrperson."
 
-**Mögliche Aktionen:**
-- Aufgabe anklicken um Details zu sehen und zu starten
-- Filter: Alle / Offene / Erledigte Aufgaben
-- Sortierung nach Deadline (dringendste zuerst)
+**Statistik-Karten:**
+- **2** Aufgaben total
+- **1** Offen
+- **1** Abgegeben (grün)
+
+**Aufgaben-Liste:**
+
+*Aufgabe 1 (offen):*
+- Badge: "🎯 KI-Bewerbungsgespräch" + "Offen"
+- Titel: **Interview-Training**
+- Beschreibung: "Führe ein simuliertes Vorstellungsgespräch mit dem KI-Coach durch."
+- 📅 Deadline: 20.12.2025 · ⏱ ca. 30 Min
+- Button: "Training starten" (lila)
+
+*Aufgabe 2 (abgegeben mit Feedback):*
+- Badge: "📄 Dokument einreichen" + "✓ Bewertet"
+- Titel: **aaaa**
+- 📤 Abgegeben am 12.12.2025, 15:21 · 💬 Feedback erhalten
+- Feedback-Box:
+  - "Feedback: Gute Reflexion! Du hast die wichtigsten Punkte erfasst."
+  - Note: **5** (lila Badge)
+- Link: "Details ansehen →"
 
 ---
 
-#### Aufgaben-Detail
+#### Aufgabe Detail (offen)
 ![Student Aufgabe Detail](doc/student/schueler-aufgabe-detail.png)
 
-Die Detailansicht einer einzelnen Aufgabe mit allen Informationen und der Möglichkeit, die Aufgabe zu bearbeiten.
+Detailansicht einer offenen Aufgabe vor der Bearbeitung.
 
-**Angezeigte Elemente:**
-- **Titel** der Aufgabe
-- **Beschreibung** - Was genau soll gemacht werden?
-- **Aufgabentyp** mit Erklärung:
-  - *KI-Interview:* "Führe ein simuliertes Bewerbungsgespräch mit der KI. Am Ende kannst du die Session als Abgabe einreichen."
-  - *Dokument:* "Lade ein Dokument hoch (PDF, Word). Z.B. deinen Lebenslauf oder ein Motivationsschreiben."
-  - *Selbstreflexion:* "Schreibe einen Text zu dem vorgegebenen Thema."
-  - *Video:* "Nimm ein kurzes Video auf, z.B. eine Selbstvorstellung."
-  - *Recherche:* "Recherchiere zum Thema und fasse deine Erkenntnisse zusammen."
-- **Deadline** - Bis wann muss abgegeben werden?
-- **Geschätzte Dauer** - Wie viel Zeit sollte man einplanen?
-- **Eigener Status** - Habe ich schon abgegeben?
+**Header:**
+- "← Zurück zu Aufgaben"
+- Titel: **Interview-Training**
+- Badges: "🎯 KI-Interview" (lila) + "Offen" + 📅 Deadline: 20.12.2025 + ⏱ 30 Min
 
-**Mögliche Aktionen je nach Typ:**
-| Typ | Button | Was passiert? |
-|-----|--------|---------------|
-| KI-Interview | "Training starten" | Öffnet den Chat mit der KI |
-| Dokument | "Datei hochladen" | Öffnet Datei-Auswahl |
-| Selbstreflexion | "Text schreiben" | Öffnet Texteditor |
-| Video | "Video aufnehmen" | Öffnet Kamera (falls implementiert) |
-| Recherche | "Recherche starten" | Öffnet Texteditor mit Link-Feld |
+**Beschreibung (Karte):**
+- 📄 **Beschreibung**
+- "Führe ein simuliertes Vorstellungsgespräch mit dem KI-Coach durch."
+
+**Aufgabe bearbeiten (Karte):**
+- 📝 **Aufgabe bearbeiten**
+- "Starte ein KI-Bewerbungsgespräch und reiche es als Abgabe ein."
+- Button: "🎯 Interview starten" (lila, volle Breite)
+
+**Tipps (rechte Spalte):**
+- 💡 **Tipps**
+- • Antworte in ganzen Sätzen
+- • Nimm dir Zeit zum Nachdenken
+- • Sei ehrlich und authentisch
 
 ---
 
 #### Aufgabe mit Feedback
-![Student Aufgabe mit Feedback](doc/student/schueler-aufgabe-mit-feedback.png)
+![Student Aufgabe Feedback](doc/student/schueler-aufgabe-mit-feedback.png)
 
-Nachdem eine Lehrkraft die Abgabe bewertet hat, erscheint das Feedback in dieser Ansicht. Hier kann der Schüler sehen, wie seine Arbeit bewertet wurde.
+Ansicht einer abgegebenen und bewerteten Aufgabe.
 
-**Angezeigte Elemente:**
-- **Note/Bewertung** - Prominent angezeigt (z.B. "5.0" oder "Sehr gut")
-- **Schriftliches Feedback** - Kommentar der Lehrkraft mit:
-  - Was war gut?
-  - Was könnte verbessert werden?
-  - Tipps für die Zukunft
-- **Bewertungsdatum** - Wann wurde bewertet?
-- **Eigene Abgabe** - Was hatte ich eingereicht?
-  - Bei KI-Interview: Link zum Chat-Verlauf
-  - Bei Dokument: Link zur hochgeladenen Datei
-  - Bei Text: Der eingereichte Text
+**Header:**
+- "← Zurück zu Aufgaben"
+- Titel: **aaaa**
+- Badges: "📄 Dokument" (orange) + "✓ Abgegeben" + 📅 Deadline: 19.12.2025
 
-**Mögliche Aktionen:**
-- Chat-Verlauf nochmals durchlesen (bei KI-Interview)
-- Eigene Abgabe nochmals ansehen
-- Feedback als "gelesen" markieren
+**Deine Abgabe (Karte, grüner Rand):**
+- ✅ **Deine Abgabe**
+- "Abgegeben am 12.12.2025, 15:21" (grüner Text)
 
-**Warum ist Feedback wichtig?**
-Das Feedback der Lehrkraft hilft, sich zu verbessern. Durch das Badge-System wird auch das Erhalten von Feedback belohnt.
+**Feedback (Karte):**
+- 💬 **Feedback** + Note **5** (lila Badge rechts)
+- "Gute Reflexion! Du hast die wichtigsten Punkte erfasst." (grüner Text)
 
----
-
-#### KI-Chat Übersicht
-![Student Chat Übersicht](doc/student/schueler-chat-übersicht.png)
-
-Übersicht aller bisherigen Trainings-Sessions mit dem KI-Coach.
-
-**Angezeigte Elemente:**
-- Liste aller Sessions chronologisch sortiert
-- Datum und Uhrzeit jeder Session
-- Dauer der Session
-- Status: offen (kann fortgesetzt werden) oder abgeschlossen
-- Falls vorhanden: Verknüpfte Aufgabe
-- Anzahl der Nachrichten in der Session
-
-**Mögliche Aktionen:**
-- Offene Session fortsetzen
-- Abgeschlossene Session nochmals lesen
-- Neue freie Session starten
-- Session löschen
+**Tipps (rechte Spalte):**
+- 💡 **Tipps**
+- • Lies die Aufgabe genau durch
+- • Plane genug Zeit ein
+- • Frag bei Unklarheiten nach
 
 ---
 
-#### KI-Chat (freies Training)
+#### KI-Training Sessions Übersicht
+![Student Sessions](doc/student/schueler-chat-übersicht.png)
+
+Übersicht aller KI-Trainings-Sessions.
+
+**Header:**
+- 🎯 "KI-Training Sessions"
+- "Hier siehst du alle deine Trainings-Sessions. Setze offene Sessions fort oder starte eine neue."
+- Button: "+ Neue Session starten" (lila, rechts)
+
+**Statistik-Karten:**
+- **57** Total
+- **1** Offen (grün)
+- **56** Abgeschlossen
+
+**Sessions als Karten-Grid (2 Spalten):**
+
+*Offene Session:*
+- Status: "Offen" (grüner Text)
+- Datum: 14.12.2025, 21:05
+- Nachrichten: **1**
+- Buttons: "▶ Fortsetzen" (lila) + "⬛ Beenden" (weiss)
+
+*Abgeschlossene Sessions:*
+- Status: "Abgeschlossen" (grauer Text)
+- Datum + Beendet-Datum
+- Nachrichten: **1**
+- "Zu Aufgabe: Ja" (falls verknüpft)
+- Button: "👁 Ansehen"
+
+---
+
+#### KI-Chat (Freies Training)
 ![Student Chat ohne Abgabe](doc/student/schueler-chat-ohne-abgabe.png)
 
-Das Herzstück der Anwendung: Der Chat mit dem KI-Bewerbungscoach für freies Training.
+Chat-Interface für freies Training ohne Aufgabe.
 
-**Angezeigte Elemente:**
-- Chat-Verlauf mit allen Nachrichten (User und KI)
-- KI-Nachrichten mit Coach-Avatar
-- Eigene Nachrichten rechtsbündig
-- Zeitstempel pro Nachricht
-- Eingabefeld am unteren Rand
-- Sende-Button
+**Header (lila Balken):**
+- "← Zurück"
+- 🎯 **KI-Bewerbungstraining**
+- "Übe Vorstellungsgespräche mit deinem persönlichen KI-Coach"
+- Button: "Beenden" (weiss/transparent)
 
-**Mögliche Aktionen:**
-- Nachricht eingeben und absenden (Enter oder Button)
-- Durch den Verlauf scrollen
-- Session beenden über Button in der Navigation
-- Zur Session-Übersicht zurückkehren
+**Chat-Bereich:**
+- KI-Nachricht (links, weisse Bubble):
+  - "Hallo! Ich bin dein Bewerbungscoach. Möchtest du ein Vorstellungsgespräch üben oder hast du eine Frage zur Bewerbung?"
+  - Zeitstempel: 21:04
 
-**Besonderheit:** Die KI agiert als HR-Coach und stellt realistische Bewerbungsfragen. Nach jeder Antwort gibt sie konstruktives Feedback mit konkreten Verbesserungsvorschlägen.
+**Eingabe-Bereich (unten):**
+- Textfeld: "Schreibe deine Antwort..."
+- Sende-Button (Pfeil, lila)
+- Hinweis: "💡 Drücke Enter zum Senden, Shift+Enter für neue Zeile"
 
 ---
 
-#### KI-Chat (für Aufgabe)
+#### KI-Chat (mit Aufgabe)
 ![Student Chat mit Abgabe](doc/student/schueler-chat-mit-abgabe.png)
 
-Der Chat-Modus wenn eine Session zu einer Aufgabe gehört.
+Chat-Interface für aufgabengebundenes Training.
 
-**Angezeigte Elemente:**
-- Gleicher Chat wie beim freien Training
-- Zusätzlich: Aufgabentitel in der Kopfzeile
-- Hinweis auf die vorgesehene Dauer
-- "Als Abgabe einreichen"-Button
+**Header (lila Balken):**
+- "← Zurück"
+- 🎯 **Interview-Training**
+- "Aufgabe von deiner Lehrperson"
+- Button: "✓ Abgeben" (grün!)
 
-**Mögliche Aktionen:**
-- Chat führen wie beim freien Training
-- Session beenden ohne Abgabe
-- **Session als Abgabe einreichen** - dies erstellt automatisch eine Submission und schliesst die Session
+**Timer-Leiste:**
+- ⏱ "Noch 29:51" (grüner Text, Countdown)
+- "Ziel: 30 Min" (rechts)
 
-**Besonderheit:** Nach dem Einreichen kann die Session nicht mehr fortgesetzt werden. Die Lehrkraft kann den gesamten Chat-Verlauf einsehen und bewerten.
+**Chat-Bereich:**
+- KI-Nachricht:
+  - "Willkommen zum Bewerbungsgespräch! Für welchen Beruf möchtest du heute üben?"
+  - Zeitstempel: 21:30
 
----
-
-#### Bewerbungen-Übersicht
-![Student Bewerbungen Übersicht](doc/student/schueler-bewerbungen-uebersicht.png)
-
-Der Bewerbungs-Tracker hilft Schüler:innen, den Überblick über ihre echten Bewerbungen zu behalten. Anders als das KI-Training geht es hier um die Verwaltung von realen Bewerbungen bei echten Firmen.
-
-**Angezeigte Elemente:**
-- Liste aller erfassten Bewerbungen mit Firmenname und Position
-- Aktueller Status als farbiger Badge mit Emoji:
-  - 📝 **Geplant** - Bewerbung ist vorgemerkt, aber noch nicht abgeschickt
-  - 📤 **Beworben** - Bewerbung wurde abgeschickt, wartet auf Antwort
-  - 📅 **Eingeladen** - Einladung zum Vorstellungsgespräch erhalten
-  - ✅ **Gespräch absolviert** - Vorstellungsgespräch wurde geführt
-  - 🎉 **Zusage** - Lehrstelle erhalten!
-  - ❌ **Absage** - Leider nicht geklappt
-  - 🔙 **Zurückgezogen** - Selbst abgesagt (z.B. weil andere Stelle gefunden)
-- Bewerbungsdatum und Gesprächstermin (falls vorhanden)
-- Statistik-Balken: Visualisiert wie viele Bewerbungen in welchem Status sind
-
-**Mögliche Aktionen:**
-- "Neue Bewerbung" Button öffnet das Erfassungsformular
-- Klick auf eine Bewerbung öffnet die Detailansicht zum Bearbeiten
-- Status kann direkt in der Liste per Dropdown geändert werden
-- Filterfunktion um nur bestimmte Status anzuzeigen (z.B. nur offene Bewerbungen)
-
-**Warum ist das nützlich?**
-Schüler:innen bewerben sich oft bei 10-20 Firmen gleichzeitig. Ohne Übersicht verliert man schnell den Überblick: Wo habe ich mich beworben? Wann war das Gespräch? Was muss ich noch tun?
+**Eingabe-Bereich:** (gleich wie freies Training)
 
 ---
 
-#### Bewerbung erstellen
+#### Bewerbungs-Tracker
+![Student Bewerbungen](doc/student/schueler-bewerbungen-uebersicht.png)
+
+Verwaltung aller echten Bewerbungen.
+
+**Header:**
+- 📊 "Bewerbungs-Tracker"
+- "Behalte den Überblick über deine Bewerbungen und deren Status."
+- Button: "+ Neue Bewerbung" (lila)
+
+**Statistik-Karten:**
+- **2** Total
+- **1** Beworben (blau)
+- **0** Eingeladen (gelb)
+- **0** Zusagen (grün)
+- **0** Absagen (rot)
+
+**Filter-Leiste:**
+- 🔍 Suchen...
+- Dropdown: "Alle Status"
+- Dropdown: "Neueste zuerst"
+
+**Bewerbungs-Tabelle:**
+
+| FIRMA | POSITION | STATUS | BEWORBEN AM | GESPRÄCH | AKTIONEN |
+|-------|----------|--------|-------------|----------|----------|
+| Beispiel AG 📝 | Informatiker EFZ | 📤 Beworben ▼ | 15.12.2025 | - | ✏️ 🗑️ |
+| EWZ | Informatikerin EFZ | ✅ Gespräch absolviert ▼ | 12.11.2025 | - | ✏️ 🗑️ |
+
+**Status-Dropdown:** Direkt in der Tabelle klickbar zum Ändern
+
+---
+
+#### Bewerbung erstellen (Modal)
 ![Student Bewerbung erstellen](doc/student/schueler-bewerbung-erstellen.png)
 
-Formular zum Erfassen einer neuen Bewerbung. Hier werden alle wichtigen Informationen zu einer Bewerbung festgehalten.
+Modal zum Erstellen einer neuen Bewerbung.
+
+**Modal-Header:**
+- "Neue Bewerbung"
+- X zum Schliessen
 
 **Formularfelder:**
+- **Firma *** (Pflicht) - Placeholder: "z.B. Google"
+- **Position** - Placeholder: "z.B. Software Engineer"
+- **Status** - Dropdown mit "📝 Geplant" vorausgewählt
+- **Beworben am** - Datumsfeld (tt.mm.jjjj)
+- **Gespräch am** - Datumsfeld (tt.mm.jjjj)
+- **Notizen** - Textarea "Zusätzliche Informationen..."
 
-| Feld | Pflicht | Beschreibung |
-|------|---------|--------------|
-| **Firmenname** | Ja | Name des Unternehmens (z.B. "Swisscom", "Migros") |
-| **Position** | Ja | Lehrstelle/Beruf (z.B. "Informatiker EFZ", "Kauffrau EFZ") |
-| **Status** | Ja | Aktueller Stand der Bewerbung (siehe Status-Erklärung unten) |
-| **Bewerbungsdatum** | Nein | Wann wurde die Bewerbung abgeschickt? |
-| **Gesprächstermin** | Nein | Datum des Vorstellungsgesprächs (falls bereits bekannt) |
-| **Notizen** | Nein | Persönliche Anmerkungen (z.B. "Kontaktperson: Frau Müller") |
-
-**Status-Dropdown erklärt:**
-- 📝 **Geplant** - Für Firmen die man im Auge hat, aber noch nicht angeschrieben hat. Gut um eine Wunschliste zu führen.
-- 📤 **Beworben** - Bewerbung ist raus! Jetzt heisst es warten.
-- 📅 **Eingeladen** - Super! Die Firma möchte dich kennenlernen. Termin eintragen nicht vergessen!
-- ✅ **Gespräch absolviert** - Gespräch ist vorbei, Entscheidung steht noch aus.
-- 🎉 **Zusage** - Herzlichen Glückwunsch!
-- ❌ **Absage** - Schade, aber nicht aufgeben - weiter geht's!
-- 🔙 **Zurückgezogen** - Falls man selbst absagt (z.B. andere Stelle angenommen).
-
-**Mögliche Aktionen:**
-- Alle Felder ausfüllen und mit "Speichern" bestätigen
-- "Abbrechen" verwirft die Eingaben und kehrt zur Übersicht zurück
+**Buttons:**
+- "Abbrechen" (weiss)
+- "Hinzufügen" (lila)
 
 ---
 
-#### Bewerbung bearbeiten
+#### Bewerbung bearbeiten (Modal)
 ![Student Bewerbung bearbeiten](doc/student/schueler-bewerbung-bearbeiten.png)
 
-Bearbeiten einer bestehenden Bewerbung. Alle Felder können aktualisiert werden, z.B. wenn ein Gesprächstermin hinzukommt oder sich der Status ändert.
+Modal zum Bearbeiten einer bestehenden Bewerbung.
 
-**Angezeigte Elemente:**
-- Alle Formularfelder vorausgefüllt mit den aktuellen Werten
-- Erstellungsdatum: Wann wurde die Bewerbung erfasst?
-- Letzte Änderung: Wann wurde zuletzt etwas geändert?
+**Modal-Header:**
+- "Bewerbung bearbeiten"
+- X zum Schliessen
 
-**Typische Anwendungsfälle:**
-- Gesprächstermin nachtragen nachdem die Einladung kam
-- Status aktualisieren (z.B. von "Beworben" auf "Eingeladen")
-- Notizen ergänzen nach einem Telefonat
-- Kontaktdaten oder Details korrigieren
+**Formularfelder (ausgefüllt):**
+- **Firma *** - "Beispiel AG"
+- **Position** - "Informatiker EFZ"
+- **Status** - "📤 Beworben" (Dropdown)
+- **Beworben am** - "15.12.2025"
+- **Gespräch am** - (leer)
+- **Notizen** - "Online beworben am 15.12."
 
-**Mögliche Aktionen:**
-- Felder bearbeiten und mit "Speichern" bestätigen
-- "Löschen" entfernt die Bewerbung komplett (mit Bestätigungsdialog)
-- "Abbrechen" verwirft alle Änderungen
+**Buttons:**
+- "Abbrechen" (weiss)
+- "Speichern" (lila)
 
 ---
 
 #### Bewerbungsstatus ändern
-![Student Bewerbungsstatus ändern](doc/student/schueler-bewerbungsstatus-aendern.png)
+![Student Status ändern](doc/student/schueler-bewerbungsstatus-aendern.png)
 
-Schnelles Ändern des Bewerbungsstatus direkt aus der Übersicht - ohne die Detailansicht öffnen zu müssen.
+Status-Dropdown direkt in der Bewerbungsliste.
 
-**So funktioniert's:**
-1. In der Bewerbungsliste auf den Status-Badge klicken
-2. Dropdown öffnet sich mit allen verfügbaren Status
-3. Neuen Status auswählen
-4. Änderung wird sofort gespeichert
-
-**Verfügbare Status im Detail:**
-
-| Status | Emoji | Bedeutung | Wann setzen? |
-|--------|-------|-----------|--------------|
-| **Geplant** | 📝 | Bewerbung noch nicht abgeschickt | Firma auf der Wunschliste |
-| **Beworben** | 📤 | Bewerbung ist unterwegs | Nach dem Abschicken |
-| **Eingeladen** | 📅 | Einladung zum Gespräch erhalten | Nach positiver Rückmeldung |
-| **Gespräch absolviert** | ✅ | Interview ist vorbei | Nach dem Vorstellungsgespräch |
-| **Zusage** | 🎉 | Lehrstelle erhalten! | Nach der Zusage der Firma |
-| **Absage** | ❌ | Absage erhalten | Nach negativer Rückmeldung |
-| **Zurückgezogen** | 🔙 | Selbst abgesagt | Wenn man die Stelle nicht mehr will |
-
-**Tipp:** Den Status regelmässig aktualisieren hilft, den Überblick zu behalten und zeigt den Fortschritt im Bewerbungsprozess.
+**Dropdown-Optionen:**
+- 📝 Geplant
+- ✓ 📤 Beworben (aktuell ausgewählt)
+- 📅 Eingeladen
+- ✅ Gespräch absolviert
+- 🎉 Zusage
+- ❌ Absage
+- 🔙 Zurückgezogen
 
 ---
 
 #### Notizen-Übersicht
-![Student Notizen Übersicht](doc/student/schueler-notizen-übersicht.png)
+![Student Notizen](doc/student/schueler-notizen-übersicht.png)
 
-Persönliche Notizen zu Firmen, Stellen oder allgemeine Gedanken zur Berufswahl. Die Notizen sind nur für den Schüler selbst sichtbar - Lehrkräfte haben keinen Zugriff.
+Persönliche Notizen zu Firmen und Bewerbungen.
 
-**Angezeigte Elemente:**
-- Liste aller Notizen, neueste zuerst
-- Vorschau des Notizinhalts (erste 2-3 Zeilen)
-- Falls angegeben: Verknüpfte Firma und Position
-- Erstellungsdatum jeder Notiz
+**Header:**
+- 📝 "Meine Notizen"
+- "Halte wichtige Informationen zu Unternehmen und deinem Bewerbungsprozess fest."
+- Button: "+ Neue Notiz" (lila)
 
-**Mögliche Aktionen:**
-- "Neue Notiz" erstellt eine leere Notiz
-- Klick auf eine Notiz öffnet sie zum Bearbeiten
-- Notiz kann gelöscht werden
-- Suchfunktion um Notizen nach Firma zu filtern
+**Filter-Leiste:**
+- Badge: "2 Total"
+- 🔍 Suchen...
+- Dropdown: "Alle Firmen"
+- Dropdown: "Neueste zuerst"
 
-**Wozu Notizen verwenden?**
-- Informationen über Firmen festhalten (Grösse, Produkte, Kultur)
-- Fragen für das Vorstellungsgespräch vorbereiten
-- Nach einem Gespräch reflektieren: Was lief gut? Was könnte besser?
-- Tipps vom KI-Coach oder der Lehrkraft festhalten
-- Kontaktpersonen und deren Infos notieren
+**Notizen als Karten (2 Spalten):**
+
+*Notiz 1:*
+- 🏢 Beispiel AG + 💼 Informatiker EFZ (Badges)
+- "Guter Eindruck beim Telefongespräch. Firma hat moderne Büros."
+- Datum: 14.12.2025, 13:26
+- Icons: ✏️ 🗑️
+
+*Notiz 2:*
+- 🏢 ZKB + 💼 Informatikerin EFZ
+- "Lehrstellen ende juni"
+- Datum: 11.12.2025, 19:05
+- Icons: ✏️ 🗑️
 
 ---
 
-#### Notiz erstellen
+#### Notiz erstellen (Modal)
 ![Student Notiz erstellen](doc/student/schueler-notiz-erstellen.png)
 
-Formular zum Erstellen einer neuen Notiz. Notizen können frei verwendet werden - von kurzen Gedanken bis zu ausführlichen Recherchen.
+Modal zum Erstellen einer neuen Notiz.
+
+**Modal-Header:**
+- "Neue Notiz"
+- X zum Schliessen
 
 **Formularfelder:**
+- **Firma (optional)** - Placeholder: "z.B. Google"
+- **Position (optional)** - Placeholder: "z.B. Software Engineer"
+- **Notiz *** (Pflicht) - Textarea "Deine Notiz..."
 
-| Feld | Pflicht | Beschreibung |
-|------|---------|--------------|
-| **Firmenname** | Nein | Optional - verknüpft die Notiz mit einer Firma |
-| **Position** | Nein | Optional - z.B. "Informatiker EFZ" |
-| **Notiztext** | Ja | Der eigentliche Inhalt, mehrzeilig |
-
-**Mögliche Aktionen:**
-- Text eingeben und mit "Speichern" bestätigen
-- "Abbrechen" verwirft die Notiz
-
-**Beispiele für nützliche Notizen:**
-
-*Firmen-Recherche:*
-> **Firma:** Swisscom  
-> **Position:** Informatiker EFZ  
-> **Notiz:** Grösster Telekom-Anbieter der Schweiz. Hat ein Lehrlings-Programm mit über 900 Lernenden. Standorte: Bern, Zürich, Lausanne. Bewerbungsfrist: Ende Oktober.
-
-*Gesprächsvorbereitung:*
-> **Firma:** Migros  
-> **Notiz:** Fragen die ich stellen will:
-> - Wie sieht ein typischer Tag aus?
-> - Gibt es Möglichkeiten nach der Lehre weiterzumachen?
-> - Wer wäre mein Berufsbildner?
-
-*Reflexion nach Gespräch:*
-> **Firma:** Post  
-> **Notiz:** Gespräch war gut! Frau Meier war sehr freundlich. Meine Antwort auf "Warum die Post?" kam gut an. Nächstes Mal: Mehr über aktuelle Projekte der Firma wissen.
+**Buttons:**
+- "Abbrechen" (weiss)
+- "Erstellen" (lila)
 
 ---
 
 #### Badges-Übersicht
-![Student Badges Übersicht](doc/student/schueler-badges-uebersicht.png)
+![Student Badges](doc/student/schueler-badges-uebersicht.png)
 
-Das Gamification-Element der Anwendung: Badges in verschiedenen Kategorien motivieren zur regelmässigen Nutzung. Badges werden automatisch vergeben, sobald die Kriterien erfüllt sind.
+Gamification-Übersicht mit allen Badges.
 
-**Angezeigte Elemente:**
-- Alle Badges gruppiert nach Kategorie
-- Verdiente Badges: Farbig mit Emoji-Icon und Datum
-- Noch nicht verdiente Badges: Ausgegraut mit Hinweis was fehlt
-- Fortschrittsanzeige pro Kategorie (z.B. "3 von 8 Badges")
+**Header:**
+- 🏆 "Meine Badges"
+- "Sammle Badges durch deine Aktivitäten!"
+- Badge-Counter rechts: **7/9** Badges verdient (lila Kreis)
+
+**Fortschrittsbalken:**
+- Grüner Balken zeigt 78% abgeschlossen
 
 **Badge-Kategorien:**
 
-| Kategorie | Beschreibung |
-|-----------|--------------|
-| **KI-Training** | Für absolvierte Sessions (erste Session, mehrere Sessions, etc.) |
-| **Notizen** | Für erstellte Notizen |
-| **Bewerbungen** | Für erfasste Bewerbungen und erreichte Status |
-| **Meilensteine** | Für allgemeine Aktivität (erste Woche aktiv, etc.) |
-| **Abgaben** | Für eingereichte Aufgaben |
-| **Feedback** | Für erhaltenes Feedback von Lehrkräften |
-| **Bewertungen** | Für gute Noten |
+**🎯 KI-Training:**
+| Badge | Beschreibung | Status |
+|-------|--------------|--------|
+| Erste Session | Dein erstes KI-Training absolviert! | ✓ Verdient am 11.12.2025 |
+| Fleissig | 5 KI-Trainings gemacht | ✓ Verdient am 11.12.2025 |
+| Training-Profi | 10 KI-Trainings absolviert | ✓ Verdient am 11.12.2025 |
 
-**Wie verdient man Badges?**
-- **Automatisch:** Das System prüft nach jeder Aktion (Training beenden, Bewerbung erstellen, etc.) ob neue Badges verdient wurden
-- **Sofortige Benachrichtigung:** Bei einem neuen Badge erscheint eine Meldung
-- **Keine Wiederholung:** Jedes Badge kann nur einmal verdient werden
+**📝 Notizen:**
+| Badge | Beschreibung | Status |
+|-------|--------------|--------|
+| Notizen-Starter | Erste Notiz erstellt | ✓ Verdient am 11.12.2025 |
+| Notizen-Sammler | 10 Notizen gesammelt | 🔒 Noch nicht freigeschaltet |
 
-**Warum Badges?**
-Badges machen den Fortschritt sichtbar und motivieren zur regelmässigen Nutzung. Statt "Ich muss noch üben" wird es zu "Ich will das nächste Badge!"
+**📁 Bewerbungen:**
+| Badge | Beschreibung | Status |
+|-------|--------------|--------|
+| Bewerber | Erste Bewerbung eingetragen | ✓ Verdient am 11.12.2025 |
+| Aktiv | 5 Bewerbungen eingetragen | 🔒 Noch nicht freigeschaltet |
 
-**Mögliche Aktionen:**
-- Durch die Kategorien scrollen
-- Auf ein Badge klicken zeigt Details: Name, Beschreibung, Kriterium
-- Nicht verdiente Badges zeigen, was noch fehlt
+**🎯 Bewerbungs-Meilensteine:**
+| Badge | Beschreibung | Status |
+|-------|--------------|--------|
+| Einladung | Zum Gespräch eingeladen | ✓ Verdient am 11.12.2025 |
+| Erfolg | Erste Zusage erhalten | ✓ Verdient am 11.12.2025 |
 
 ---
 
@@ -1267,200 +1721,190 @@ Badges machen den Fortschritt sichtbar und motivieren zur regelmässigen Nutzung
 #### Dashboard
 ![Teacher Dashboard](doc/teacher/teacher-dashboard.png)
 
-Die Startseite für Lehrkräfte mit Fokus auf Klassenmanagement und offene Bewertungen.
+Startseite für Lehrkräfte mit Klassenübersicht.
 
-**Angezeigte Elemente:**
-- Anzahl der verwalteten Klassen
-- Gesamtzahl der Schüler:innen
-- Anzahl offener Abgaben die bewertet werden müssen (prominent)
-- Liste der neuesten Abgaben mit Schülername und Aufgabe
-- Quick-Actions für häufige Tätigkeiten
+**Header:**
+- "Hallo, teacher@zhaw.ch 👋"
+- "Hier ist deine Übersicht."
 
-**Mögliche Aktionen:**
-- Direkt zu einer Abgabe springen zur Bewertung
-- Neue Aufgabe erstellen
-- Neue Klasse erstellen
-- Zu Klassen- oder Aufgabenverwaltung wechseln
+**Alert-Banner (gelb):**
+- 📋 "1 Abgabe wartet auf dein Feedback"
+- "Schüler freuen sich über zeitnahes Feedback!"
+- Button: "Jetzt bewerten →" (lila)
+
+**Statistik-Karten:**
+- **1** Klassen
+- **1** Schüler
+- **3** Aufgaben
+- **1** Offen (grün)
+
+**Hauptbereich:**
+
+*Linke Spalte - Abgaben ohne Feedback:*
+- 📤 "Abgaben ohne Feedback" + "Alle ansehen →"
+- Karte: Avatar "S" + "student" + "rech"
+- Badge: "🔍 Recherche"
+- "vor 2 Tagen"
+
+*Rechte Spalte:*
+- **⚡ Schnellzugriff**
+  - ➕ Neue Aufgabe
+  - 👥 Klassen verwalten
+  - 📋 Alle Aufgaben
+
+- **🎓 Meine Klassen** + "Alle →"
+  - Informatik 3a · 1 Schüler
+
+**Navigation:**
+- Tabs: Dashboard | Klassen | Aufgaben
 
 ---
 
-#### Klassen-Übersicht
-![Teacher Klassen Übersicht](doc/teacher/teacher-klassen-uebersicht.png)
+#### Klassenverwaltung
+![Teacher Klassen](doc/teacher/teacher-klassen-uebersicht.png)
 
-Verwaltung aller Klassen der Lehrkraft.
+Verwaltung der Schulklassen.
 
-**Angezeigte Elemente:**
-- Liste aller eigenen Klassen
-- Klassenname (z.B. "INF2024a")
-- Anzahl Schüler:innen pro Klasse
-- Anzahl Aufgaben pro Klasse
-- Erstellungsdatum
+**Header:**
+- 🎓 "Klassenverwaltung"
+- "Erstelle Klassen und ordne Schüler zu."
+- Button: "+ Neue Klasse" (lila)
 
-**Mögliche Aktionen:**
-- Neue Klasse erstellen
-- Klasse anklicken zum Bearbeiten
-- Schüler:innen zur Klasse hinzufügen/entfernen
-- Klasse löschen (nur wenn keine Aufgaben)
+**Statistik-Karten:**
+- **1** Klassen
+- **1** Schüler total
+
+**Klassen-Karte (aufgeklappt):**
+- **Informatik 3a**
+- "1 Schüler · Erstellt am 14.12.2025"
+- Icons: ▲ (zuklappen) + ✏️ (bearbeiten) + 🗑️ (löschen)
+
+**Schüler in dieser Klasse:**
+- Eingabefeld: "Schüler-Email eingeben"
+- Button: "+ Hinzufügen" (lila)
+- Liste: "student@zhaw.ch" mit X zum Entfernen
 
 ---
 
-#### Klasse erstellen
-![Teacher Klasse erstellen](doc/teacher/teacher-klasse-erstellen.png)
+#### Klasse bearbeiten (Modal)
+![Teacher Klasse bearbeiten](doc/teacher/teacher-klasse-erstellen.png)
 
-Formular zum Erstellen einer neuen Schulklasse.
+Modal zum Bearbeiten des Klassennamens.
 
-**Formularfelder:**
-- Klassenname (Pflichtfeld, z.B. "KV2024b")
-- Schüler-Emails (mehrzeilig, eine Email pro Zeile)
-
-**Mögliche Aktionen:**
-- Klasse mit Schüler:innen erstellen
-- Weitere Schüler:innen später hinzufügen
-- Abbrechen
-
-**Hinweis:** Schüler:innen werden über ihre Email-Adresse identifiziert. Sobald sich ein Schüler mit dieser Email bei Auth0 registriert, wird er automatisch der Klasse zugeordnet.
+**Modal:**
+- "Klasse bearbeiten"
+- X zum Schliessen
+- **Klassenname** - Textfeld mit "Informatik 3a"
+- Buttons: "Abbrechen" (weiss) + "Speichern" (lila)
 
 ---
 
 #### Aufgaben-Übersicht
-![Teacher Aufgaben Übersicht](doc/teacher/teacher-aufgaben-uebersicht.png)
+![Teacher Aufgaben](doc/teacher/teacher-aufgaben-uebersicht.png)
 
 Alle erstellten Aufgaben mit Abgabe-Status.
 
-**Angezeigte Elemente:**
-- Liste aller eigenen Aufgaben
-- Aufgabentitel und Typ
-- Zugewiesene Klasse
-- Deadline
-- Abgabe-Fortschritt: "X von Y Schüler:innen haben abgegeben"
-- Status (aktiv, geschlossen)
+**Header:**
+- 📚 "Aufgaben"
+- Button: "+ Neue Aufgabe" (lila)
 
-**Mögliche Aktionen:**
-- Neue Aufgabe erstellen
-- Aufgabe anklicken für Detailansicht
-- Aufgabe bearbeiten
-- Aufgabe schliessen (keine Abgaben mehr möglich)
-- Nach Klasse filtern
+**Filter-Tabs:**
+- "Alle (3)" (dunkel, aktiv)
+- "🟢 Offen (3)"
+- "🔔 Feedback nötig (1)" (mit Badge)
+- "✓ Beendet"
+
+**Filter-Leiste:**
+- 🔍 "Aufgabe suchen..."
+- Dropdown: "Alle Klassen"
+- Dropdown: "Alle Typen"
+- Dropdown: "Nach Deadline"
+
+**Aufgaben-Tabelle:**
+
+| AUFGABE | KLASSE | DEADLINE | ABGABEN | STATUS | AKTIONEN |
+|---------|--------|----------|---------|--------|----------|
+| **rech** | Unbekannt | **3d** | 1/0 abgegeben | 🔔 Feedback nötig | 👁️ ✏️ 🗑️ |
+| 🔍 Recherche | 0 Schüler | 17.12.2025 | 1 warten auf Feedback | (orange) | |
+| **aaaa** | Informatik 3a | **5d** | 1/1 abgegeben | ✅ Abgeschlossen | 👁️ ✏️ 🗑️ |
+| 📄 Dokument | 1 Schüler | 19.12.2025 | ✓ Alle bewertet | (grün) | |
+| **Interview-Training** | Informatik 3a | **7d** | 0/1 abgegeben | ⏳ Wartet | 👁️ ✏️ 🗑️ |
+| 🎯 KI-Interview ⏱30 Min | 1 Schüler | 20.12.2025 | Noch keine Abgaben | (gelb) | |
 
 ---
 
-#### Aufgabe erstellen
+#### Aufgabe erstellen (Modal)
 ![Teacher Aufgabe erstellen](doc/teacher/teacher-aufgabe-erstellen.png)
 
-Formular zum Erstellen einer neuen Aufgabe für eine Klasse. Hier definiert die Lehrkraft, was die Schüler:innen tun sollen.
+Modal zum Erstellen einer neuen Aufgabe.
+
+**Modal:**
+- "Neue Aufgabe"
+- X zum Schliessen
 
 **Formularfelder:**
+- **Titel *** - Placeholder: "z.B. Bewerbungsgespräch üben"
+- **Klasse *** - Dropdown "Wählen..."
+- **Typ *** - Dropdown "Wählen..."
+- **Deadline *** - Datum/Zeit-Picker (z.B. "21.12.2025, 20:26")
+- **Beschreibung** - Textarea "Optional: Weitere Details..."
 
-| Feld | Pflicht | Beschreibung |
-|------|---------|--------------|
-| **Titel** | Ja | Kurzer, aussagekräftiger Name (z.B. "Bewerbungsgespräch üben") |
-| **Beschreibung** | Ja | Detaillierte Anleitung für die Schüler:innen |
-| **Aufgabentyp** | Ja | Art der Aufgabe (siehe unten) |
-| **Klasse** | Ja | Welche Klasse soll die Aufgabe erhalten? |
-| **Deadline** | Ja | Bis wann muss abgegeben werden? |
-| **Geschätzte Dauer** | Nein | Wie lange sollte man einplanen? (in Minuten) |
-
-**Aufgabentypen erklärt:**
-
-| Typ | Icon | Beschreibung | Ideal für |
-|-----|------|--------------|-----------|
-| **KI-Bewerbungsgespräch** | 🤖 | Schüler führt Chat mit KI-Coach | Gesprächsübung, Selbstpräsentation |
-| **Dokument einreichen** | 📄 | Schüler lädt Datei hoch (PDF, Word) | Lebenslauf, Motivationsschreiben |
-| **Selbstreflexion** | ✍️ | Schüler schreibt einen Text | Nachdenken über Stärken/Schwächen |
-| **Video-Bewerbung** | 🎥 | Schüler nimmt Video auf | Selbstvorstellung, Elevator Pitch |
-| **Recherche** | 🔍 | Schüler recherchiert und fasst zusammen | Firmenrecherche, Berufsbilder |
-
-**Beispiel für eine gute Aufgabenbeschreibung:**
-
-> **Titel:** Bewerbungsgespräch für Informatiker-Lehrstelle
-> 
-> **Beschreibung:** Führe ein 15-minütiges Übungsgespräch mit dem KI-Coach. Stell dir vor, du bewirbst dich bei einer IT-Firma deiner Wahl als Informatiker/in EFZ. Die KI wird dir typische Fragen stellen. Antworte so, wie du es in einem echten Gespräch tun würdest. Am Ende erhältst du Feedback.
-> 
-> **Typ:** KI-Bewerbungsgespräch  
-> **Dauer:** 15 Minuten
-
-**Mögliche Aktionen:**
-- Alle Felder ausfüllen und "Erstellen" klicken
-- Aufgabe wird sofort für alle Schüler:innen der Klasse sichtbar
-- "Abbrechen" verwirft die Eingaben
-
-**Tipp für Lehrkräfte:** Je klarer die Beschreibung, desto besser wissen die Schüler:innen was erwartet wird. Bei KI-Interviews kann man auch einen spezifischen Beruf oder eine Branche vorgeben.
+**Buttons:**
+- "Abbrechen" (weiss)
+- "Erstellen" (lila)
 
 ---
 
-#### Aufgaben-Detail / Abgaben einsehen
+#### Aufgaben-Detail
 ![Teacher Aufgaben Detail](doc/teacher/teacher-aufgaben-detail.png)
 
-Detailansicht einer Aufgabe mit allen eingereichten Abgaben.
+Detailansicht mit allen Abgaben einer Aufgabe.
 
-**Angezeigte Elemente:**
-- Aufgaben-Informationen (Titel, Beschreibung, Typ, Deadline)
-- Liste aller Abgaben:
-  - Schülername
-  - Abgabezeitpunkt
-  - Status (eingereicht, bewertet)
-  - Note falls bereits bewertet
-- Schüler:innen die noch nicht abgegeben haben
+**Header:**
+- "← Zurück zu Aufgaben"
+- Titel: **rech**
+- Badges: "🔍 Recherche" + 📅 Deadline: 17.12.2025
 
-**Mögliche Aktionen:**
-- Abgabe anklicken zum Bewerten
-- Aufgabe bearbeiten
-- Aufgabe schliessen
-- Alle Schüler:innen ohne Abgabe sehen
+**Statistik-Karten:**
+- **1** Abgaben
+- **0** Ausstehend
+- **1** Feedback offen (rot)
+- **0** Bewertet (grün)
+
+**Filter-Tabs:**
+- "Alle (1)"
+- "🔔 Offen (1)"
+- "✓ Bewertet (0)"
+
+**Abgabe-Karte:**
+- Avatar "S" + **student** + student@zhaw.ch
+- Datum: 12.12.2025, 14:59
+- **Abgabe:** (Box mit dem eingereichten Text)
+- Status: "Offen" (grüner Badge)
+- Button: "Feedback geben" (lila)
 
 ---
 
-#### Feedback geben
-![Teacher Feedback geben](doc/teacher/teacher-aufgaben-feedback-geben.png)
+#### Feedback geben (Modal)
+![Teacher Feedback](doc/teacher/teacher-aufgaben-feedback-geben.png)
 
-Die Bewertungs-Ansicht für eine einzelne Schüler-Abgabe. Hier kann die Lehrkraft die Arbeit prüfen und konstruktives Feedback geben.
+Modal zum Bewerten einer Abgabe.
 
-**Angezeigte Elemente:**
-- **Kopfzeile:** Schülername, Klasse, Aufgabentitel
-- **Abgabezeitpunkt:** Wann wurde eingereicht? (Pünktlich oder verspätet?)
-- **Abgabe-Inhalt** - je nach Aufgabentyp:
+**Modal:**
+- "Feedback geben"
+- X zum Schliessen
 
-| Aufgabentyp | Was wird angezeigt? |
-|-------------|---------------------|
-| KI-Interview | Vollständiger Chat-Verlauf zwischen Schüler und KI |
-| Dokument | Download-Link zur hochgeladenen Datei |
-| Selbstreflexion | Der geschriebene Text |
-| Video | Video-Player (falls implementiert) |
-| Recherche | Text und gesammelte Links |
+**Info-Box (grau):**
+- **Schüler:** student@zhaw.ch
+- **Abgabe:** (zeigt den eingereichten Text)
 
-**Bewertungsformular:**
+**Formularfelder:**
+- **Dein Feedback** - Textarea "Schreibe hier dein Feedback..."
+- **Note (optional, 1-6)** - Zahlenfeld mit Placeholder "z.B. 4.5"
 
-| Feld | Beschreibung |
-|------|--------------|
-| **Note/Punkte** | Zahlenwert (z.B. 1-6 oder Punktzahl) |
-| **Schriftliches Feedback** | Freitext-Kommentar für den Schüler |
-
-**Tipps für gutes Feedback:**
-- **Positives zuerst:** Was hat der Schüler gut gemacht?
-- **Konkret sein:** Statt "War gut" besser "Deine Antwort auf die Frage nach Stärken war überzeugend weil..."
-- **Verbesserungsvorschläge:** Was kann beim nächsten Mal besser werden?
-- **Ermutigung:** Motivation für weitere Übungen
-
-**Beispiel-Feedback:**
-> **Note:** 5.0
-> 
-> **Feedback:** Sehr gutes Gespräch! Deine Antworten waren authentisch und du hast dir Zeit genommen nachzudenken. Besonders gut: Du hast konkrete Beispiele genannt bei der Frage nach deinen Stärken.
-> 
-> **Verbesserungspotenzial:** Bei der Frage "Warum unsere Firma?" könntest du noch mehr zeigen, dass du dich über das Unternehmen informiert hast. Tipp: Schau dir vor dem Gespräch die Website und News der Firma an.
-
-**Mögliche Aktionen:**
-- Note eingeben (optional)
-- Feedback-Text schreiben
-- "Speichern" sendet das Feedback an den Schüler
-- Bei KI-Interview: Durch den gesamten Chat-Verlauf scrollen
-- Bei Dokument: Datei herunterladen und offline prüfen
-- "Zurück" ohne zu speichern
-
-**Was passiert nach dem Speichern?**
-- Der Schüler sieht das Feedback in seiner Aufgabenansicht
-- Der Schüler erhält eine Benachrichtigung auf dem Dashboard
-- Falls Note ≥4: Schüler erhält möglicherweise ein Badge ("Gute Arbeit")
-- Die Abgabe wird als "Bewertet" markiert
+**Buttons:**
+- "Abbrechen" (weiss)
+- "Speichern" (lila)
 
 ---
 
@@ -1468,79 +1912,224 @@ Die Bewertungs-Ansicht für eine einzelne Schüler-Abgabe. Hier kann die Lehrkra
 
 ### Architektur
 
-Die KI-Integration basiert auf **Spring AI** mit dem OpenAI GPT-4 Modell. Die Kommunikation erfolgt über einen ChatClient mit Memory-Funktion.
+Die KI-Integration basiert auf **Spring AI** mit dem **OpenAI GPT-4** Modell. Die Kommunikation erfolgt über einen ChatClient mit Memory-Funktion, die durch MongoDB realisiert wird.
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Frontend  │────▶│ Spring Boot  │────▶│  OpenAI API │
-│  (Svelte)   │◀────│   Backend    │◀────│   (GPT-4)   │
-└─────────────┘     └──────────────┘     └─────────────┘
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │   MongoDB   │
-                    │  (Sessions) │
-                    └─────────────┘
+┌─────────────────┐     HTTP/REST     ┌──────────────────┐     HTTPS      ┌─────────────────┐
+│    Frontend     │◄─────────────────▶│   Spring Boot    │◄──────────────▶│   OpenAI API    │
+│   (SvelteKit)   │                   │     Backend      │                │    (GPT-4)      │
+└─────────────────┘                   └────────┬─────────┘                └─────────────────┘
+                                               │
+                                               │ MongoDB Driver
+                                               ▼
+                                      ┌─────────────────┐
+                                      │  MongoDB Atlas  │
+                                      │   (Sessions)    │
+                                      └─────────────────┘
 ```
+
+**Datenfluss einer Chat-Nachricht:**
+1. Frontend sendet `POST /api/sessions/{id}/messages` mit User-Nachricht
+2. Backend lädt Session mit allen bisherigen Nachrichten aus MongoDB
+3. Backend baut Prompt: System-Prompt + alle bisherigen Nachrichten + neue Nachricht
+4. Backend sendet Prompt an OpenAI GPT-4
+5. OpenAI generiert Antwort basierend auf Kontext
+6. Backend speichert User-Nachricht und KI-Antwort in Session
+7. Backend gibt KI-Antwort an Frontend zurück
+8. Frontend zeigt Antwort im Chat an
+
+---
+
+### Spring AI Integration
+
+**Konfiguration (application.yml):**
+```yaml
+spring:
+  ai:
+    openai:
+      api-key: ${OPEN_AI_KEY}
+      chat:
+        options:
+          model: gpt-4-turbo-preview
+          temperature: 0.7
+```
+
+**ChatClient-Verwendung im SessionService:**
+```java
+@Service
+public class SessionService {
+    
+    private final ChatClient chatClient;
+    
+    public SessionService(ChatClient.Builder chatClientBuilder) {
+        this.chatClient = chatClientBuilder.build();
+    }
+    
+    public String generateResponse(Session session, String userMessage) {
+        List<Message> chatMessages = new ArrayList<>();
+        
+        // 1. System-Prompt hinzufügen
+        String systemPrompt = session.getAssignmentId() != null 
+            ? ASSIGNMENT_SYSTEM_PROMPT 
+            : FREE_TRAINING_SYSTEM_PROMPT;
+        chatMessages.add(new SystemMessage(systemPrompt));
+        
+        // 2. Bisherige Nachrichten hinzufügen (Memory)
+        for (SessionMessage msg : session.getMessages()) {
+            if ("user".equals(msg.getRole())) {
+                chatMessages.add(new UserMessage(msg.getContent()));
+            } else {
+                chatMessages.add(new AssistantMessage(msg.getContent()));
+            }
+        }
+        
+        // 3. Neue User-Nachricht hinzufügen
+        chatMessages.add(new UserMessage(userMessage));
+        
+        // 4. An OpenAI senden
+        Prompt prompt = new Prompt(chatMessages);
+        return chatClient.prompt(prompt).call().content();
+    }
+}
+```
+
+---
 
 ### System-Prompts
 
-Die KI verwendet zwei verschiedene System-Prompts je nach Kontext:
+Die KI verwendet **zwei verschiedene System-Prompts** je nach Kontext:
 
-#### 1. Freies Training (SYSTEM_PROMPT)
-Für ungebundenes Üben ohne Aufgabe. Der KI-Coach bietet zwei Modi:
+#### 1. Freies Training (FREE_TRAINING_SYSTEM_PROMPT)
 
-**Modus 1: Interview-Training**
-- Fragt nach Beruf und Firma
-- Stellt realistische HR-Fragen aus verschiedenen Kategorien:
-  - Motivation & Berufswahl
-  - Persönlichkeit & Stärken
-  - Arbeitsweise & Teamfähigkeit
-  - Praktische Erfahrung
-- Streut kreative "Culture Fit" Fragen ein (z.B. "Wenn du ein Tier wärst...")
-- Gibt nach jeder Antwort konstruktives Feedback
+Für ungebundenes Üben ohne Aufgabe. Der KI-Coach ist flexibel und passt sich dem Schüler an.
 
-**Modus 2: Bewerbungs-Beratung**
-- Hilft bei Fragen zu Lebenslauf, Motivationsschreiben, Outfit, etc.
-- Gibt praktische, umsetzbare Tipps
+**Persona:**
+> Du bist ein erfahrener, freundlicher HR-Verantwortlicher eines mittelständischen Schweizer Unternehmens. Du führst Bewerbungsgespräche mit Jugendlichen, die eine Lehrstelle suchen.
+
+**Zwei Modi:**
+
+| Modus | Trigger | Verhalten |
+|-------|---------|-----------|
+| **Interview-Training** | Schüler nennt Beruf/Firma | Führt realistisches Bewerbungsgespräch |
+| **Bewerbungs-Beratung** | Schüler stellt Fragen | Gibt Tipps zu Lebenslauf, Outfit, etc. |
+
+**Frage-Kategorien im Interview-Modus:**
+1. **Motivation & Berufswahl**
+   - "Warum möchtest du diesen Beruf erlernen?"
+   - "Was interessiert dich an unserer Branche?"
+   - "Wo siehst du dich in 5 Jahren?"
+
+2. **Persönlichkeit & Stärken**
+   - "Was sind deine Stärken und Schwächen?"
+   - "Wie würden dich deine Freunde beschreiben?"
+   - "Worauf bist du besonders stolz?"
+
+3. **Arbeitsweise & Teamfähigkeit**
+   - "Wie gehst du mit Stress um?"
+   - "Erzähl von einer Situation, in der du im Team gearbeitet hast"
+   - "Wie gehst du mit Konflikten um?"
+
+4. **Praktische Erfahrung**
+   - "Hast du ein Schnupperpraktikum gemacht?"
+   - "Was hast du dabei gelernt?"
+   - "Welche Erfahrungen bringst du mit?"
+
+5. **Culture Fit / Kreative Fragen**
+   - "Wenn du ein Tier wärst, welches wärst du und warum?"
+   - "Was würdest du mit einer Million Franken machen?"
+   - "Welches Buch hat dich zuletzt inspiriert?"
+
+**Feedback-Struktur nach jeder Antwort:**
+```
+✓ Was war gut an deiner Antwort:
+[Positive Aspekte hervorheben]
+
+→ Was du verbessern könntest:
+[Konstruktive Kritik]
+
+💡 Tipp: Was HR-Leute bei dieser Frage hören wollen:
+[Konkrete Verbesserungsvorschläge]
+```
+
+---
 
 #### 2. Aufgaben-Modus (ASSIGNMENT_SYSTEM_PROMPT)
-Für aufgabengebundenes Training mit definiertem Zeitrahmen:
 
+Für aufgabengebundenes Training mit definiertem Zeitrahmen. Strukturierter und bewertungsorientiert.
+
+**Zusätzliche Anweisungen:**
 - Strukturierter Ablauf mit 4-6 Fragen
-- Zeitrahmen aus der Aufgabe übernommen
-- Am Ende: Zusammenfassung mit Schulnote (1-6) und konkreten Tipps
+- Zeitrahmen aus der Aufgabe berücksichtigen
+- Am Ende: Zusammenfassung mit Schulnote (1-6)
 - Fokus auf Effizienz und Bewertbarkeit
 
-### Feedback-Mechanismus
-
-Nach jeder Schüler-Antwort gibt die KI strukturiertes Feedback:
-
+**Aufgaben-Kontext wird injiziert:**
+```java
+String assignmentContext = String.format(
+    "Dies ist eine Übung für die Aufgabe '%s'. " +
+    "Geplante Dauer: %d Minuten. " +
+    "Beschreibung: %s",
+    session.getAssignmentTitle(),
+    session.getTargetDurationMin(),
+    assignment.getDescription()
+);
 ```
-✓ Was war gut an der Antwort?
-→ Was könnte verbessert werden?
-💡 Was wollen HR-Leute bei dieser Frage hören?
-```
+
+---
 
 ### Chat-Memory
 
-Die Konversationshistorie wird pro Session in MongoDB gespeichert. Bei jeder neuen Nachricht wird der gesamte Verlauf an die KI gesendet, um kontextbezogene Antworten zu ermöglichen.
+Die Konversationshistorie wird **pro Session in MongoDB** gespeichert. Bei jeder neuen Nachricht wird der gesamte Verlauf an die KI gesendet.
 
-```java
-List<Message> chatMessages = new ArrayList<>();
-chatMessages.add(new SystemMessage(systemPrompt));
-
-for (SessionMessage msg : messages) {
-    if ("USER".equals(msg.getRole())) {
-        chatMessages.add(new UserMessage(msg.getContent()));
-    } else if ("ASSISTANT".equals(msg.getRole())) {
-        chatMessages.add(new AssistantMessage(msg.getContent()));
+**Session-Dokument in MongoDB:**
+```json
+{
+  "_id": "session123",
+  "studentId": "auth0|abc123",
+  "studentEmail": "max.muster@schule.ch",
+  "assignmentId": "assignment456",
+  "assignmentTitle": "Bewerbungsgespräch üben",
+  "targetDurationMin": 15,
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Hallo! Ich bin dein KI-Coach...",
+      "createdAt": "2024-01-15T10:00:00Z"
+    },
+    {
+      "role": "user",
+      "content": "Ich möchte Informatiker werden",
+      "createdAt": "2024-01-15T10:01:00Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Super! Informatiker ist ein spannender Beruf...",
+      "createdAt": "2024-01-15T10:01:05Z"
     }
+  ],
+  "status": "OPEN",
+  "startedAt": "2024-01-15T10:00:00Z"
 }
-
-Prompt prompt = new Prompt(chatMessages);
-return chatClient.prompt(prompt).call().content();
 ```
+
+**Vorteile dieser Architektur:**
+- ✅ Voller Kontext bei jeder Anfrage
+- ✅ Session kann unterbrochen und später fortgesetzt werden
+- ✅ Chat-Verlauf ist für Lehrkraft einsehbar
+- ✅ Keine zusätzliche Memory-Infrastruktur nötig
+
+---
+
+### API-Endpoints für KI-Chat
+
+| Endpoint | Methode | Beschreibung |
+|----------|---------|--------------|
+| `/api/sessions` | POST | Neue Session starten (mit optionalem `assignmentId`) |
+| `/api/sessions/{id}` | GET | Session mit allen Nachrichten laden |
+| `/api/sessions/{id}/messages` | POST | Neue Nachricht senden, KI-Antwort erhalten |
+| `/api/sessions/{id}/close` | PUT | Session beenden (freies Training) |
+| `/api/sessions/{id}/submit` | PUT | Session als Aufgabe abgeben |
+| `/api/sessions` | GET | Alle eigenen Sessions auflisten |
 
 ---
 
@@ -1548,12 +2137,62 @@ return chatClient.prompt(prompt).call().content();
 
 ### Auth0 (Authentifizierung)
 
-**Zweck:** Sichere Benutzerauthentifizierung und Rollenverwaltung
+**Zweck:** Sichere Benutzerauthentifizierung und Rollenverwaltung ohne eigenes User-Management.
 
-**Integration:**
-- OAuth2 Resource Server im Backend (JWT-Validierung)
-- SvelteKit Auth-Integration im Frontend
-- Rollen werden in Auth0 definiert: `STUDENT`, `TEACHER`
+**Warum Auth0?**
+- Sichere Passwort-Speicherung (gehashed, gesalzen)
+- OAuth2/OpenID Connect Standard
+- Einfache Rollenverwaltung
+- Social Login möglich (Google, etc.)
+- Keine eigene Security-Implementation nötig
+
+**Integration im Backend:**
+
+```java
+// SecurityConfig.java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+    
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/student/**").hasRole("STUDENT")
+                .requestMatchers("/api/teacher/**").hasRole("TEACHER")
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll()
+            )
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter()))
+            );
+        return http.build();
+    }
+}
+```
+
+**Rollen-Extraktion aus JWT:**
+
+```java
+// JwtRoleConverter.java
+public class JwtRoleConverter implements Converter<Jwt, AbstractAuthenticationToken> {
+    
+    private static final String ROLES_CLAIM = "https://praesto.ch/roles";
+    
+    @Override
+    public AbstractAuthenticationToken convert(Jwt jwt) {
+        Collection<GrantedAuthority> authorities = extractRoles(jwt);
+        return new JwtAuthenticationToken(jwt, authorities);
+    }
+    
+    private Collection<GrantedAuthority> extractRoles(Jwt jwt) {
+        List<String> roles = jwt.getClaimAsStringList(ROLES_CLAIM);
+        return roles.stream()
+            .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+            .collect(Collectors.toList());
+    }
+}
+```
 
 **Konfiguration (application.yml):**
 ```yaml
@@ -1563,32 +2202,41 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://${AUTH0_DOMAIN}/
+          audiences: ${AUTH0_AUDIENCE}
 ```
 
-**Vorteile:**
-- Kein eigenes User-Management nötig
-- Sichere JWT-basierte Authentifizierung
-- Einfache Rollenverwaltung über Auth0 Dashboard
+**Rollen in Auth0:**
+| Rolle | Beschreibung | Zugriff |
+|-------|--------------|---------|
+| `STUDENT` | Schüler:in | Dashboard, Chat, Aufgaben, Bewerbungen, Notizen, Badges |
+| `TEACHER` | Lehrkraft | Dashboard, Klassen, Aufgaben, Abgaben, Feedback |
 
 ---
 
 ### MongoDB Atlas (Datenbank)
 
-**Zweck:** Persistente Datenspeicherung
+**Zweck:** Persistente Datenspeicherung in einer flexiblen NoSQL-Datenbank.
+
+**Warum MongoDB?**
+- Flexible Schema-Struktur (gut für eingebettete Dokumente wie Messages)
+- Cloud-hosted via Atlas (kein Server-Management)
+- Gute Spring Data Integration
+- Kostenloser M0 Tier für Entwicklung
 
 **Collections:**
-| Collection | Inhalt |
-|------------|--------|
-| `classes` | Schulklassen |
-| `assignments` | Aufgaben |
-| `submissions` | Abgaben |
-| `sessions` | KI-Chat-Sessions |
-| `applications` | Bewerbungen |
-| `notes` | Notizen |
-| `badges` | Badge-Definitionen |
-| `user_badges` | Verdiente Badges |
 
-**Konfiguration:**
+| Collection | Inhalt | Dokumente |
+|------------|--------|-----------|
+| `classes` | Schulklassen | Name, teacherId, studentEmails[] |
+| `assignments` | Aufgaben | Titel, Typ, Deadline, classId |
+| `submissions` | Abgaben | assignmentId, studentEmail, Status, Feedback |
+| `sessions` | KI-Chat-Sessions | studentId, messages[], Status |
+| `applications` | Bewerbungen | Firmenname, Position, Status |
+| `notes` | Notizen | Text, Firmenname (optional) |
+| `badges` | Badge-Definitionen | Titel, Icon, RuleType, Threshold |
+| `user_badges` | Verdiente Badges | studentId, badgeId, earnedAt |
+
+**Konfiguration (application.yml):**
 ```yaml
 spring:
   data:
@@ -1597,18 +2245,47 @@ spring:
       database: Praesto
 ```
 
-**Vorteile:**
-- Flexible Schema-Struktur (NoSQL)
-- Eingebettete Dokumente (z.B. Messages in Session)
-- Cloud-hosted (Atlas) - kein Server-Management
+**Beispiel Repository:**
+```java
+@Repository
+public interface SessionRepository extends MongoRepository<Session, String> {
+    
+    List<Session> findByStudentIdOrderByStartedAtDesc(String studentId);
+    
+    List<Session> findByAssignmentId(String assignmentId);
+    
+    long countByStudentIdAndStatus(String studentId, SessionStatus status);
+}
+```
+
+**Eingebettete Dokumente:**
+Messages werden direkt in der Session gespeichert (kein separates Collection):
+```java
+@Document(collection = "sessions")
+public class Session {
+    @Id
+    private String id;
+    
+    @Builder.Default
+    private List<SessionMessage> messages = new ArrayList<>();  // Eingebettet!
+    
+    // ...
+}
+```
 
 ---
 
 ### OpenAI API (KI)
 
-**Zweck:** Generierung der KI-Coach-Antworten
+**Zweck:** Generierung der KI-Coach-Antworten für realistische Bewerbungsgespräche.
 
-**Modell:** GPT-4
+**Modell:** GPT-4 Turbo (`gpt-4-turbo-preview`)
+
+**Warum GPT-4?**
+- State-of-the-art Sprachverständnis
+- Natürliche, kontextbezogene Antworten
+- Gutes Verständnis für Rollenspiele (HR-Coach)
+- Kann Feedback strukturiert geben
 
 **Integration via Spring AI:**
 ```yaml
@@ -1616,17 +2293,22 @@ spring:
   ai:
     openai:
       api-key: ${OPEN_AI_KEY}
+      chat:
+        options:
+          model: gpt-4-turbo-preview
+          temperature: 0.7      # Kreativität (0-1)
+          max-tokens: 1000      # Max. Antwortlänge
 ```
 
 **Features genutzt:**
-- Chat Completions API
-- System Messages für Persona/Verhalten
-- Konversationshistorie für Kontext
+- **Chat Completions API:** Für Konversationen
+- **System Messages:** Für Persona/Verhalten des Coaches
+- **Konversationshistorie:** Für kontextbezogene Antworten
 
-**Vorteile:**
-- State-of-the-art Sprachmodell
-- Natürliche, kontextbezogene Antworten
-- Einfache Integration via Spring AI
+**Kosten-Überlegungen:**
+- GPT-4 ist teurer als GPT-3.5
+- Pro Session ca. 0.05-0.15 CHF (je nach Länge)
+- Für Schulprojekt akzeptabel
 
 ---
 
@@ -1636,129 +2318,303 @@ Die folgenden optionalen Anforderungen aus der Projektausschreibung wurden umges
 
 | Anforderung | Status | Beschreibung |
 |-------------|--------|--------------|
-| **Codeanalyse mit SonarQube** | ✅ | SonarQube-Integration für statische Code-Analyse |
-| **Komplexes Datenmodell** | ✅ | 8 MongoDB-Collections, 6 Enums, eingebettete Dokumente, Beziehungen |
-| **Komplexes Frontend** | ✅ | SvelteKit mit Svelte 5, rollenbasierte Views, 20+ Screens |
-| **Zugriff auf Drittsysteme** | ✅ | Auth0 (Authentifizierung), OpenAI (KI), MongoDB Atlas (Datenbank) |
-| **Backend mit MCP-Server** | ❌ | Nicht implementiert |
-| **Komplexe Benutzerverwaltung** | ✅ | Auth0 mit Rollen (Student/Teacher), Klassenzugehörigkeit per Email |
-| **Komplexe Abfragen auf der Datenbank** | ✅ | 20+ Repository-Methoden mit Filtern, Sortierung, Status-Abfragen |
-| **Detaillierte Dokumentation auf GitHub** | ✅ | Issues, Project Board mit Roadmap |
-| **Mehrere Branches sinnvoll verwendet** | 🔶 | Feature-Branches teilweise verwendet |
-| **End-to-End Tests** | 🔶 | 26 Unit-/Integrationstests vorhanden, E2E-Tests ausstehend |
+| **Codeanalyse mit SonarQube** | ✅ Umgesetzt | SonarCloud-Integration für statische Code-Analyse |
+| **Komplexes Datenmodell** | ✅ Umgesetzt | 8 Collections, 6 Enums, eingebettete Dokumente |
+| **Komplexes Frontend** | ✅ Umgesetzt | SvelteKit, 20+ Screens, rollenbasiert |
+| **Zugriff auf Drittsysteme** | ✅ Umgesetzt | Auth0, OpenAI, MongoDB Atlas |
+| **Komplexe Benutzerverwaltung** | ✅ Umgesetzt | Auth0 mit Rollen, Klassenzugehörigkeit |
+| **Komplexe Abfragen** | ✅ Umgesetzt | 20+ Repository-Methoden mit Filtern |
+| **Detaillierte GitHub-Doku** | ✅ Umgesetzt | Issues, Project Board, Roadmap |
+| **Mehrere Branches** | ✅ Umgesetzt | main, develop, feature/, fix/ |
+| **Backend mit MCP-Server** | ❌ Nicht umgesetzt | - |
+| **End-to-End Tests** | 🔶 Teilweise | Unit-/Integrationstests vorhanden |
 
-### SonarQube
+---
+
+### Codeanalyse mit SonarQube
 
 ![SonarQube Analyse](doc/sonar.png)
 
-Die Codequalität wird mit SonarQube überwacht.
+**Integration:** [SonarCloud Dashboard](https://sonarcloud.io/summary/overall?id=ch.zhaw.pericjul.praesto-original&branch=main)
+
+Die Codequalität wird kontinuierlich mit **SonarCloud** überwacht. Bei jedem Push wird automatisch eine Analyse durchgeführt.
+
+**Coverage-Exclusions (JaCoCo):**
+
+Bestimmte Klassen wurden bewusst von der Coverage-Messung ausgeschlossen, da Tests hier keinen Mehrwert bieten:
+
+```xml
+<plugin>
+    <groupId>org.jacoco</groupId>
+    <artifactId>jacoco-maven-plugin</artifactId>
+    <configuration>
+        <excludes>
+            <exclude>**/config/**</exclude>
+            <exclude>**/security/JwtRoleConverter.class</exclude>
+            <exclude>**/security/SecurityConfig.class</exclude>
+            <exclude>**/PraestoApplication.class</exclude>
+        </excludes>
+    </configuration>
+</plugin>
+```
+
+| Ausgeschlossen | Begründung |
+|----------------|------------|
+| `**/config/**` | Konfigurationsklassen enthalten nur Bean-Definitionen ohne Logik |
+| `JwtRoleConverter` | Erfordert vollständigen Security-Context, Integration wird durch Controller-Tests abgedeckt |
+| `SecurityConfig` | Spring Security-Konfiguration, wird durch @WebMvcTest implizit getestet |
+| `PraestoApplication` | Main-Klasse startet nur Spring Boot – kein testbarer Code |
+
+**Vorteile der SonarQube-Integration:**
+- Frühzeitige Erkennung von Code-Problemen
+- Automatisierte Code-Reviews
+- Dokumentation der Code-Qualität
+- Motivation für sauberen Code
+
+---
+
+### Komplexes Datenmodell
+
+Das Datenmodell geht über die Mindestanforderung von 3 Entitäten deutlich hinaus:
+
+**8 MongoDB Collections:**
+1. `classes` – Schulklassen
+2. `assignments` – Aufgaben
+3. `submissions` – Abgaben
+4. `sessions` – KI-Chat-Sessions
+5. `applications` – Bewerbungen
+6. `notes` – Notizen
+7. `badges` – Badge-Definitionen
+8. `user_badges` – Verdiente Badges
+
+**6 Enumerationen:**
+1. `AssignmentType` – 5 Werte mit displayName und description
+2. `AssignmentStatus` – 5 Zustände
+3. `SubmissionStatus` – 4 Zustände
+4. `SessionStatus` – 2 Zustände
+5. `ApplicationStatus` – 7 Zustände
+6. `BadgeRuleType` – 7 Regel-Typen
+
+**Eingebettete Dokumente:**
+- `SessionMessage` in `Session` (1:n eingebettet)
+
+**Beziehungstypen:**
+- 1:n – Teacher → Classes, Class → Assignments, etc.
+- n:m – User ↔ Badge (via UserBadge)
+- 1:1 – Session ↔ Submission (bei Abgabe)
+
+**Zustandsmaschinen:**
+- Assignment durchläuft 5 Zustände
+- Submission durchläuft 4 Zustände
+- Session durchläuft 2 Zustände
+- Application durchläuft 7 Zustände
+
+---
+
+### Komplexes Frontend
+
+Das Frontend wurde mit **SvelteKit** (Svelte 5) und einem **eigenen CSS Design System** entwickelt.
+
+**Umfang:**
+- **20+ Screens** für Student und Teacher
+- **Rollenbasierte Navigation** (automatische Weiterleitung)
+- **Responsive Design** für Desktop und Mobile
+- **Echtzeit-Updates** im Chat
+
+**Technische Highlights:**
+
+| Feature | Implementation |
+|---------|----------------|
+| **Authentifizierung** | Auth0 SDK + SvelteKit Hooks |
+| **State Management** | Svelte Stores für globalen State |
+| **API-Aufrufe** | Axios mit Bearer Token |
+| **Styling** | Eigenes CSS Design System mit CSS Variables |
+| **Timer** | Reaktiver Countdown mit Svelte |
+| **Chat-UI** | Auto-Scroll, Loading States |
+| **Formulare** | Validierung, Error Messages |
+| **Benachrichtigungen** | Toast-Messages |
+| **Filter/Sortierung** | Client-side mit Svelte Reactivity |
+
+**Komponenten-Bibliothek:**
+- Wiederverwendbare UI-Komponenten
+- Konsistentes Design-System mit CSS Variables
+- Eigene CSS-Klassen in `theme.css` und `components.css`
+
+---
+
+### Komplexe Benutzerverwaltung
+
+Die Benutzerverwaltung kombiniert Auth0 mit applikationsspezifischer Logik:
+
+**Auth0-Seite:**
+- Benutzer-Authentifizierung
+- Passwort-Management
+- Rollen-Zuweisung (`STUDENT`, `TEACHER`)
+- JWT-Token mit Custom Claims
+
+**Applikations-Seite:**
+- Klassenzugehörigkeit via Email
+- Automatische Zuordnung beim Login
+- Rollenspezifische Endpoints
+- Daten-Isolation (Student sieht nur eigene Daten)
+
+**Ablauf der Klassenzuordnung:**
+1. Teacher erstellt Klasse mit Schüler-Emails
+2. Schüler registriert sich bei Auth0 mit seiner Email
+3. Beim Login: Backend sucht Klassen mit dieser Email
+4. Schüler sieht automatisch Aufgaben seiner Klasse(n)
+
+**Security-Implementierung:**
+```java
+@PreAuthorize("hasRole('TEACHER')")
+@PostMapping("/api/classes")
+public ResponseEntity<SchoolClass> createClass(@RequestBody SchoolClassDTO dto) {
+    String teacherId = getCurrentUserId();  // Aus JWT
+    return classService.create(dto, teacherId);
+}
+```
+
+---
+
+### Komplexe Datenbankabfragen
+
+Über 20 Repository-Methoden mit verschiedenen Abfrage-Patterns:
+
+**Beispiele:**
+
+```java
+// SessionRepository
+List<Session> findByStudentIdOrderByStartedAtDesc(String studentId);
+List<Session> findByStudentIdAndStatus(String studentId, SessionStatus status);
+long countByStudentIdAndStatus(String studentId, SessionStatus status);
+
+// SubmissionRepository
+List<Submission> findByAssignmentIdOrderBySubmittedAtDesc(String assignmentId);
+List<Submission> findByStudentEmailAndStatusIn(String email, List<SubmissionStatus> statuses);
+Optional<Submission> findByAssignmentIdAndStudentEmail(String assignmentId, String email);
+
+// ApplicationRepository
+List<Application> findByStudentIdOrderByUpdatedAtDesc(String studentId);
+long countByStudentIdAndStatus(String studentId, ApplicationStatus status);
+
+// SchoolClassRepository
+List<SchoolClass> findByTeacherId(String teacherId);
+List<SchoolClass> findByStudentEmailsContaining(String email);
+```
+
+**Aggregationen:**
+```java
+// ApplicationService - Statistiken
+public ApplicationStats getStats(String studentId) {
+    return ApplicationStats.builder()
+        .total(repo.countByStudentId(studentId))
+        .applied(repo.countByStudentIdAndStatus(studentId, APPLIED))
+        .invited(repo.countByStudentIdAndStatus(studentId, INVITED))
+        .accepted(repo.countByStudentIdAndStatus(studentId, ACCEPTED))
+        .rejected(repo.countByStudentIdAndStatus(studentId, REJECTED))
+        .build();
+}
+```
+
+---
+
+### Detaillierte GitHub-Dokumentation
+
+**GitHub Issues:**
+- Alle Features als Issues dokumentiert
+- Klare Beschreibungen und Akzeptanzkriterien
+- Labels für Kategorisierung (feature, bug, enhancement)
+- Zuordnung zu Sprints
+
+**GitHub Project Board:**
+- Kanban-Board mit Spalten: Backlog, Ready, In Progress, Done
+- Roadmap-Ansicht mit Zeitachse
+- Iteration Planning für Sprints
+
+**Labels verwendet:**
+| Label | Farbe | Verwendung |
+|-------|-------|------------|
+| `backend` | Pink | Backend-bezogen |
+| `frontend` | Dunkelblau | Frontend-bezogen |
+| `testing` | Grün | Tests |
+| `documentation` | Cyan | Dokumentation |
+| `enhancement` | Lila | Verbesserung |
+| `ux` | Hellgrün | UX/Design |
+
+---
 
 ### Testabdeckung
 
-26 Testklassen decken die wichtigsten Bereiche ab:
+**Unit- und Integrationstests:**
 
-| Bereich | Testklassen |
-|---------|-------------|
-| **Controller** | 10 Tests (alle Endpoints) |
-| **Services** | 9 Tests (Geschäftslogik) |
-| **Config** | 2 Tests (OpenAI, JWT) |
-| **Model/Utils** | 5 Tests (Validation, Enums, Exceptions) |
+| Bereich | Testklassen | Abdeckung |
+|---------|-------------|-----------|
+| Controller | 10 | Alle Endpoints getestet |
+| Services | 9 | Geschäftslogik |
+| Config | 2 | OpenAI, JWT |
+| Model | 5 | Validation, Enums, Exceptions |
+| **Total** | **26** | **>80%** |
 
+**Test-Technologien:**
+- JUnit 5
+- Mockito für Mocking
+- @SpringBootTest für Integrationstests
+- @WebMvcTest für Controller-Tests
+- MockMvc für HTTP-Tests
+
+**Beispiel Controller-Test:**
+```java
+@WebMvcTest(SessionController.class)
+class SessionControllerTest {
+    
+    @Autowired
+    private MockMvc mockMvc;
+    
+    @MockBean
+    private SessionService sessionService;
+    
+    @Test
+    @WithMockUser(roles = "STUDENT")
+    void shouldCreateSession() throws Exception {
+        // Given
+        Session session = Session.builder().id("123").build();
+        when(sessionService.create(any())).thenReturn(session);
+        
+        // When & Then
+        mockMvc.perform(post("/api/sessions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"assignmentId\": null}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value("123"));
+    }
+}
+```
 ---
 
 # Fazit
 
 ## Stand der Implementation
 
-Die Kernfunktionalität von Praesto ist vollständig implementiert und einsatzbereit. Alle geplanten Features der ersten Iteration wurden umgesetzt.
+Alle Pflichtanforderungen wurden erfolgreich umgesetzt. Die Anwendung ist funktionsfähig und unter [praesto.azurewebsites.net](https://praesto.azurewebsites.net) erreichbar.
 
-### Vollständig implementiert ✅
-
-| Bereich | Features |
-|---------|----------|
-| **Authentifizierung** | Login via Auth0, rollenbasierte Ansichten (Student/Teacher) |
-| **KI-Training** | Freies Training, aufgabengebundenes Training, zwei System-Prompts, Feedback nach jeder Antwort |
-| **Klassenverwaltung** | Klassen erstellen, Schüler per Email hinzufügen/entfernen |
-| **Aufgabensystem** | 5 Aufgabentypen, Deadlines, Status-Tracking |
-| **Abgaben** | KI-Interview als Abgabe einreichen, Lehrkraft-Feedback, Bewertung |
-| **Bewerbungs-Tracker** | CRUD, 7 Status-Stufen, Statistiken |
-| **Notizen** | Persönliche Notizen mit Firmen-/Stellen-Verknüpfung |
-| **Gamification** | 37 Badges in 7 Kategorien, automatische Vergabe |
-| **Dashboard** | Übersicht für beide Rollen mit Quick-Actions |
-
-### Teilweise implementiert 🔶
-
-| Feature | Status | Details |
-|---------|--------|---------|
-| **Dokument-Upload** | Backend vorbereitet | Datenmodell vorhanden, UI-Integration ausstehend |
-| **Video-Upload** | Backend vorbereitet | Datenmodell vorhanden, UI-Integration ausstehend |
+| Feature | Status |
+|---------|--------|
+| KI-Bewerbungstraining (Chat) | ✅ |
+| Aufgabenverwaltung (5 Typen) | ✅ |
+| Bewerbungs-Tracker | ✅ |
+| Notizen | ✅ |
+| Badges/Gamification | ✅ |
+| Klassenverwaltung (Teacher) | ✅ |
+| Feedback-System | ✅ |
 
 ---
 
 ## Nächste Schritte
 
-Die folgenden Features sind für zukünftige Iterationen geplant und werden im GitHub Project Backlog geführt.
+Das Projekt wurde in mehreren Iterationen im [GitHub Project Board](https://github.com/users/pericjul/projects/praesto) geplant und umgesetzt. Alle geplanten Issues wurden erfolgreich abgeschlossen.
 
-### Priorität 1: Email-Benachrichtigungen 📧
+Für zukünftige Weiterentwicklungen sind folgende Features geplant und im Backlog hinterlegt:
+- Email-Benachrichtigungen bei neuen Aufgaben/Feedback
+- Datei-Upload für Dokument- und Video-Aufgaben
+- Voice-Chat für realistischere Gespräche
 
-**Beschreibung:** Integration eines Mail-Services für automatische Benachrichtigungen.
-
-**Geplante Trigger:**
-| Ereignis | Empfänger | Inhalt |
-|----------|-----------|--------|
-| Neue Aufgabe erstellt | Student | "Du hast eine neue Aufgabe: [Titel]" |
-| Abgabe eingereicht | Teacher | "[Schüler] hat [Aufgabe] abgegeben" |
-| Feedback erhalten | Student | "Du hast Feedback zu [Aufgabe] erhalten" |
-| Deadline-Erinnerung | Student | "Aufgabe [Titel] ist in 24h fällig" |
-
-**Technologie:** Spring Boot Mail Starter + SMTP-Provider (z.B. SendGrid, Mailgun)
-
----
-
-### Priorität 2: Dokument-Upload & -Download 📄
-
-**Beschreibung:** Vollständige Implementation des Datei-Uploads für Aufgabentypen DOCUMENT_UPLOAD und VIDEO_PITCH.
-
-**Geplante Features:**
-- Schüler:in kann PDF/Word/Video hochladen
-- Lehrkraft kann Dateien herunterladen
-- Lehrkraft kann korrigierte Version hochladen
-- Vorschau im Browser (PDF)
-
-**Technologie:** 
-- File Storage: MongoDB GridFS oder Cloud Storage (S3/Azure Blob)
-- Max. Dateigrösse: 50 MB (Dokumente), 200 MB (Videos)
-
----
-
-### Priorität 3: Erweiterte Features 🚀
-
-| Feature | Beschreibung |
-|---------|--------------|
-| **Voice-Chat** | Spracheingabe für realistischere Gesprächssimulation |
-| **Firmen-Datenbank** | Automatische Infos zu Schweizer Lehrbetrieben |
-| **Barrierefreiheit** | Text-to-Speech für Schüler:innen mit Leseschwäche |
-| **Analytics** | Detaillierte Fortschritts-Statistiken für Lehrkräfte |
-
----
-
-## Backlog
-
-Das Projekt wurde in mehreren Iterationen im GitHub Project geplant und umgesetzt. Alle geplanten Issues wurden erfolgreich abgeschlossen. Die oben genannten nächsten Schritte (Email-Service, Dokument-Upload) sind Ideen für zukünftige Weiterentwicklungen nach Projektabschluss.
-
----
-
-## Reflexion
-
-### Was gut funktioniert hat
-- **Spring AI Integration:** Die Anbindung an OpenAI via Spring AI war straightforward und ermöglicht flexible Prompt-Gestaltung
-- **MongoDB:** Das flexible Schema passte gut zu den unterschiedlichen Abgabetypen
-- **SvelteKit:** Schnelle Entwicklung des Frontends mit guter Developer Experience
-- **Auth0:** Sichere Authentifizierung ohne eigene User-Verwaltung
-
-### Lessons Learned
-- **System-Prompts:** Iteratives Verfeinern der Prompts war nötig, um realistische HR-Fragen und gutes Feedback zu erhalten
-- **Gamification:** Die Badge-Logik sollte von Anfang an gut durchdacht sein - nachträgliche Änderungen der Kriterien können frustrierend für User sein
-
-### Ausblick
-Praesto hat das Potenzial, Schüler:innen auf dem Weg zur ersten Lehrstelle wirksam zu unterstützen. Die nächsten Schritte (Email-Service, Datei-Upload) werden die Anwendung abrunden und den Nutzen für Lehrkräfte weiter steigern.
