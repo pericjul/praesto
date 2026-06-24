@@ -1,4 +1,7 @@
 <script>
+    import { t, locale } from "$lib/i18n";
+    import { get } from "svelte/store";
+
     let { data } = $props();
 
     let classes = $derived(data?.classes ?? []);
@@ -11,6 +14,27 @@
     let pendingSubmissions = $derived(
         recentSubmissions.filter(s => !s.teacherFeedback)
     );
+
+    // Anstehende Deadlines der eigenen Aufgaben
+    let upcomingDeadlines = $derived(
+        assignments
+            .filter(a => a.dueDate && new Date(a.dueDate) >= new Date())
+            .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+            .slice(0, 4)
+    );
+
+    function formatDeadline(date) {
+        if (!date) return "";
+        const localeMap = { de: "de-CH", en: "en-GB", fr: "fr-CH", it: "it-CH" };
+        const days = Math.ceil((new Date(date) - new Date()) / 86400000);
+        const tr = get(t);
+        if (days <= 0) return tr("tdash.dueToday");
+        if (days === 1) return tr("tdash.dueTomorrow");
+        if (days <= 7) return `${tr("tdash.dueInPre")} ${days} ${tr("tdash.dueInPost")}`;
+        return new Date(date).toLocaleDateString(localeMap[get(locale)] ?? "de-CH", {
+            day: "2-digit", month: "2-digit"
+        });
+    }
 
     const assignmentTypes = {
         AI_INTERVIEW: { label: "🤖 KI-Interview", color: "#8b5cf6" },
@@ -26,6 +50,8 @@
 
     function formatRelativeTime(date) {
         if (!date) return "";
+        const tr = get(t);
+        const localeMap = { de: "de-CH", en: "en-GB", fr: "fr-CH", it: "it-CH" };
         const now = new Date();
         const then = new Date(date);
         const diffMs = now - then;
@@ -33,11 +59,13 @@
         const diffHours = Math.floor(diffMs / 3600000);
         const diffDays = Math.floor(diffMs / 86400000);
 
-        if (diffMin < 1) return "gerade eben";
-        if (diffMin < 60) return `vor ${diffMin} Min.`;
-        if (diffHours < 24) return `vor ${diffHours} Std.`;
-        if (diffDays < 7) return `vor ${diffDays} Tagen`;
-        return new Date(date).toLocaleDateString("de-CH");
+        const join = (pre, n, post) => [pre, n, post].filter(Boolean).join(" ");
+
+        if (diffMin < 1) return tr("tdash.timeNow");
+        if (diffMin < 60) return join(tr("tdash.timeMinPre"), diffMin, tr("tdash.timeMinPost"));
+        if (diffHours < 24) return join(tr("tdash.timeHoursPre"), diffHours, tr("tdash.timeHoursPost"));
+        if (diffDays < 7) return join(tr("tdash.timeDaysPre"), diffDays, tr("tdash.timeDaysPost"));
+        return new Date(date).toLocaleDateString(localeMap[get(locale)] ?? "de-CH");
     }
 
     function shortenEmail(email) {
@@ -50,14 +78,14 @@
 </script>
 
 <svelte:head>
-    <title>Dashboard – Praesto</title>
+    <title>{$t('tdash.pageTitle')}</title>
 </svelte:head>
 
 <div class="page-wrapper">
     <!-- Header -->
     <header class="page-header">
-        <h1>Hallo, {user.name ?? "Lehrperson"} 👋</h1>
-        <p class="subtitle">Hier ist deine Übersicht.</p>
+        <h1>{$t('tdash.greeting')}, {user.firstName ?? $t('tdash.fallbackName')} 👋</h1>
+        <p class="subtitle">{$t('tdash.subtitle')}</p>
     </header>
 
     <!-- Wichtigste Info: Feedback nötig -->
@@ -66,11 +94,11 @@
             <div class="alert-content">
                 <span class="alert-icon">📬</span>
                 <div>
-                    <strong>{stats.pendingSubmissions} {stats.pendingSubmissions === 1 ? 'Abgabe wartet' : 'Abgaben warten'} auf dein Feedback</strong>
-                    <p>Schüler freuen sich über zeitnahes Feedback!</p>
+                    <strong>{stats.pendingSubmissions} {stats.pendingSubmissions === 1 ? $t('tdash.alertWaitingOne') : $t('tdash.alertWaitingMany')} {$t('tdash.alertOnFeedback')}</strong>
+                    <p>{$t('tdash.alertHint')}</p>
                 </div>
             </div>
-            <a href="/teacher/assignments" class="alert-action">Jetzt bewerten →</a>
+            <a href="/teacher/assignments" class="alert-action">{$t('tdash.alertAction')}</a>
         </div>
     {/if}
 
@@ -78,19 +106,19 @@
     <div class="stats-row">
         <div class="stat-card">
             <span class="stat-value">{stats.totalClasses}</span>
-            <span class="stat-label">Klassen</span>
+            <span class="stat-label">{$t('tdash.statClasses')}</span>
         </div>
         <div class="stat-card">
             <span class="stat-value">{stats.totalStudents}</span>
-            <span class="stat-label">Schüler</span>
+            <span class="stat-label">{$t('tdash.statStudents')}</span>
         </div>
         <div class="stat-card">
             <span class="stat-value">{stats.totalAssignments}</span>
-            <span class="stat-label">Aufgaben</span>
+            <span class="stat-label">{$t('tdash.statAssignments')}</span>
         </div>
         <div class="stat-card" class:highlight={stats.pendingSubmissions > 0}>
             <span class="stat-value">{stats.pendingSubmissions}</span>
-            <span class="stat-label">Offen</span>
+            <span class="stat-label">{$t('tdash.statPending')}</span>
         </div>
     </div>
 
@@ -99,16 +127,16 @@
         <!-- Left: Pending Submissions -->
         <section class="section">
             <div class="section-header">
-                <h2>📥 Abgaben ohne Feedback</h2>
+                <h2>{$t('tdash.submissionsTitle')}</h2>
                 {#if pendingSubmissions.length > 0}
-                    <a href="/teacher/assignments" class="section-link">Alle ansehen →</a>
+                    <a href="/teacher/assignments" class="section-link">{$t('tdash.viewAll')}</a>
                 {/if}
             </div>
 
             {#if pendingSubmissions.length === 0}
                 <div class="empty-state success">
                     <span class="empty-icon">✅</span>
-                    <p>Alle Abgaben wurden bewertet!</p>
+                    <p>{$t('tdash.allGraded')}</p>
                 </div>
             {:else}
                 <div class="submissions-list">
@@ -136,40 +164,57 @@
         <aside class="sidebar">
             <!-- Quick Actions -->
             <div class="card">
-                <h3>⚡ Schnellzugriff</h3>
+                <h3>{$t('tdash.quickAccess')}</h3>
                 <nav class="quick-links">
                     <a href="/teacher/assignments?new=1" class="quick-link">
                         <span class="quick-icon">➕</span>
-                        <span>Neue Aufgabe</span>
+                        <span>{$t('tdash.quickNewAssignment')}</span>
                     </a>
                     <a href="/teacher/classes" class="quick-link">
                         <span class="quick-icon">👥</span>
-                        <span>Klassen verwalten</span>
+                        <span>{$t('tdash.quickManageClasses')}</span>
                     </a>
                     <a href="/teacher/assignments" class="quick-link">
                         <span class="quick-icon">📝</span>
-                        <span>Alle Aufgaben</span>
+                        <span>{$t('tdash.quickAllAssignments')}</span>
                     </a>
                 </nav>
+            </div>
+
+            <!-- Anstehende Deadlines -->
+            <div class="card">
+                <h3>{$t('tdash.deadlinesTitle')}</h3>
+                {#if upcomingDeadlines.length === 0}
+                    <p class="deadline-empty">{$t('tdash.noDeadlines')}</p>
+                {:else}
+                    <div class="deadlines-list">
+                        {#each upcomingDeadlines as a}
+                            <a href="/teacher/assignments/{a.id}" class="deadline-item">
+                                <span class="deadline-title">{a.title}</span>
+                                <span class="deadline-date">{formatDeadline(a.dueDate)}</span>
+                            </a>
+                        {/each}
+                    </div>
+                {/if}
             </div>
 
             <!-- Classes -->
             <div class="card">
                 <div class="card-header">
-                    <h3>📚 Meine Klassen</h3>
-                    <a href="/teacher/classes" class="card-link">Alle →</a>
+                    <h3>{$t('tdash.myClasses')}</h3>
+                    <a href="/teacher/classes" class="card-link">{$t('tdash.allLink')}</a>
                 </div>
                 {#if classes.length === 0}
                     <div class="empty-mini">
-                        <p>Noch keine Klassen</p>
-                        <a href="/teacher/classes" class="btn-small">Erstellen</a>
+                        <p>{$t('tdash.noClasses')}</p>
+                        <a href="/teacher/classes" class="btn-small">{$t('tdash.create')}</a>
                     </div>
                 {:else}
                     <div class="classes-list">
                         {#each classes.slice(0, 4) as schoolClass}
                             <div class="class-item">
                                 <span class="class-name">{schoolClass.name}</span>
-                                <span class="class-count">{schoolClass.studentEmails?.length ?? 0} Schüler</span>
+                                <span class="class-count">{schoolClass.studentIds?.length ?? 0} {$t('tdash.classStudents')}</span>
                             </div>
                         {/each}
                     </div>
@@ -553,6 +598,51 @@
         border-radius: 0.4rem;
         text-decoration: none;
         font-size: 0.8rem;
+    }
+
+    /* Deadlines */
+    .deadlines-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .deadline-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 0.7rem;
+        background: #faf8fc;
+        border-radius: 0.5rem;
+        text-decoration: none;
+    }
+
+    .deadline-item:hover {
+        background: #f0ebf5;
+    }
+
+    .deadline-title {
+        font-size: 0.85rem;
+        color: #2d2141;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .deadline-date {
+        font-size: 0.8rem;
+        color: #c97d3c;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .deadline-empty {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #6b647a;
     }
 
     /* Responsive */

@@ -1,6 +1,7 @@
 <script>
     import { enhance } from "$app/forms";
     import { invalidateAll } from "$app/navigation";
+    import { t } from "$lib/i18n";
 
     let { data, form } = $props();
 
@@ -18,15 +19,31 @@
     let allApplications = $derived(data?.applications ?? []);
     let stats = $derived(data?.stats ?? {});
 
-    const statusOptions = [
-        { value: "PLANNED", label: "Geplant", emoji: "📝", color: "#6b7280" },
-        { value: "APPLIED", label: "Beworben", emoji: "📤", color: "#3b82f6" },
-        { value: "INVITED", label: "Eingeladen", emoji: "📅", color: "#f59e0b" },
-        { value: "INTERVIEW_DONE", label: "Gespräch absolviert", emoji: "✅", color: "#8b5cf6" },
-        { value: "ACCEPTED", label: "Zusage", emoji: "🎉", color: "#10b981" },
-        { value: "REJECTED", label: "Absage", emoji: "❌", color: "#ef4444" },
-        { value: "WITHDRAWN", label: "Zurückgezogen", emoji: "🔙", color: "#9ca3af" }
-    ];
+    function daysUntil(date) {
+        if (!date) return null;
+        return Math.ceil((new Date(date) - new Date()) / (1000 * 60 * 60 * 24));
+    }
+
+    function isInterviewSoon(date) {
+        const d = daysUntil(date);
+        return d !== null && d >= 0 && d <= 7;
+    }
+
+    let upcomingInterviews = $derived(
+        allApplications
+            .filter((a) => isInterviewSoon(a.interviewDate) && !["REJECTED", "WITHDRAWN"].includes(a.status))
+            .sort((a, b) => new Date(a.interviewDate) - new Date(b.interviewDate))
+    );
+
+    let statusOptions = $derived([
+        { value: "PLANNED", label: $t('sapp.statusPlanned'), emoji: "📝", color: "#6b7280" },
+        { value: "APPLIED", label: $t('sapp.statusApplied'), emoji: "📤", color: "#3b82f6" },
+        { value: "INVITED", label: $t('sapp.statusInvited'), emoji: "📅", color: "#f59e0b" },
+        { value: "INTERVIEW_DONE", label: $t('sapp.statusInterviewDone'), emoji: "✅", color: "#8b5cf6" },
+        { value: "ACCEPTED", label: $t('sapp.statusAccepted'), emoji: "🎉", color: "#10b981" },
+        { value: "REJECTED", label: $t('sapp.statusRejected'), emoji: "❌", color: "#ef4444" },
+        { value: "WITHDRAWN", label: $t('sapp.statusWithdrawn'), emoji: "🔙", color: "#9ca3af" }
+    ]);
 
     function getStatusInfo(status) {
         return statusOptions.find(s => s.value === status) || statusOptions[0];
@@ -109,17 +126,17 @@
 </script>
 
 <svelte:head>
-    <title>Bewerbungs-Tracker – Praesto</title>
+    <title>{$t('sapp.headTitle')}</title>
 </svelte:head>
 
 <div class="page-wrapper">
     <header class="page-header">
         <div>
-            <h1 class="title">📊 Bewerbungs-Tracker</h1>
-            <p class="subtitle">Behalte den Überblick über deine Bewerbungen und deren Status.</p>
+            <h1 class="title">📊 {$t('sapp.title')}</h1>
+            <p class="subtitle">{$t('sapp.subtitle')}</p>
         </div>
         <button type="button" class="btn btn-primary" onclick={openNewModal}>
-            ➕ Neue Bewerbung
+            ➕ {$t('sapp.newApplication')}
         </button>
     </header>
 
@@ -129,31 +146,31 @@
 
     {#if form?.success}
         <div class="alert alert-success">
-            {#if form.action === "created"}Bewerbung wurde hinzugefügt.
-            {:else if form.action === "updated"}Bewerbung wurde aktualisiert.
-            {:else if form.action === "deleted"}Bewerbung wurde gelöscht.
-            {:else if form.action === "statusUpdated"}Status wurde geändert.
+            {#if form.action === "created"}{$t('sapp.successCreated')}
+            {:else if form.action === "updated"}{$t('sapp.successUpdated')}
+            {:else if form.action === "deleted"}{$t('sapp.successDeleted')}
+            {:else if form.action === "statusUpdated"}{$t('sapp.successStatusUpdated')}
             {/if}
         </div>
     {/if}
 
     <!-- Stats Cards -->
     <div class="stats-grid">
-        <div class="stat-card"><span class="stat-value">{stats.total ?? 0}</span><span class="stat-label">Total</span></div>
-        <div class="stat-card stat-info"><span class="stat-value">{stats.applied ?? 0}</span><span class="stat-label">Beworben</span></div>
-        <div class="stat-card stat-warning"><span class="stat-value">{stats.invited ?? 0}</span><span class="stat-label">Eingeladen</span></div>
-        <div class="stat-card stat-success"><span class="stat-value">{stats.accepted ?? 0}</span><span class="stat-label">Zusagen</span></div>
-        <div class="stat-card stat-danger"><span class="stat-value">{stats.rejected ?? 0}</span><span class="stat-label">Absagen</span></div>
+        <div class="stat-card"><span class="stat-value">{stats.total ?? 0}</span><span class="stat-label">{$t('sapp.statTotal')}</span></div>
+        <div class="stat-card stat-info"><span class="stat-value">{stats.applied ?? 0}</span><span class="stat-label">{$t('sapp.statApplied')}</span></div>
+        <div class="stat-card stat-warning"><span class="stat-value">{stats.invited ?? 0}</span><span class="stat-label">{$t('sapp.statInvited')}</span></div>
+        <div class="stat-card stat-success"><span class="stat-value">{stats.accepted ?? 0}</span><span class="stat-label">{$t('sapp.statAccepted')}</span></div>
+        <div class="stat-card stat-danger"><span class="stat-value">{stats.rejected ?? 0}</span><span class="stat-label">{$t('sapp.statRejected')}</span></div>
     </div>
 
     {#if allApplications.length > 0}
         <div class="filter-bar">
             <div class="filter-group">
-                <input type="text" placeholder="🔍 Suchen..." bind:value={searchQuery} class="filter-input" />
+                <input type="text" placeholder={$t('sapp.searchPlaceholder')} bind:value={searchQuery} class="filter-input" />
             </div>
             <div class="filter-group">
                 <select bind:value={filterStatus} class="filter-select">
-                    <option value="all">Alle Status</option>
+                    <option value="all">{$t('sapp.allStatus')}</option>
                     {#each statusOptions as opt}
                         <option value={opt.value}>{opt.emoji} {opt.label}</option>
                     {/each}
@@ -161,14 +178,14 @@
             </div>
             <div class="filter-group">
                 <select bind:value={sortBy} class="filter-select">
-                    <option value="newest">Neueste zuerst</option>
-                    <option value="oldest">Älteste zuerst</option>
-                    <option value="company">Nach Firma</option>
-                    <option value="status">Nach Status</option>
+                    <option value="newest">{$t('sapp.sortNewest')}</option>
+                    <option value="oldest">{$t('sapp.sortOldest')}</option>
+                    <option value="company">{$t('sapp.sortCompany')}</option>
+                    <option value="status">{$t('sapp.sortStatus')}</option>
                 </select>
             </div>
             {#if searchQuery || filterStatus !== "all" || sortBy !== "newest"}
-                <button type="button" class="btn-reset" onclick={resetFilters}>✕ Filter zurücksetzen</button>
+                <button type="button" class="btn-reset" onclick={resetFilters}>✕ {$t('sapp.resetFilters')}</button>
             {/if}
         </div>
     {/if}
@@ -176,30 +193,44 @@
     {#if allApplications.length === 0}
         <div class="empty-state">
             <div class="empty-icon">📋</div>
-            <h2>Noch keine Bewerbungen</h2>
-            <p>Starte deinen Bewerbungs-Tracker und behalte den Überblick!</p>
+            <h2>{$t('sapp.emptyTitle')}</h2>
+            <p>{$t('sapp.emptyText')}</p>
             <button type="button" class="btn btn-primary" onclick={openNewModal}>
-                Erste Bewerbung hinzufügen
+                {$t('sapp.emptyButton')}
             </button>
         </div>
     {:else if applications().length === 0}
         <div class="empty-state">
             <div class="empty-icon">🔍</div>
-            <h2>Keine Bewerbungen gefunden</h2>
-            <p>Passe deine Filter an.</p>
-            <button type="button" class="btn btn-secondary" onclick={resetFilters}>Filter zurücksetzen</button>
+            <h2>{$t('sapp.noResultsTitle')}</h2>
+            <p>{$t('sapp.noResultsText')}</p>
+            <button type="button" class="btn btn-secondary" onclick={resetFilters}>{$t('sapp.resetFilters')}</button>
         </div>
     {:else}
+        {#if upcomingInterviews.length > 0}
+            <div class="upcoming-banner">
+                <span class="up-title">📅 {$t('sapp.upcomingTitle')}</span>
+                <ul class="up-list">
+                    {#each upcomingInterviews as app}
+                        {@const d = daysUntil(app.interviewDate)}
+                        <li>
+                            <span class="up-company">{app.companyName}</span>
+                            <span class="up-when">{d === 0 ? $t('sapp.today') : d === 1 ? $t('sapp.tomorrow') : $t('sapp.inDays').replace('{n}', d)} · {formatDate(app.interviewDate)}</span>
+                        </li>
+                    {/each}
+                </ul>
+            </div>
+        {/if}
         <div class="table-wrapper">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Firma</th>
-                        <th>Position</th>
-                        <th>Status</th>
-                        <th>Beworben am</th>
-                        <th>Gespräch</th>
-                        <th>Aktionen</th>
+                        <th>{$t('sapp.colCompany')}</th>
+                        <th>{$t('sapp.colPosition')}</th>
+                        <th>{$t('sapp.colStatus')}</th>
+                        <th>{$t('sapp.colAppliedAt')}</th>
+                        <th>{$t('sapp.colInterview')}</th>
+                        <th>{$t('sapp.colActions')}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -231,11 +262,13 @@
                                 </form>
                             </td>
                             <td class="text-muted">{formatDate(app.appliedAt)}</td>
-                            <td class="text-muted">{formatDate(app.interviewDate)}</td>
+                            <td class="text-muted" class:interview-soon={isInterviewSoon(app.interviewDate) && !["REJECTED","WITHDRAWN"].includes(app.status)}>
+                                {formatDate(app.interviewDate)}
+                            </td>
                             <td>
                                 <div class="list-item-actions">
-                                    <button type="button" class="btn-icon" onclick={() => openEditModal(app)} title="Bearbeiten">✏️</button>
-                                    <button type="button" class="btn-icon btn-danger" onclick={() => confirmDelete(app.id)} title="Löschen">🗑️</button>
+                                    <button type="button" class="btn-icon" onclick={() => openEditModal(app)} title={$t('sapp.edit')}>✏️</button>
+                                    <button type="button" class="btn-icon btn-danger" onclick={() => confirmDelete(app.id)} title={$t('sapp.delete')}>🗑️</button>
                                 </div>
                             </td>
                         </tr>
@@ -243,7 +276,7 @@
                             <tr class="delete-row">
                                 <td colspan="6">
                                     <div class="delete-confirm">
-                                        <span class="delete-confirm-text">Bewerbung bei <strong>{app.companyName}</strong> löschen?</span>
+                                        <span class="delete-confirm-text">{$t('sapp.deleteConfirmPre')} <strong>{app.companyName}</strong> {$t('sapp.deleteConfirmPost')}</span>
                                         <div class="delete-actions">
                                             <form method="POST" action="?/delete" use:enhance={() => {
                                                 return async ({ result }) => {
@@ -252,9 +285,9 @@
                                                 };
                                             }}>
                                                 <input type="hidden" name="applicationId" value={app.id} />
-                                                <button type="submit" class="btn btn-danger">Ja, löschen</button>
+                                                <button type="submit" class="btn btn-danger">{$t('sapp.confirmYes')}</button>
                                             </form>
-                                            <button type="button" class="btn btn-secondary" onclick={cancelDelete}>Abbrechen</button>
+                                            <button type="button" class="btn btn-secondary" onclick={cancelDelete}>{$t('sapp.cancel')}</button>
                                         </div>
                                     </div>
                                 </td>
@@ -269,11 +302,11 @@
 
 <!-- Modal -->
 {#if showModal}
-    <button type="button" class="modal-backdrop" onclick={closeModal} aria-label="Modal schliessen"></button>
+    <button type="button" class="modal-backdrop" onclick={closeModal} aria-label={$t('sapp.closeModal')}></button>
     <div class="modal" role="dialog" aria-modal="true">
         <div class="modal-header">
-            <h2>{editingApplication ? "Bewerbung bearbeiten" : "Neue Bewerbung"}</h2>
-            <button type="button" class="btn-close-modal" onclick={closeModal} aria-label="Schliessen">✕</button>
+            <h2>{editingApplication ? $t('sapp.editApplication') : $t('sapp.newApplication')}</h2>
+            <button type="button" class="btn-close-modal" onclick={closeModal} aria-label={$t('sapp.close')}>✕</button>
         </div>
 
         <form method="POST" action={editingApplication ? "?/update" : "?/create"}
@@ -292,20 +325,20 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="companyName">Firma *</label>
+                        <label for="companyName">{$t('sapp.labelCompany')}</label>
                         <input type="text" id="companyName" name="companyName" required
-                            placeholder="z.B. Google" value={editingApplication?.companyName ?? ""} />
+                            placeholder={$t('sapp.placeholderCompany')} value={editingApplication?.companyName ?? ""} />
                     </div>
                     <div class="form-group">
-                        <label for="position">Position</label>
+                        <label for="position">{$t('sapp.labelPosition')}</label>
                         <input type="text" id="position" name="position"
-                            placeholder="z.B. Software Engineer" value={editingApplication?.position ?? ""} />
+                            placeholder={$t('sapp.placeholderPosition')} value={editingApplication?.position ?? ""} />
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="status">Status</label>
+                        <label for="status">{$t('sapp.labelStatus')}</label>
                         <select id="status" name="status">
                             {#each statusOptions as opt}
                                 <option value={opt.value} selected={editingApplication?.status === opt.value}>
@@ -315,25 +348,25 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="appliedAt">Beworben am</label>
+                        <label for="appliedAt">{$t('sapp.labelAppliedAt')}</label>
                         <input type="date" id="appliedAt" name="appliedAt" value={toISODate(editingApplication?.appliedAt)} />
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="interviewDate">Gespräch am</label>
+                    <label for="interviewDate">{$t('sapp.labelInterviewDate')}</label>
                     <input type="date" id="interviewDate" name="interviewDate" value={toISODate(editingApplication?.interviewDate)} />
                 </div>
 
                 <div class="form-group">
-                    <label for="notes">Notizen</label>
-                    <textarea id="notes" name="notes" placeholder="Zusätzliche Informationen...">{editingApplication?.notes ?? ""}</textarea>
+                    <label for="notes">{$t('sapp.labelNotes')}</label>
+                    <textarea id="notes" name="notes" placeholder={$t('sapp.placeholderNotes')}>{editingApplication?.notes ?? ""}</textarea>
                 </div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick={closeModal}>Abbrechen</button>
-                <button type="submit" class="btn btn-primary">{editingApplication ? "Speichern" : "Hinzufügen"}</button>
+                <button type="button" class="btn btn-secondary" onclick={closeModal}>{$t('sapp.cancel')}</button>
+                <button type="submit" class="btn btn-primary">{editingApplication ? $t('sapp.save') : $t('sapp.add')}</button>
             </div>
         </form>
     </div>
@@ -397,5 +430,46 @@
         .data-table { font-size: var(--font-size-xs); }
         .data-table th:nth-child(5),
         .data-table td:nth-child(5) { display: none; }
+    }
+
+    .upcoming-banner {
+        background: var(--color-warning-bg, #fffbeb);
+        border: 1px solid var(--color-warning-border, #fcd34d);
+        border-radius: var(--radius-lg, 0.75rem);
+        padding: 0.85rem 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .up-title {
+        font-weight: 700;
+        color: #92400e;
+        display: block;
+        margin-bottom: 0.4rem;
+    }
+
+    .up-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .up-list li {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        font-size: 0.9rem;
+        color: #78600e;
+    }
+
+    .up-company {
+        font-weight: 600;
+    }
+
+    td.interview-soon {
+        color: #b45309 !important;
+        font-weight: 700;
     }
 </style>

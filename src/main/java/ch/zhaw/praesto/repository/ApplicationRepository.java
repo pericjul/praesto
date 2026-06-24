@@ -20,4 +20,6 @@ public interface ApplicationRepository extends MongoRepository<Application, Stri
 
     boolean existsByStudentIdAndStatus(String studentId, ApplicationStatus status);
 
+    void deleteByStudentIdIn(java.util.Collection<String> studentIds);
+
 }

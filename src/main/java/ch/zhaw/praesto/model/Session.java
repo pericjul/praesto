@@ -2,6 +2,7 @@ package ch.zhaw.praesto.model;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -19,7 +20,10 @@ public class Session {
     @Id
     private String id;
 
-    private String studentId;     // aus JWT
+    @Indexed
+    private String schoolId;      // Mandanten-Isolation (Pflichtfeld)
+
+    private String studentId;     // User.id
     private String studentEmail;  // für Submission
     private String assignmentId;  // optional - wenn für Aufgabe
 

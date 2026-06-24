@@ -1,7 +1,7 @@
 // frontend/src/routes/api/sessions/[id]/submit/+server.js
 import { json } from "@sveltejs/kit";
 
-const API_BASE = "http://localhost:8080/api";
+import { API_BASE } from "$lib/server/api.js";
 
 export async function PUT({ params, locals }) {
     if (!locals.isAuthenticated) {

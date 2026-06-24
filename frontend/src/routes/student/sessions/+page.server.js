@@ -1,6 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 
-const API_BASE = "http://localhost:8080/api";
+import { API_BASE } from "$lib/server/api.js";
 
 export async function load({ locals, fetch }) {
     if (!locals.isAuthenticated) {
@@ -89,6 +89,33 @@ export const actions = {
 
         if (!res.ok) {
             return { error: "Session konnte nicht geschlossen werden" };
+        }
+
+        return { success: true };
+    },
+
+    // Session löschen
+    delete: async ({ locals, fetch, request }) => {
+        if (!locals.isAuthenticated) {
+            throw redirect(302, "/login");
+        }
+
+        const token = locals.jwt_token;
+        const headers = {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+        };
+
+        const formData = await request.formData();
+        const sessionId = formData.get("sessionId");
+
+        const res = await fetch(`${API_BASE}/sessions/${sessionId}`, {
+            method: "DELETE",
+            headers
+        });
+
+        if (!res.ok) {
+            return { error: "Session konnte nicht gelöscht werden" };
         }
 
         return { success: true };

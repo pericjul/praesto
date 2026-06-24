@@ -1,46 +1,30 @@
-import { redirect } from '@sveltejs/kit';
-import axios from 'axios';
-
+// Reads the JWT and user-info cookies set at login and exposes them on
+// event.locals for load functions and actions. The token's signature is verified
+// by the backend on every API call — here we only check that a token and a user
+// id are present.
 export async function handle({ event, resolve }) {
-    // Get JWT token and user info from cookies
-    const jwt_token = event.cookies.get('jwt_token');
-    const userInfoCookie = event.cookies.get('user_info');
-    
-    // Add the token to the event locals so it's available in load functions
+    const jwt_token = event.cookies.get("jwt_token");
+    const userInfoCookie = event.cookies.get("user_info");
+
     event.locals.jwt_token = jwt_token;
-    
-    // Get user info from cookie (always set on login alongside JWT)
-    // Parsing is necessary because user_info is stored as URL-encoded JSON string, not plain text like jwt_token
+
     if (userInfoCookie) {
         try {
             event.locals.user = JSON.parse(decodeURIComponent(userInfoCookie));
         } catch (error) {
-            console.error('Failed to parse user info cookie:', error);
+            console.error("Failed to parse user info cookie:", error);
             event.locals.user = {};
         }
     } else {
-        // No user info cookie means user is not logged in
         event.locals.user = {};
     }
-    
-    // isAuthenticated: we assume that users are authenticated if the property "user.name" exists
-    if (jwt_token && event.locals.user && event.locals.user.name) {
-        event.locals.isAuthenticated = true;
-    } else {
-        event.locals.isAuthenticated = false;
-    }
-    
-    // Handle preflight requests if needed for API calls
-    if (event.request.method === 'OPTIONS') {
-        return new Response(null, {
-            status: 200,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            },
-        });
-    }
-    
+
+    event.locals.isAuthenticated = Boolean(jwt_token && event.locals.user && event.locals.user.id);
+    event.locals.isDemo = event.cookies.get("demo_mode") === "1";
+
+    // Sprache aus Cookie (Standard: Deutsch)
+    const cookieLang = event.cookies.get("lang");
+    event.locals.lang = ["de", "en", "fr", "it"].includes(cookieLang) ? cookieLang : "de";
+
     return resolve(event);
 }

@@ -333,72 +333,74 @@ class ModelTest {
         @Test
         @DisplayName("SchoolClass Builder")
         void schoolClass_builder_setsAllFields() {
-            List<String> students = List.of("student1@test.ch", "student2@test.ch");
+            List<String> students = List.of("stud-1", "stud-2");
             Instant now = Instant.now();
 
             SchoolClass schoolClass = SchoolClass.builder()
                     .id("class-123")
+                    .schoolId("school-1")
                     .name("3SE2")
                     .teacherId("teacher-123")
-                    .studentEmails(students)
+                    .studentIds(students)
                     .createdAt(now)
                     .updatedAt(now)
                     .build();
 
             assertThat(schoolClass.getName()).isEqualTo("3SE2");
-            assertThat(schoolClass.getStudentEmails()).hasSize(2);
+            assertThat(schoolClass.getSchoolId()).isEqualTo("school-1");
+            assertThat(schoolClass.getStudentIds()).hasSize(2);
             assertThat(schoolClass.getTeacherId()).isEqualTo("teacher-123");
         }
 
         @Test
         @DisplayName("SchoolClass addStudent")
-        void schoolClass_addStudent_addsNormalized() {
+        void schoolClass_addStudent_adds() {
             SchoolClass schoolClass = new SchoolClass();
-            schoolClass.setStudentEmails(new ArrayList<>());
+            schoolClass.setStudentIds(new ArrayList<>());
 
-            schoolClass.addStudent("Test@Example.COM");
+            schoolClass.addStudent("stud-1");
 
-            assertThat(schoolClass.getStudentEmails()).containsExactly("test@example.com");
+            assertThat(schoolClass.getStudentIds()).containsExactly("stud-1");
         }
 
         @Test
         @DisplayName("SchoolClass addStudent - kein Duplikat")
         void schoolClass_addStudent_noDuplicate() {
             SchoolClass schoolClass = new SchoolClass();
-            schoolClass.setStudentEmails(new ArrayList<>());
+            schoolClass.setStudentIds(new ArrayList<>());
 
-            schoolClass.addStudent("test@example.com");
-            schoolClass.addStudent("TEST@EXAMPLE.COM");
+            schoolClass.addStudent("stud-1");
+            schoolClass.addStudent("stud-1");
 
-            assertThat(schoolClass.getStudentEmails()).hasSize(1);
+            assertThat(schoolClass.getStudentIds()).hasSize(1);
         }
 
         @Test
         @DisplayName("SchoolClass removeStudent")
         void schoolClass_removeStudent_removes() {
             SchoolClass schoolClass = new SchoolClass();
-            schoolClass.setStudentEmails(new ArrayList<>(List.of("test@example.com")));
+            schoolClass.setStudentIds(new ArrayList<>(List.of("stud-1")));
 
-            schoolClass.removeStudent("Test@Example.COM");
+            schoolClass.removeStudent("stud-1");
 
-            assertThat(schoolClass.getStudentEmails()).isEmpty();
+            assertThat(schoolClass.getStudentIds()).isEmpty();
         }
 
         @Test
         @DisplayName("SchoolClass hasStudent")
         void schoolClass_hasStudent_returnsTrue() {
             SchoolClass schoolClass = new SchoolClass();
-            schoolClass.setStudentEmails(new ArrayList<>(List.of("test@example.com")));
+            schoolClass.setStudentIds(new ArrayList<>(List.of("stud-1")));
 
-            assertThat(schoolClass.hasStudent("TEST@EXAMPLE.COM")).isTrue();
-            assertThat(schoolClass.hasStudent("other@example.com")).isFalse();
+            assertThat(schoolClass.hasStudent("stud-1")).isTrue();
+            assertThat(schoolClass.hasStudent("stud-other")).isFalse();
         }
 
         @Test
         @DisplayName("SchoolClass getStudentCount")
         void schoolClass_getStudentCount_returnsCount() {
             SchoolClass schoolClass = new SchoolClass();
-            schoolClass.setStudentEmails(new ArrayList<>(List.of("a@b.com", "c@d.com")));
+            schoolClass.setStudentIds(new ArrayList<>(List.of("a", "b")));
 
             assertThat(schoolClass.getStudentCount()).isEqualTo(2);
         }
@@ -407,7 +409,7 @@ class ModelTest {
         @DisplayName("SchoolClass getStudentCount - null Liste")
         void schoolClass_getStudentCount_nullList_returnsZero() {
             SchoolClass schoolClass = new SchoolClass();
-            schoolClass.setStudentEmails(null);
+            schoolClass.setStudentIds(null);
 
             assertThat(schoolClass.getStudentCount()).isEqualTo(0);
         }
@@ -416,29 +418,29 @@ class ModelTest {
         @DisplayName("SchoolClass hasStudent - null Liste")
         void schoolClass_hasStudent_nullList_returnsFalse() {
             SchoolClass schoolClass = new SchoolClass();
-            schoolClass.setStudentEmails(null);
+            schoolClass.setStudentIds(null);
 
-            assertThat(schoolClass.hasStudent("test@test.com")).isFalse();
+            assertThat(schoolClass.hasStudent("stud-1")).isFalse();
         }
 
         @Test
         @DisplayName("SchoolClass removeStudent - null Liste")
         void schoolClass_removeStudent_nullList_noException() {
             SchoolClass schoolClass = new SchoolClass();
-            schoolClass.setStudentEmails(null);
+            schoolClass.setStudentIds(null);
 
-            assertDoesNotThrow(() -> schoolClass.removeStudent("test@example.com"));
+            assertDoesNotThrow(() -> schoolClass.removeStudent("stud-1"));
         }
 
         @Test
         @DisplayName("SchoolClass addStudent - null Liste wird initialisiert")
         void schoolClass_addStudent_nullList_initializes() {
             SchoolClass schoolClass = new SchoolClass();
-            schoolClass.setStudentEmails(null);
+            schoolClass.setStudentIds(null);
 
-            schoolClass.addStudent("test@test.com");
+            schoolClass.addStudent("stud-1");
 
-            assertThat(schoolClass.getStudentEmails()).containsExactly("test@test.com");
+            assertThat(schoolClass.getStudentIds()).containsExactly("stud-1");
         }
     }
 

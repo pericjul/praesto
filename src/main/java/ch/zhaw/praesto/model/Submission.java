@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -20,8 +21,12 @@ public class Submission {
     @Id
     private String id;
 
+    @Indexed
+    private String schoolId;         // Mandanten-Isolation (Pflichtfeld)
+
     private String assignmentId;
-    private String studentEmail;
+    private String studentId;        // User.id
+    private String studentEmail;     // Denormalisierung (für Badge-/Anzeige-Queries)
     private AssignmentType type;
 
     // Inhalt je nach Typ

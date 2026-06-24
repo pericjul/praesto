@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Lokales Start-Script mit Geheimnissen ###
+start-backend.sh
+.env
+
+### Hochgeladene Dateien (lokal/ephemer) ###
+uploads/*
+!uploads/.gitkeep
+
+### macOS ###
+.DS_Store
+**/.DS_Store

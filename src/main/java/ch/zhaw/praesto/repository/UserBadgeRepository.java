@@ -17,4 +17,6 @@ public interface UserBadgeRepository extends MongoRepository<UserBadge, String> 
     boolean existsByStudentIdAndBadgeId(String studentId, String badgeId);
     
     long countByStudentId(String studentId);
+
+    void deleteByStudentIdIn(java.util.Collection<String> studentIds);
 }

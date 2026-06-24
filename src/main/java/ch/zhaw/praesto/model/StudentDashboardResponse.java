@@ -23,6 +23,7 @@ public class StudentDashboardResponse {
     private Instant lastSessionStartedAt;
     private int totalSessionsCount;
     private String openSessionId;
+    private int streakDays;          // Tage in Folge mit mind. einer Session
     
     // Bewerbungen
     private int applicationsCount;
@@ -33,4 +34,7 @@ public class StudentDashboardResponse {
     
     // Mitteilungen
     private List<NotificationInfo> notifications;  // Feedback etc.
+
+    // Anstehende Termine (Deadlines + Bewerbungsgespräche)
+    private List<UpcomingEvent> upcomingEvents;
 }

@@ -12,4 +12,6 @@ public interface NoteRepository extends MongoRepository<Note, String> {
     List<Note> findByStudentIdOrderByCreatedAtDesc(String studentId);
 
     long countByStudentId(String studentId);
+
+    void deleteByStudentIdIn(java.util.Collection<String> studentIds);
 }

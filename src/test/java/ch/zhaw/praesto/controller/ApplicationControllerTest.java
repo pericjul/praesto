@@ -26,7 +26,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
 @TestMethodOrder(OrderAnnotation.class)
 public class ApplicationControllerTest {
 
@@ -58,7 +57,7 @@ public class ApplicationControllerTest {
         var result = mvc.perform(post("/api/applications")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.companyName").value(TEST_COMPANY))
@@ -74,7 +73,7 @@ public class ApplicationControllerTest {
     public void testGetApplication() throws Exception {
         mvc.perform(get("/api/applications/" + application_id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.companyName").value(TEST_COMPANY));
@@ -85,7 +84,7 @@ public class ApplicationControllerTest {
     public void testGetAllApplications() throws Exception {
         mvc.perform(get("/api/applications")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -95,7 +94,7 @@ public class ApplicationControllerTest {
     public void testGetStats() throws Exception {
         mvc.perform(get("/api/applications/stats")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -106,7 +105,7 @@ public class ApplicationControllerTest {
         mvc.perform(put("/api/applications/" + application_id + "/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"status\":\"INVITED\"}")
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("INVITED"));
@@ -117,7 +116,7 @@ public class ApplicationControllerTest {
     public void testDeleteApplication() throws Exception {
         mvc.perform(delete("/api/applications/" + application_id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }

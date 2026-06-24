@@ -31,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
 @TestMethodOrder(OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AssignmentControllerTest {
@@ -55,16 +54,14 @@ public class AssignmentControllerTest {
 
     @BeforeAll
     public void setUp() {
-        // Test-Klasse erstellen falls nicht vorhanden
-        SchoolClass testClass = schoolClassRepository.findByName("AssignmentTestClass")
-                .orElseGet(() -> {
-                    SchoolClass c = SchoolClass.builder()
-                            .name("AssignmentTestClass")
-                            .teacherId("test-user-id")
-                            .studentEmails(new ArrayList<>())
-                            .build();
-                    return schoolClassRepository.save(c);
-                });
+        // Test-Klasse in der Schule des Test-Lehrers erstellen
+        SchoolClass c = SchoolClass.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
+                .name("AssignmentTestClass")
+                .teacherId(TestSecurityConfig.TEACHER_ID)
+                .studentIds(new ArrayList<>())
+                .build();
+        SchoolClass testClass = schoolClassRepository.save(c);
         class_id = testClass.getId();
     }
 
@@ -84,15 +81,15 @@ public class AssignmentControllerTest {
         var result = mvc.perform(post("/api/assignment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.title").value("Bewerbungstraining"))
+                .andExpect(jsonPath("$[0].title").value("Bewerbungstraining"))
                 .andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
         JsonNode jsonNode = objectMapper.readTree(jsonResponse);
-        assignment_id = jsonNode.get("id").asText();
+        assignment_id = jsonNode.get(0).get("id").asText();
     }
 
     @Test
@@ -100,7 +97,7 @@ public class AssignmentControllerTest {
     public void testGetAssignment() throws Exception {
         mvc.perform(get("/api/assignments/" + assignment_id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Bewerbungstraining"));
@@ -111,7 +108,7 @@ public class AssignmentControllerTest {
     public void testGetTeacherAssignments() throws Exception {
         mvc.perform(get("/api/assignments/teacher")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -121,7 +118,7 @@ public class AssignmentControllerTest {
     public void testGetAssignmentsForClass() throws Exception {
         mvc.perform(get("/api/assignments/class/" + class_id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -142,7 +139,7 @@ public class AssignmentControllerTest {
         mvc.perform(put("/api/assignments/" + assignment_id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Aktualisiert"));
@@ -153,7 +150,7 @@ public class AssignmentControllerTest {
     public void testDeleteAssignment() throws Exception {
         mvc.perform(delete("/api/assignments/" + assignment_id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -171,7 +168,7 @@ public class AssignmentControllerTest {
         mvc.perform(post("/api/assignment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -189,7 +186,7 @@ public class AssignmentControllerTest {
     public void testGetAssignment_NotFound() throws Exception {
         mvc.perform(get("/api/assignments/nonexistent-id")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -208,18 +205,18 @@ public class AssignmentControllerTest {
         var result = mvc.perform(post("/api/assignment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andExpect(status().isCreated())
                 .andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
         JsonNode jsonNode = objectMapper.readTree(jsonResponse);
-        String newAssignmentId = jsonNode.get("id").asText();
+        String newAssignmentId = jsonNode.get(0).get("id").asText();
 
         // Als Student abrufen - sollte Forbidden sein
         mvc.perform(get("/api/assignments/" + newAssignmentId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
@@ -240,7 +237,7 @@ public class AssignmentControllerTest {
         mvc.perform(put("/api/assignments/nonexistent-id")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -249,7 +246,7 @@ public class AssignmentControllerTest {
     public void testDeleteAssignment_NotFound() throws Exception {
         mvc.perform(delete("/api/assignments/nonexistent-id")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -268,19 +265,19 @@ public class AssignmentControllerTest {
         var result = mvc.perform(post("/api/assignment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andExpect(status().isCreated())
                 .andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
         JsonNode jsonNode = objectMapper.readTree(jsonResponse);
-        String newAssignmentId = jsonNode.get("id").asText();
+        String newAssignmentId = jsonNode.get(0).get("id").asText();
 
         // Als Student updaten versuchen
         mvc.perform(put("/api/assignments/" + newAssignmentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
@@ -302,18 +299,18 @@ public class AssignmentControllerTest {
         var result = mvc.perform(post("/api/assignment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andExpect(status().isCreated())
                 .andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
         JsonNode jsonNode = objectMapper.readTree(jsonResponse);
-        String newAssignmentId = jsonNode.get("id").asText();
+        String newAssignmentId = jsonNode.get(0).get("id").asText();
 
         // Als Student löschen versuchen
         mvc.perform(delete("/api/assignments/" + newAssignmentId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
@@ -325,7 +322,7 @@ public class AssignmentControllerTest {
     public void testGetTeacherAssignments_AsStudent_Forbidden() throws Exception {
         mvc.perform(get("/api/assignments/teacher")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -347,7 +344,7 @@ public class AssignmentControllerTest {
         mvc.perform(post("/api/assignment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -364,7 +361,7 @@ public class AssignmentControllerTest {
         mvc.perform(post("/api/assignment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -381,7 +378,7 @@ public class AssignmentControllerTest {
         mvc.perform(post("/api/assignment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -398,7 +395,7 @@ public class AssignmentControllerTest {
         mvc.perform(post("/api/assignment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -417,16 +414,16 @@ public class AssignmentControllerTest {
         var result = mvc.perform(post("/api/assignment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.dueDate").exists())
+                .andExpect(jsonPath("$[0].dueDate").exists())
                 .andReturn();
 
         // Aufräumen
         String jsonResponse = result.getResponse().getContentAsString();
         JsonNode jsonNode = objectMapper.readTree(jsonResponse);
-        assignmentRepository.deleteById(jsonNode.get("id").asText());
+        assignmentRepository.deleteById(jsonNode.get(0).get("id").asText());
     }
 
     // ========================================
@@ -447,13 +444,13 @@ public class AssignmentControllerTest {
         var result = mvc.perform(post("/api/assignment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andExpect(status().isCreated())
                 .andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
         JsonNode jsonNode = objectMapper.readTree(jsonResponse);
-        String newAssignmentId = jsonNode.get("id").asText();
+        String newAssignmentId = jsonNode.get(0).get("id").asText();
 
         // Update mit leerem Titel
         String updateBody = """
@@ -467,7 +464,7 @@ public class AssignmentControllerTest {
         mvc.perform(put("/api/assignments/" + newAssignmentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
@@ -493,13 +490,13 @@ public class AssignmentControllerTest {
         var result = mvc.perform(post("/api/assignment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andExpect(status().isCreated())
                 .andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
         JsonNode jsonNode = objectMapper.readTree(jsonResponse);
-        String newAssignmentId = jsonNode.get("id").asText();
+        String newAssignmentId = jsonNode.get(0).get("id").asText();
 
         // Status ändern
         String statusBody = """
@@ -511,7 +508,7 @@ public class AssignmentControllerTest {
         mvc.perform(put("/api/" + newAssignmentId + "/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(statusBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CLOSED"));
@@ -525,7 +522,7 @@ public class AssignmentControllerTest {
         mvc.perform(put("/api/some-id/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"status\": \"CLOSED\"}")
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -535,7 +532,7 @@ public class AssignmentControllerTest {
         mvc.perform(put("/api/some-id/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}")
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -551,7 +548,7 @@ public class AssignmentControllerTest {
         mvc.perform(put("/api/nonexistent-id/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(statusBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -574,6 +571,7 @@ public class AssignmentControllerTest {
         // Assignment von anderem Teacher erstellen (direkt in DB)
         var otherTeacherAssignment = assignmentRepository.save(
                 ch.zhaw.praesto.model.Assignment.builder()
+                        .schoolId(TestSecurityConfig.SCHOOL_ID)
                         .title("Other Teacher Assignment")
                         .classId(class_id)
                         .type(ch.zhaw.praesto.model.AssignmentType.SELF_REFLECTION)
@@ -593,7 +591,7 @@ public class AssignmentControllerTest {
         mvc.perform(put("/api/assignments/" + otherTeacherAssignment.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
@@ -606,6 +604,7 @@ public class AssignmentControllerTest {
         // Assignment von anderem Teacher erstellen
         var otherTeacherAssignment = assignmentRepository.save(
                 ch.zhaw.praesto.model.Assignment.builder()
+                        .schoolId(TestSecurityConfig.SCHOOL_ID)
                         .title("Other Teacher Delete Test")
                         .classId(class_id)
                         .type(ch.zhaw.praesto.model.AssignmentType.SELF_REFLECTION)
@@ -616,7 +615,7 @@ public class AssignmentControllerTest {
 
         mvc.perform(delete("/api/assignments/" + otherTeacherAssignment.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
@@ -629,6 +628,7 @@ public class AssignmentControllerTest {
         // Assignment von anderem Teacher erstellen
         var otherTeacherAssignment = assignmentRepository.save(
                 ch.zhaw.praesto.model.Assignment.builder()
+                        .schoolId(TestSecurityConfig.SCHOOL_ID)
                         .title("Other Teacher View Test")
                         .classId(class_id)
                         .type(ch.zhaw.praesto.model.AssignmentType.SELF_REFLECTION)
@@ -639,7 +639,7 @@ public class AssignmentControllerTest {
 
         mvc.perform(get("/api/assignments/" + otherTeacherAssignment.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
@@ -653,23 +653,15 @@ public class AssignmentControllerTest {
 
     @Test
     public void testGetAssignment_AsStudentInClass_Success() throws Exception {
-        // Klasse mit Student erstellen
-        SchoolClass classWithStudent = schoolClassRepository.findByName("StudentAssignmentTestClass")
-                .orElseGet(() -> {
-                    SchoolClass c = SchoolClass.builder()
-                            .name("StudentAssignmentTestClass")
-                            .teacherId("test-user-id")
-                            .studentEmails(new ArrayList<>())
-                            .build();
-                    c.getStudentEmails().add("test@test.ch"); // Test-Student hinzufügen
-                    return schoolClassRepository.save(c);
-                });
-
-        // Sicherstellen dass Student in Klasse ist
-        if (!classWithStudent.getStudentEmails().contains("test@test.ch")) {
-            classWithStudent.getStudentEmails().add("test@test.ch");
-            schoolClassRepository.save(classWithStudent);
-        }
+        // Klasse mit Test-Student (per User-Id) erstellen
+        SchoolClass c = SchoolClass.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
+                .name("StudentAssignmentTestClass")
+                .teacherId(TestSecurityConfig.TEACHER_ID)
+                .studentIds(new ArrayList<>())
+                .build();
+        c.addStudent(TestSecurityConfig.STUDENT_ID);
+        SchoolClass classWithStudent = schoolClassRepository.save(c);
 
         // Assignment für diese Klasse erstellen
         String createBody = """
@@ -683,18 +675,18 @@ public class AssignmentControllerTest {
         var result = mvc.perform(post("/api/assignment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andExpect(status().isCreated())
                 .andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
         JsonNode jsonNode = objectMapper.readTree(jsonResponse);
-        String studentAssignmentId = jsonNode.get("id").asText();
+        String studentAssignmentId = jsonNode.get(0).get("id").asText();
 
         // Als Student abrufen - sollte OK sein
         mvc.perform(get("/api/assignments/" + studentAssignmentId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Student View Success"));
@@ -707,7 +699,7 @@ public class AssignmentControllerTest {
     public void testGetAssignmentsForClass_AsStudent() throws Exception {
         mvc.perform(get("/api/assignments/class/" + class_id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -721,7 +713,7 @@ public class AssignmentControllerTest {
         mvc.perform(get("/api/assignments/some-id")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -729,7 +721,7 @@ public class AssignmentControllerTest {
         mvc.perform(get("/api/assignments/teacher")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -737,7 +729,7 @@ public class AssignmentControllerTest {
         mvc.perform(get("/api/assignments/class/" + class_id)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test

@@ -16,4 +16,13 @@ public interface SessionRepository extends MongoRepository<Session, String> {
 
     long countByStudentIdAndStatus(String studentId, SessionStatus status);
 
+    // ===== Mandanten-sichere (schoolId-gefilterte) Varianten =====
+
+    java.util.Optional<Session> findByIdAndSchoolId(String id, String schoolId);
+
+    long countBySchoolId(String schoolId);
+
+    void deleteBySchoolId(String schoolId);
+
+    void deleteByStudentId(String studentId);
 }

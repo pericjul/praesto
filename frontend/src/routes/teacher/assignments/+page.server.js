@@ -1,14 +1,14 @@
 import { redirect } from "@sveltejs/kit";
 
-const API_BASE = "http://localhost:8080/api";
+import { API_BASE } from "$lib/server/api.js";
 
 export async function load({ locals, fetch }) {
     if (!locals.isAuthenticated) {
         throw redirect(302, "/login");
     }
 
-    const roles = locals.user?.user_roles ?? [];
-    if (!roles.includes("TEACHER")) {
+    const role = locals.user?.role;
+    if (role !== "TEACHER") {
         throw redirect(302, "/");
     }
 
@@ -33,7 +33,7 @@ export async function load({ locals, fetch }) {
             assignments.map(async (assignment) => {
                 // Klasse finden für Schüleranzahl
                 const schoolClass = classes.find(c => c.id === assignment.classId);
-                const totalStudents = schoolClass?.studentEmails?.length ?? 0;
+                const totalStudents = schoolClass?.studentIds?.length ?? 0;
 
                 // Submissions für diese Aufgabe laden
                 let submissionCount = 0;
@@ -115,11 +115,11 @@ export const actions = {
         const description = formData.get("description")?.toString().trim() || null;
         const durationMin = formData.get("durationMin")?.toString();
         const dueDate = formData.get("dueDate")?.toString();
-        const classId = formData.get("classId")?.toString();
+        const classIds = formData.getAll("classIds").map((c) => c.toString()).filter(Boolean);
         const type = formData.get("type")?.toString();
 
         if (!title) return { error: "Titel ist erforderlich" };
-        if (!classId) return { error: "Bitte wähle eine Klasse aus" };
+        if (classIds.length === 0) return { error: "Bitte wähle mindestens eine Klasse aus" };
         if (!type) return { error: "Bitte wähle einen Aufgabentyp aus" };
         if (!dueDate) return { error: "Deadline ist erforderlich" };
 
@@ -133,7 +133,7 @@ export const actions = {
             description,
             durationMin: durationMin ? parseInt(durationMin) : null,
             dueDate: deadlineDate.toISOString(),
-            classId,
+            classIds,
             type
         };
 

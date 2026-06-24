@@ -2,6 +2,7 @@ package ch.zhaw.praesto.model;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -15,6 +16,9 @@ public class Assignment {
 
     @Id
     private String id;
+
+    @Indexed
+    private String schoolId;        // Mandanten-Isolation (Pflichtfeld)
 
     private String title;
     private String description;

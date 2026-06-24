@@ -81,7 +81,8 @@ class SessionServiceTest {
             when(userService.getUserId()).thenReturn("student-123");
             when(userService.userHasRole("STUDENT")).thenReturn(true);
             when(userService.userHasRole("TEACHER")).thenReturn(false);
-            when(sessionRepository.findById("session-123")).thenReturn(Optional.of(testSession));
+            when(userService.getCurrentSchoolId()).thenReturn("school-1");
+            when(sessionRepository.findByIdAndSchoolId("session-123", "school-1")).thenReturn(Optional.of(testSession));
 
             Session result = sessionService.getSessionById("session-123");
 
@@ -95,7 +96,8 @@ class SessionServiceTest {
             when(userService.getUserId()).thenReturn("teacher-123");
             when(userService.userHasRole("STUDENT")).thenReturn(false);
             when(userService.userHasRole("TEACHER")).thenReturn(true);
-            when(sessionRepository.findById("session-123")).thenReturn(Optional.of(testSession));
+            when(userService.getCurrentSchoolId()).thenReturn("school-1");
+            when(sessionRepository.findByIdAndSchoolId("session-123", "school-1")).thenReturn(Optional.of(testSession));
 
             Session result = sessionService.getSessionById("session-123");
 
@@ -106,7 +108,8 @@ class SessionServiceTest {
         @DisplayName("Session nicht gefunden")
         void getSessionById_notFound_throwsNotFound() {
             when(userService.getUserId()).thenReturn("student-123");
-            when(sessionRepository.findById("unknown")).thenReturn(Optional.empty());
+            when(userService.getCurrentSchoolId()).thenReturn("school-1");
+            when(sessionRepository.findByIdAndSchoolId("unknown", "school-1")).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> sessionService.getSessionById("unknown"))
                     .isInstanceOf(NotFoundException.class);
@@ -117,8 +120,8 @@ class SessionServiceTest {
         void getSessionById_otherStudent_throwsForbidden() {
             when(userService.getUserId()).thenReturn("other-student");
             when(userService.userHasRole("STUDENT")).thenReturn(true);
-            when(userService.userHasRole("TEACHER")).thenReturn(false);
-            when(sessionRepository.findById("session-123")).thenReturn(Optional.of(testSession));
+            when(userService.getCurrentSchoolId()).thenReturn("school-1");
+            when(sessionRepository.findByIdAndSchoolId("session-123", "school-1")).thenReturn(Optional.of(testSession));
 
             assertThatThrownBy(() -> sessionService.getSessionById("session-123"))
                     .isInstanceOf(ForbiddenException.class);
@@ -412,7 +415,8 @@ class SessionServiceTest {
             when(userService.getUserId()).thenReturn("unknown-user");
             when(userService.userHasRole("STUDENT")).thenReturn(false);
             when(userService.userHasRole("TEACHER")).thenReturn(false);
-            when(sessionRepository.findById("session-123")).thenReturn(Optional.of(testSession));
+            when(userService.getCurrentSchoolId()).thenReturn("school-1");
+            when(sessionRepository.findByIdAndSchoolId("session-123", "school-1")).thenReturn(Optional.of(testSession));
 
             assertThatThrownBy(() -> sessionService.getSessionById("session-123"))
                     .isInstanceOf(ForbiddenException.class);

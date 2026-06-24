@@ -3,6 +3,8 @@
     import { invalidateAll } from "$app/navigation";
     import { onMount, onDestroy } from "svelte";
     import { goto } from "$app/navigation";
+    import { get } from "svelte/store";
+    import { t } from "$lib/i18n";
 
     // Svelte 5: $props()
     let { data, form } = $props();
@@ -127,11 +129,11 @@
                 goto("/student/assignments");
             } else {
                 const error = await response.text();
-                alert("Fehler beim Abgeben: " + error);
+                alert(get(t)("schat.submitError") + error);
             }
         } catch (err) {
             console.error("Fehler:", err);
-            alert("Verbindungsfehler");
+            alert(get(t)("schat.connectionError"));
         } finally {
             isSubmittingAssignment = false;
         }
@@ -143,20 +145,20 @@
 </script>
 
 <svelte:head>
-    <title>{isAssignment ? assignmentTitle : "KI-Training"} – Praesto</title>
+    <title>{isAssignment ? assignmentTitle : $t('schat.headTraining')} – Praesto</title>
 </svelte:head>
 
 <div class="chat-wrapper">
     <div class="chat-page">
         <!-- Header -->
         <header class="chat-header">
-            <a href={isAssignment ? "/student/assignments" : "/student/sessions"} class="back-link">← Zurück</a>
+            <a href={isAssignment ? "/student/assignments" : "/student/sessions"} class="back-link">{$t('schat.back')}</a>
             <div class="header-content">
-                <h1>🤖 {isAssignment ? assignmentTitle : "KI-Bewerbungstraining"}</h1>
+                <h1>🤖 {isAssignment ? assignmentTitle : $t('schat.titleTraining')}</h1>
                 {#if isAssignment}
-                    <p>Aufgabe von deiner Lehrperson</p>
+                    <p>{$t('schat.assignmentFromTeacher')}</p>
                 {:else}
-                    <p>Übe Vorstellungsgespräche mit deinem persönlichen KI-Coach</p>
+                    <p>{$t('schat.trainingSubtitle')}</p>
                 {/if}
             </div>
             
@@ -168,19 +170,19 @@
                         onclick={submitAsAssignment}
                         disabled={isSubmittingAssignment}
                     >
-                        {isSubmittingAssignment ? "..." : "✓ Abgeben"}
+                        {isSubmittingAssignment ? "..." : $t('schat.submit')}
                     </button>
                 {:else}
                     <form method="POST" action="?/close" use:enhance class="close-form">
                         <button type="submit" class="btn-close">
-                            Beenden
+                            {$t('schat.end')}
                         </button>
                     </form>
                 {/if}
             {:else if isSubmittedAsAssignment}
-                <span class="status-badge submitted">✓ Abgegeben</span>
+                <span class="status-badge submitted">{$t('schat.submitted')}</span>
             {:else}
-                <span class="status-badge closed">Abgeschlossen</span>
+                <span class="status-badge closed">{$t('schat.closed')}</span>
             {/if}
         </header>
 
@@ -191,13 +193,13 @@
                 <div class="timer-content">
                     <span class="timer-label">
                         {#if isTimeUp}
-                            ⏰ Zeit abgelaufen!
+                            {$t('schat.timeUp')}
                         {:else}
-                            ⏱️ Noch {formatTimer(remainingSeconds)}
+                            {$t('schat.remaining')} {formatTimer(remainingSeconds)}
                         {/if}
                     </span>
                     <span class="timer-info">
-                        Ziel: {targetDurationMin} Min
+                        {$t('schat.goalPrefix')} {targetDurationMin} {$t('schat.goalUnit')}
                     </span>
                 </div>
             </div>
@@ -214,7 +216,7 @@
             {#if messages.length === 0 && !isSubmitting}
                 <div class="message bot">
                     <div class="message-bubble">
-                        Hallo! 👋 Ich bin dein Bewerbungscoach. Ich helfe dir, dich auf Vorstellungsgespräche vorzubereiten. Sag mir, für welchen Beruf du dich interessierst!
+                        {$t('schat.greeting')}
                     </div>
                 </div>
             {:else}
@@ -275,7 +277,7 @@
                     <textarea
                         name="message"
                         bind:value={messageInput}
-                        placeholder="Schreibe deine Antwort..."
+                        placeholder={$t('schat.placeholder')}
                         rows="2"
                         disabled={isSubmitting}
                         onkeydown={handleKeydown}
@@ -288,17 +290,17 @@
                         {/if}
                     </button>
                 </form>
-                <p class="hint">💡 Drücke Enter zum Senden, Shift+Enter für neue Zeile</p>
+                <p class="hint">{$t('schat.hint')}</p>
             </div>
         {:else}
             <div class="closed-notice">
                 {#if isSubmittedAsAssignment}
-                    <p>✅ Diese Aufgabe wurde abgegeben. Deine Lehrperson kann sie nun bewerten.</p>
+                    <p>{$t('schat.submittedNotice')}</p>
                 {:else}
-                    <p>📋 Diese Session wurde abgeschlossen. Du kannst den Verlauf ansehen.</p>
+                    <p>{$t('schat.closedNotice')}</p>
                 {/if}
                 <a href={isAssignment ? "/student/assignments" : "/student/sessions"} class="btn-back">
-                    ← {isAssignment ? "Zu den Aufgaben" : "Zur Übersicht"}
+                    ← {isAssignment ? $t('schat.toAssignments') : $t('schat.toOverview')}
                 </a>
             </div>
         {/if}
@@ -310,20 +312,20 @@
     <div class="modal-backdrop"></div>
     <div class="time-up-modal">
         <div class="modal-icon">⏰</div>
-        <h2>Zeit abgelaufen!</h2>
-        <p>Die vorgegebene Zeit von <strong>{targetDurationMin} Minuten</strong> ist um.</p>
-        <p>Möchtest du das Training abschliessen und abgeben, oder weitermachen?</p>
+        <h2>{$t('schat.modalTitle')}</h2>
+        <p>{$t('schat.modalText1a')} <strong>{targetDurationMin} {$t('schat.modalText1b')}</strong> {$t('schat.modalText1c')}</p>
+        <p>{$t('schat.modalText2')}</p>
         <div class="modal-actions">
             <button type="button" class="btn-secondary" onclick={continueTraining}>
-                Weitermachen
+                {$t('schat.continueTraining')}
             </button>
-            <button 
-                type="button" 
+            <button
+                type="button"
                 class="btn-primary"
                 onclick={submitAsAssignment}
                 disabled={isSubmittingAssignment}
             >
-                {isSubmittingAssignment ? "Wird abgegeben..." : "✓ Jetzt abgeben"}
+                {isSubmittingAssignment ? $t('schat.submitting') : $t('schat.submitNow')}
             </button>
         </div>
     </div>

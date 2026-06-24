@@ -18,7 +18,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
 public class HealthControllerTest {
 
     @Autowired
@@ -41,7 +40,7 @@ public class HealthControllerTest {
         // Health sollte auch mit Auth funktionieren
         mvc.perform(get("/health")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("ok"));

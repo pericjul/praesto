@@ -50,9 +50,24 @@ public class BadgeService {
      * Prüft alle Badge-Regeln und vergibt neue Badges
      * Gibt Liste der neu verdienten Badges zurück
      */
+    /**
+     * Convenience-Variante: der aktuell eingeloggte User IST der Schüler.
+     * Email wird aus dem SecurityContext gelesen.
+     */
     public List<Badge> checkAndAwardBadges(String studentId) {
+        return checkAndAwardBadges(studentId, userService.getEmail());
+    }
+
+    /**
+     * Prüft alle Badge-Regeln für einen bestimmten Schüler und vergibt neue Badges.
+     * studentEmail muss explizit übergeben werden, damit der Badge-Check auch dann
+     * korrekt läuft, wenn der aktuelle User NICHT der Schüler ist (z.B. Lehrer gibt
+     * Feedback). Vorher wurde die Email aus dem SecurityContext gelesen, wodurch
+     * FEEDBACK_RECEIVED/GRADES_RECEIVED Badges nie vergeben wurden.
+     */
+    public List<Badge> checkAndAwardBadges(String studentId, String studentEmail) {
         List<Badge> newlyEarnedBadges = new ArrayList<>();
-        
+
         // Bereits verdiente Badge-IDs
         Set<String> earnedBadgeIds = userBadgeRepository
                 .findByStudentIdOrderByEarnedAtDesc(studentId)
@@ -62,10 +77,10 @@ public class BadgeService {
 
         // Alle Badges prüfen
         List<Badge> allBadges = badgeRepository.findAllByOrderBySortOrderAsc();
-        
-        // Email für Submission-basierte Prüfungen (aktueller User)
-        String studentEmail = userService.getEmail().toLowerCase();
-        
+
+        // Email für Submission-basierte Prüfungen (normalisiert)
+        String normalizedEmail = studentEmail == null ? null : studentEmail.toLowerCase().trim();
+
         for (Badge badge : allBadges) {
             // Bereits verdient? Skip
             if (earnedBadgeIds.contains(badge.getId())) {
@@ -73,7 +88,7 @@ public class BadgeService {
             }
             
             // Regel prüfen
-            boolean earned = checkBadgeRule(studentId, studentEmail, badge);
+            boolean earned = checkBadgeRule(studentId, normalizedEmail, badge);
             
             if (earned) {
                 // Badge vergeben

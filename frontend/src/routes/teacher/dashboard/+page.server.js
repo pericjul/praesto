@@ -1,7 +1,7 @@
 // frontend/src/routes/teacher/dashboard/+page.server.js
 import { redirect } from "@sveltejs/kit";
 
-const API_BASE = "http://localhost:8080/api";
+import { API_BASE } from "$lib/server/api.js";
 
 export async function load({ locals, fetch }) {
     if (!locals.isAuthenticated) {
@@ -9,9 +9,9 @@ export async function load({ locals, fetch }) {
     }
 
     const user = locals.user ?? {};
-    const roles = user.user_roles ?? [];
+    const role = user.role;
 
-    if (!roles.includes("TEACHER")) {
+    if (role !== "TEACHER") {
         throw redirect(302, "/dashboard");
     }
 
@@ -41,7 +41,7 @@ export async function load({ locals, fetch }) {
         if (classesRes.ok) {
             classes = await classesRes.json();
             stats.totalClasses = classes.length;
-            stats.totalStudents = classes.reduce((sum, c) => sum + (c.studentEmails?.length ?? 0), 0);
+            stats.totalStudents = classes.reduce((sum, c) => sum + (c.studentIds?.length ?? 0), 0);
         }
     } catch (err) {
         console.error("Fehler beim Laden der Klassen:", err);
@@ -62,8 +62,8 @@ export async function load({ locals, fetch }) {
         console.error("Fehler beim Laden der Aufgaben:", err);
     }
 
-    // Submissions für alle Assignments laden (nur die neuesten)
-    for (const assignment of assignments.slice(0, 5)) {
+    // Submissions für ALLE Assignments laden (korrekte Pending-Zahl über alle Aufgaben)
+    for (const assignment of assignments) {
         try {
             const submissionsRes = await fetch(`${API_BASE}/submissions/assignment/${assignment.id}`, {
                 method: "GET",

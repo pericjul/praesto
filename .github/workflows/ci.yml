@@ -14,7 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MONGODB_URI: ${{ secrets.MONGODB_URI }}
-      AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      OPEN_AI_KEY: ${{ secrets.OPEN_AI_KEY }}
+      SUPER_ADMIN_EMAIL: ${{ secrets.SUPER_ADMIN_EMAIL }}
+      SUPER_ADMIN_PASSWORD: ${{ secrets.SUPER_ADMIN_PASSWORD }}
 
     steps:
       - name: Checkout code

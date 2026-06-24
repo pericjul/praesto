@@ -22,7 +22,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
 public class BadgeControllerTest {
 
     @Autowired
@@ -53,7 +52,7 @@ public class BadgeControllerTest {
     public void testGetAllBadges() throws Exception {
         mvc.perform(get("/api/badges")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -62,7 +61,7 @@ public class BadgeControllerTest {
     public void testGetMyBadges() throws Exception {
         mvc.perform(get("/api/badges/my")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -71,7 +70,7 @@ public class BadgeControllerTest {
     public void testGetMyBadgeCount() throws Exception {
         mvc.perform(get("/api/badges/my/count")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -80,7 +79,7 @@ public class BadgeControllerTest {
     public void testCheckBadges() throws Exception {
         mvc.perform(post("/api/badges/check")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -90,6 +89,6 @@ public class BadgeControllerTest {
         mvc.perform(get("/api/badges")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 }

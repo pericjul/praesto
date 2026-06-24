@@ -1,7 +1,7 @@
 // frontend/src/routes/teacher/sessions/[id]/+page.server.js
 import { redirect, fail } from "@sveltejs/kit";
 
-const API_BASE = "http://localhost:8080/api";
+import { API_BASE } from "$lib/server/api.js";
 
 export async function load({ locals, fetch, params }) {
     if (!locals.isAuthenticated) {
@@ -9,9 +9,9 @@ export async function load({ locals, fetch, params }) {
     }
 
     const user = locals.user ?? {};
-    const roles = user.user_roles ?? [];
+    const role = user.role;
 
-    if (!roles.includes("TEACHER")) {
+    if (role !== "TEACHER") {
         throw redirect(302, "/dashboard");
     }
 

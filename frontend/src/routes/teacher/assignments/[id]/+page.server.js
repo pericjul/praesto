@@ -1,7 +1,7 @@
 // frontend/src/routes/teacher/assignments/[id]/+page.server.js
 import { redirect } from "@sveltejs/kit";
 
-const API_BASE = "http://localhost:8080/api";
+import { API_BASE } from "$lib/server/api.js";
 
 export async function load({ locals, fetch, params }) {
     if (!locals.isAuthenticated) {
@@ -9,9 +9,9 @@ export async function load({ locals, fetch, params }) {
     }
 
     const user = locals.user ?? {};
-    const roles = user.user_roles ?? [];
+    const role = user.role;
 
-    if (!roles.includes("TEACHER")) {
+    if (role !== "TEACHER") {
         throw redirect(302, "/dashboard");
     }
 
@@ -56,6 +56,13 @@ export async function load({ locals, fetch, params }) {
         const res = await fetch(`${API_BASE}/classes/${assignment.classId}`, { headers });
         if (res.ok) {
             schoolClass = await res.json();
+            const ids = schoolClass.studentIds ?? [];
+            schoolClass.students = await Promise.all(
+                ids.map(async (id) => {
+                    const r = await fetch(`${API_BASE}/users/${id}`, { headers });
+                    return r.ok ? await r.json() : { id, firstName: "?", lastName: "", email: id };
+                })
+            );
         }
     } catch (err) {
         console.error("Error loading class:", err);

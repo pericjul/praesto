@@ -5,7 +5,10 @@ import ch.zhaw.praesto.exception.ForbiddenException;
 import ch.zhaw.praesto.exception.NotFoundException;
 import ch.zhaw.praesto.model.SchoolClass;
 import ch.zhaw.praesto.model.SchoolClassDTO;
+import ch.zhaw.praesto.model.User;
+import ch.zhaw.praesto.model.UserRole;
 import ch.zhaw.praesto.repository.SchoolClassRepository;
+import ch.zhaw.praesto.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,37 +16,43 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Klassenverwaltung. Alle Abfragen sind auf die {@code schoolId} des aktuellen
+ * Users gefiltert (Mandanten-Isolation). Schüler werden über ihre User-Id geführt.
+ */
 @Service
 @RequiredArgsConstructor
 public class SchoolClassService {
 
     private static final String KLASSE_NICHT_GEFUNDEN = "Klasse nicht gefunden";
     private static final String TEACHER = "TEACHER";
+    private static final String KEINE_BERECHTIGUNG = "Keine Berechtigung fuer diese Klasse";
+
     private final SchoolClassRepository schoolClassRepository;
+    private final UserRepository userRepository;
     private final UserService userService;
+
     /**
      * Neue Klasse erstellen (nur Lehrer).
      */
     public SchoolClass createClass(SchoolClassDTO dto) {
-        if (!userService.userHasRole(TEACHER)) {
-            throw new ForbiddenException("Nur Lehrer duerfen Klassen erstellen");
-        }
+        requireTeacher("Nur Lehrer duerfen Klassen erstellen");
 
         if (dto.getName() == null || dto.getName().isBlank()) {
             throw new BadRequestException("Klassenname ist erforderlich");
         }
 
-        if (schoolClassRepository.existsByName(dto.getName().trim())) {
+        String schoolId = userService.getCurrentSchoolId();
+        if (schoolClassRepository.existsBySchoolIdAndName(schoolId, dto.getName().trim())) {
             throw new BadRequestException("Eine Klasse mit diesem Namen existiert bereits");
         }
 
-        String teacherId = userService.getUserId();
         Instant now = Instant.now();
-
         SchoolClass schoolClass = SchoolClass.builder()
+                .schoolId(schoolId)
                 .name(dto.getName().trim())
-                .teacherId(teacherId)
-                .studentEmails(new ArrayList<>())
+                .teacherId(userService.getCurrentUserId())
+                .studentIds(new ArrayList<>())
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
@@ -52,34 +61,28 @@ public class SchoolClassService {
     }
 
     /**
-     * Alle Klassen des aktuellen Lehrers.
+     * Alle Klassen des aktuellen Lehrers (innerhalb seiner Schule).
      */
     public List<SchoolClass> getMyClasses() {
-        if (!userService.userHasRole(TEACHER)) {
-            throw new ForbiddenException("Nur Lehrer duerfen Klassen sehen");
-        }
-
-        String teacherId = userService.getUserId();
-        return schoolClassRepository.findByTeacherId(teacherId);
+        requireTeacher("Nur Lehrer duerfen Klassen sehen");
+        return schoolClassRepository.findBySchoolIdAndTeacherId(
+                userService.getCurrentSchoolId(), userService.getCurrentUserId());
     }
 
     /**
-     * Eine Klasse nach ID holen.
+     * Eine Klasse nach ID holen (Mandanten-sicher).
      */
     public SchoolClass getClassById(String classId) {
-        SchoolClass schoolClass = schoolClassRepository.findById(classId)
-                .orElseThrow(() -> new NotFoundException(KLASSE_NICHT_GEFUNDEN));
+        SchoolClass schoolClass = requireClassInSchool(classId);
 
-        String userId = userService.getUserId();
-        String userEmail = userService.getEmail();
+        String userId = userService.getCurrentUserId();
         boolean isTeacher = userService.userHasRole(TEACHER);
         boolean isStudent = userService.userHasRole("STUDENT");
 
         if (isTeacher && !schoolClass.getTeacherId().equals(userId)) {
-            throw new ForbiddenException("Keine Berechtigung fuer diese Klasse");
+            throw new ForbiddenException(KEINE_BERECHTIGUNG);
         }
-
-        if (isStudent && !schoolClass.hasStudent(userEmail)) {
+        if (isStudent && !schoolClass.hasStudent(userId)) {
             throw new ForbiddenException("Du bist nicht in dieser Klasse");
         }
 
@@ -87,15 +90,14 @@ public class SchoolClassService {
     }
 
     /**
-     * Klasse des aktuellen Schülers holen (per Email aus JWT).
+     * Klasse des aktuellen Schülers holen.
      */
     public SchoolClass getMyClass() {
         if (!userService.userHasRole("STUDENT")) {
             throw new ForbiddenException("Nur Schueler haben eine Klasse");
         }
-
-        String email = userService.getEmail();
-        return schoolClassRepository.findFirstByStudentEmailsContaining(email.toLowerCase())
+        return schoolClassRepository.findFirstBySchoolIdAndStudentIdsContaining(
+                        userService.getCurrentSchoolId(), userService.getCurrentUserId())
                 .orElseThrow(() -> new NotFoundException("Du bist keiner Klasse zugeordnet"));
     }
 
@@ -103,10 +105,8 @@ public class SchoolClassService {
      * ClassId des aktuellen Schülers holen (für Dashboard etc.).
      */
     public String getMyClassId() {
-        String email = userService.getEmail();
-        if (email == null) return null;
-        
-        return schoolClassRepository.findFirstByStudentEmailsContaining(email.toLowerCase())
+        return schoolClassRepository.findFirstBySchoolIdAndStudentIdsContaining(
+                        userService.getCurrentSchoolId(), userService.getCurrentUserId())
                 .map(SchoolClass::getId)
                 .orElse(null);
     }
@@ -115,24 +115,16 @@ public class SchoolClassService {
      * Klasse aktualisieren (nur eigene Klassen).
      */
     public SchoolClass updateClass(String classId, SchoolClassDTO dto) {
-        if (!userService.userHasRole(TEACHER)) {
-            throw new ForbiddenException("Nur Lehrer duerfen Klassen bearbeiten");
-        }
-
-        SchoolClass schoolClass = schoolClassRepository.findById(classId)
-                .orElseThrow(() -> new NotFoundException(KLASSE_NICHT_GEFUNDEN));
-
-        String teacherId = userService.getUserId();
-        if (!schoolClass.getTeacherId().equals(teacherId)) {
-            throw new ForbiddenException("Keine Berechtigung fuer diese Klasse");
-        }
+        requireTeacher("Nur Lehrer duerfen Klassen bearbeiten");
+        SchoolClass schoolClass = requireOwnClass(classId);
 
         if (dto.getName() != null && !dto.getName().isBlank()) {
-            if (!schoolClass.getName().equals(dto.getName().trim()) &&
-                    schoolClassRepository.existsByName(dto.getName().trim())) {
+            String newName = dto.getName().trim();
+            if (!schoolClass.getName().equals(newName)
+                    && schoolClassRepository.existsBySchoolIdAndName(schoolClass.getSchoolId(), newName)) {
                 throw new BadRequestException("Eine Klasse mit diesem Namen existiert bereits");
             }
-            schoolClass.setName(dto.getName().trim());
+            schoolClass.setName(newName);
         }
 
         schoolClass.setUpdatedAt(Instant.now());
@@ -140,59 +132,42 @@ public class SchoolClassService {
     }
 
     /**
-     * Schüler zur Klasse hinzufügen (per Email).
+     * Schüler zur Klasse hinzufügen (per User-Id). Validiert, dass der Schüler zur selben Schule gehört.
      */
-    public SchoolClass addStudentToClass(String classId, String studentEmail) {
-        if (!userService.userHasRole(TEACHER)) {
-            throw new ForbiddenException("Nur Lehrer duerfen Schueler hinzufuegen");
+    public SchoolClass addStudentToClass(String classId, String userId) {
+        requireTeacher("Nur Lehrer duerfen Schueler hinzufuegen");
+
+        if (userId == null || userId.isBlank()) {
+            throw new BadRequestException("userId ist erforderlich");
         }
 
-        if (studentEmail == null || studentEmail.isBlank()) {
-            throw new BadRequestException("Email ist erforderlich");
+        SchoolClass schoolClass = requireOwnClass(classId);
+
+        User student = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Schüler nicht gefunden"));
+
+        if (student.getRole() != UserRole.STUDENT
+                || !schoolClass.getSchoolId().equals(student.getSchoolId())) {
+            throw new ForbiddenException("Dieser Schüler gehört nicht zu deiner Schule");
         }
 
-        // Einfache Email-Validierung
-        if (!studentEmail.contains("@")) {
-            throw new BadRequestException("Ungueltige Email-Adresse");
-        }
-
-        SchoolClass schoolClass = schoolClassRepository.findById(classId)
-                .orElseThrow(() -> new NotFoundException(KLASSE_NICHT_GEFUNDEN));
-
-        String teacherId = userService.getUserId();
-        if (!schoolClass.getTeacherId().equals(teacherId)) {
-            throw new ForbiddenException("Keine Berechtigung fuer diese Klasse");
-        }
-
-        String normalizedEmail = studentEmail.toLowerCase().trim();
-        
-        // Prüfen ob Email schon in dieser Klasse ist
-        if (schoolClass.hasStudent(normalizedEmail)) {
+        if (schoolClass.hasStudent(userId)) {
             throw new BadRequestException("Dieser Schueler ist bereits in der Klasse");
         }
 
-        schoolClass.addStudent(normalizedEmail);
+        schoolClass.addStudent(userId);
         schoolClass.setUpdatedAt(Instant.now());
         return schoolClassRepository.save(schoolClass);
     }
 
     /**
-     * Schüler aus Klasse entfernen.
+     * Schüler aus Klasse entfernen (per User-Id).
      */
-    public SchoolClass removeStudentFromClass(String classId, String studentEmail) {
-        if (!userService.userHasRole(TEACHER)) {
-            throw new ForbiddenException("Nur Lehrer duerfen Schueler entfernen");
-        }
+    public SchoolClass removeStudentFromClass(String classId, String userId) {
+        requireTeacher("Nur Lehrer duerfen Schueler entfernen");
+        SchoolClass schoolClass = requireOwnClass(classId);
 
-        SchoolClass schoolClass = schoolClassRepository.findById(classId)
-                .orElseThrow(() -> new NotFoundException(KLASSE_NICHT_GEFUNDEN));
-
-        String teacherId = userService.getUserId();
-        if (!schoolClass.getTeacherId().equals(teacherId)) {
-            throw new ForbiddenException("Keine Berechtigung fuer diese Klasse");
-        }
-
-        schoolClass.removeStudent(studentEmail);
+        schoolClass.removeStudent(userId);
         schoolClass.setUpdatedAt(Instant.now());
         return schoolClassRepository.save(schoolClass);
     }
@@ -201,18 +176,31 @@ public class SchoolClassService {
      * Klasse löschen.
      */
     public void deleteClass(String classId) {
-        if (!userService.userHasRole(TEACHER)) {
-            throw new ForbiddenException("Nur Lehrer duerfen Klassen loeschen");
-        }
-
-        SchoolClass schoolClass = schoolClassRepository.findById(classId)
-                .orElseThrow(() -> new NotFoundException(KLASSE_NICHT_GEFUNDEN));
-
-        String teacherId = userService.getUserId();
-        if (!schoolClass.getTeacherId().equals(teacherId)) {
-            throw new ForbiddenException("Keine Berechtigung fuer diese Klasse");
-        }
-
+        requireTeacher("Nur Lehrer duerfen Klassen loeschen");
+        SchoolClass schoolClass = requireOwnClass(classId);
         schoolClassRepository.delete(schoolClass);
+    }
+
+    // ============================================================
+    // Intern
+    // ============================================================
+
+    private void requireTeacher(String message) {
+        if (!userService.userHasRole(TEACHER)) {
+            throw new ForbiddenException(message);
+        }
+    }
+
+    private SchoolClass requireClassInSchool(String classId) {
+        return schoolClassRepository.findByIdAndSchoolId(classId, userService.getCurrentSchoolId())
+                .orElseThrow(() -> new NotFoundException(KLASSE_NICHT_GEFUNDEN));
+    }
+
+    private SchoolClass requireOwnClass(String classId) {
+        SchoolClass schoolClass = requireClassInSchool(classId);
+        if (!schoolClass.getTeacherId().equals(userService.getCurrentUserId())) {
+            throw new ForbiddenException(KEINE_BERECHTIGUNG);
+        }
+        return schoolClass;
     }
 }

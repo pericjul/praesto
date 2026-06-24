@@ -44,4 +44,18 @@ public interface SubmissionRepository extends MongoRepository<Submission, String
     long countByStudentEmailAndTeacherFeedbackIsNotNull(String studentEmail);
 
     long countByStudentEmailAndGradeIsNotNull(String studentEmail);
+
+    // ===== Mandanten-sichere (schoolId-gefilterte) Varianten =====
+
+    Optional<Submission> findByIdAndSchoolId(String id, String schoolId);
+
+    long countBySchoolId(String schoolId);
+
+    // ===== Personenbezogen (DSG-Export/Löschung) =====
+
+    List<Submission> findByStudentId(String studentId);
+
+    void deleteByStudentId(String studentId);
+
+    void deleteBySchoolId(String schoolId);
 }

@@ -26,7 +26,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
 @TestMethodOrder(OrderAnnotation.class)
 public class NoteControllerTest {
 
@@ -59,7 +58,7 @@ public class NoteControllerTest {
         var result = mvc.perform(post("/api/notes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.companyName").value(TEST_COMPANY))
@@ -75,7 +74,7 @@ public class NoteControllerTest {
     public void testGetNote() throws Exception {
         mvc.perform(get("/api/notes/" + note_id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.companyName").value(TEST_COMPANY));
@@ -86,7 +85,7 @@ public class NoteControllerTest {
     public void testGetAllNotes() throws Exception {
         mvc.perform(get("/api/notes")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -103,7 +102,7 @@ public class NoteControllerTest {
         mvc.perform(put("/api/notes/" + note_id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.companyName").value("Microsoft"));
@@ -114,7 +113,7 @@ public class NoteControllerTest {
     public void testDeleteNote() throws Exception {
         mvc.perform(delete("/api/notes/" + note_id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }

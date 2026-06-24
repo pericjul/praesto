@@ -1,0 +1,263 @@
+export const studentMedia = {
+	de: {
+		// ===== Sessions-Übersicht (ssess.) =====
+		"ssess.headTitle": "Meine Sessions – Praesto",
+		"ssess.title": "🤖 KI-Training Sessions",
+		"ssess.subtitle":
+			"Hier siehst du alle deine Trainings-Sessions. Setze offene Sessions fort oder starte eine neue.",
+		"ssess.newSession": "➕ Neue Session starten",
+		"ssess.closedAlert": "Session wurde geschlossen.",
+		"ssess.total": "Total",
+		"ssess.open": "Offen",
+		"ssess.closed": "Abgeschlossen",
+		"ssess.emptyTitle": "Noch keine Sessions",
+		"ssess.emptyText":
+			"Starte dein erstes KI-Training und übe für Bewerbungsgespräche!",
+		"ssess.firstSession": "Erste Session starten",
+		"ssess.messages": "Nachrichten:",
+		"ssess.toAssignment": "Zu Aufgabe:",
+		"ssess.yes": "Ja",
+		"ssess.endedAt": "Beendet:",
+		"ssess.confirmDelete": "Wirklich löschen?",
+		"ssess.yesDelete": "Ja, löschen",
+		"ssess.cancel": "Abbrechen",
+		"ssess.continue": "▶️ Fortsetzen",
+		"ssess.ending": "⏳ Beenden...",
+		"ssess.end": "⏹️ Beenden",
+		"ssess.view": "👁️ Ansehen",
+		"ssess.deleteTitle": "Session löschen",
+
+		// ===== Chat / Session-Detail (schat.) =====
+		"schat.headTraining": "KI-Training",
+		"schat.back": "← Zurück",
+		"schat.titleTraining": "KI-Bewerbungstraining",
+		"schat.assignmentFromTeacher": "Aufgabe von deiner Lehrperson",
+		"schat.trainingSubtitle":
+			"Übe Vorstellungsgespräche mit deinem persönlichen KI-Coach",
+		"schat.submit": "✓ Abgeben",
+		"schat.end": "Beenden",
+		"schat.submitted": "✓ Abgegeben",
+		"schat.closed": "Abgeschlossen",
+		"schat.timeUp": "⏰ Zeit abgelaufen!",
+		"schat.remaining": "⏱️ Noch",
+		"schat.goalPrefix": "Ziel:",
+		"schat.goalUnit": "Min",
+		"schat.greeting":
+			"Hallo! 👋 Ich bin dein Bewerbungscoach. Ich helfe dir, dich auf Vorstellungsgespräche vorzubereiten. Sag mir, für welchen Beruf du dich interessierst!",
+		"schat.submitError": "Fehler beim Abgeben: ",
+		"schat.connectionError": "Verbindungsfehler",
+		"schat.placeholder": "Schreibe deine Antwort...",
+		"schat.hint": "💡 Drücke Enter zum Senden, Shift+Enter für neue Zeile",
+		"schat.submittedNotice":
+			"✅ Diese Aufgabe wurde abgegeben. Deine Lehrperson kann sie nun bewerten.",
+		"schat.closedNotice":
+			"📋 Diese Session wurde abgeschlossen. Du kannst den Verlauf ansehen.",
+		"schat.toAssignments": "Zu den Aufgaben",
+		"schat.toOverview": "Zur Übersicht",
+		"schat.modalTitle": "Zeit abgelaufen!",
+		"schat.modalText1a": "Die vorgegebene Zeit von",
+		"schat.modalText1b": "Minuten",
+		"schat.modalText1c": "ist um.",
+		"schat.modalText2":
+			"Möchtest du das Training abschliessen und abgeben, oder weitermachen?",
+		"schat.continueTraining": "Weitermachen",
+		"schat.submitting": "Wird abgegeben...",
+		"schat.submitNow": "✓ Jetzt abgeben"
+	},
+	en: {
+		// ===== Sessions overview (ssess.) =====
+		"ssess.headTitle": "My Sessions – Praesto",
+		"ssess.title": "🤖 AI Training Sessions",
+		"ssess.subtitle":
+			"Here you can see all your training sessions. Continue open sessions or start a new one.",
+		"ssess.newSession": "➕ Start new session",
+		"ssess.closedAlert": "Session has been closed.",
+		"ssess.total": "Total",
+		"ssess.open": "Open",
+		"ssess.closed": "Completed",
+		"ssess.emptyTitle": "No sessions yet",
+		"ssess.emptyText":
+			"Start your first AI training and practise for job interviews!",
+		"ssess.firstSession": "Start first session",
+		"ssess.messages": "Messages:",
+		"ssess.toAssignment": "For assignment:",
+		"ssess.yes": "Yes",
+		"ssess.endedAt": "Ended:",
+		"ssess.confirmDelete": "Really delete?",
+		"ssess.yesDelete": "Yes, delete",
+		"ssess.cancel": "Cancel",
+		"ssess.continue": "▶️ Continue",
+		"ssess.ending": "⏳ Ending...",
+		"ssess.end": "⏹️ End",
+		"ssess.view": "👁️ View",
+		"ssess.deleteTitle": "Delete session",
+
+		// ===== Chat / session detail (schat.) =====
+		"schat.headTraining": "AI Training",
+		"schat.back": "← Back",
+		"schat.titleTraining": "AI Interview Training",
+		"schat.assignmentFromTeacher": "Assignment from your teacher",
+		"schat.trainingSubtitle":
+			"Practise job interviews with your personal AI coach",
+		"schat.submit": "✓ Submit",
+		"schat.end": "End",
+		"schat.submitted": "✓ Submitted",
+		"schat.closed": "Completed",
+		"schat.timeUp": "⏰ Time's up!",
+		"schat.remaining": "⏱️ Remaining",
+		"schat.goalPrefix": "Goal:",
+		"schat.goalUnit": "min",
+		"schat.greeting":
+			"Hi! 👋 I'm your interview coach. I'll help you prepare for job interviews. Tell me which job you're interested in!",
+		"schat.submitError": "Error submitting: ",
+		"schat.connectionError": "Connection error",
+		"schat.placeholder": "Write your answer...",
+		"schat.hint": "💡 Press Enter to send, Shift+Enter for a new line",
+		"schat.submittedNotice":
+			"✅ This assignment has been submitted. Your teacher can now grade it.",
+		"schat.closedNotice":
+			"📋 This session has been completed. You can review the history.",
+		"schat.toAssignments": "To the assignments",
+		"schat.toOverview": "To the overview",
+		"schat.modalTitle": "Time's up!",
+		"schat.modalText1a": "The allotted time of",
+		"schat.modalText1b": "minutes",
+		"schat.modalText1c": "is over.",
+		"schat.modalText2":
+			"Would you like to finish the training and submit it, or keep going?",
+		"schat.continueTraining": "Keep going",
+		"schat.submitting": "Submitting...",
+		"schat.submitNow": "✓ Submit now"
+	},
+	fr: {
+		// ===== Aperçu des sessions (ssess.) =====
+		"ssess.headTitle": "Mes sessions – Praesto",
+		"ssess.title": "🤖 Sessions d'entraînement IA",
+		"ssess.subtitle":
+			"Tu vois ici toutes tes sessions d'entraînement. Reprends les sessions ouvertes ou démarres-en une nouvelle.",
+		"ssess.newSession": "➕ Démarrer une nouvelle session",
+		"ssess.closedAlert": "La session a été clôturée.",
+		"ssess.total": "Total",
+		"ssess.open": "Ouverte",
+		"ssess.closed": "Terminée",
+		"ssess.emptyTitle": "Pas encore de sessions",
+		"ssess.emptyText":
+			"Démarre ton premier entraînement IA et prépare-toi aux entretiens d'embauche !",
+		"ssess.firstSession": "Démarrer la première session",
+		"ssess.messages": "Messages :",
+		"ssess.toAssignment": "Pour le devoir :",
+		"ssess.yes": "Oui",
+		"ssess.endedAt": "Terminée le :",
+		"ssess.confirmDelete": "Vraiment supprimer ?",
+		"ssess.yesDelete": "Oui, supprimer",
+		"ssess.cancel": "Annuler",
+		"ssess.continue": "▶️ Reprendre",
+		"ssess.ending": "⏳ Clôture...",
+		"ssess.end": "⏹️ Clôturer",
+		"ssess.view": "👁️ Consulter",
+		"ssess.deleteTitle": "Supprimer la session",
+
+		// ===== Chat / détail de session (schat.) =====
+		"schat.headTraining": "Entraînement IA",
+		"schat.back": "← Retour",
+		"schat.titleTraining": "Entraînement aux entretiens IA",
+		"schat.assignmentFromTeacher": "Devoir de ton enseignant·e",
+		"schat.trainingSubtitle":
+			"Entraîne-toi aux entretiens d'embauche avec ton coach IA personnel",
+		"schat.submit": "✓ Rendre",
+		"schat.end": "Clôturer",
+		"schat.submitted": "✓ Rendu",
+		"schat.closed": "Terminée",
+		"schat.timeUp": "⏰ Temps écoulé !",
+		"schat.remaining": "⏱️ Encore",
+		"schat.goalPrefix": "Objectif :",
+		"schat.goalUnit": "min",
+		"schat.greeting":
+			"Bonjour ! 👋 Je suis ton coach d'entretien. Je t'aide à te préparer aux entretiens d'embauche. Dis-moi quel métier t'intéresse !",
+		"schat.submitError": "Erreur lors de l'envoi : ",
+		"schat.connectionError": "Erreur de connexion",
+		"schat.placeholder": "Écris ta réponse...",
+		"schat.hint":
+			"💡 Appuie sur Entrée pour envoyer, Maj+Entrée pour une nouvelle ligne",
+		"schat.submittedNotice":
+			"✅ Ce devoir a été rendu. Ton enseignant·e peut maintenant l'évaluer.",
+		"schat.closedNotice":
+			"📋 Cette session a été clôturée. Tu peux consulter l'historique.",
+		"schat.toAssignments": "Vers les devoirs",
+		"schat.toOverview": "Vers l'aperçu",
+		"schat.modalTitle": "Temps écoulé !",
+		"schat.modalText1a": "Le temps imparti de",
+		"schat.modalText1b": "minutes",
+		"schat.modalText1c": "est écoulé.",
+		"schat.modalText2":
+			"Veux-tu terminer l'entraînement et le rendre, ou continuer ?",
+		"schat.continueTraining": "Continuer",
+		"schat.submitting": "Envoi en cours...",
+		"schat.submitNow": "✓ Rendre maintenant"
+	},
+	it: {
+		// ===== Panoramica sessioni (ssess.) =====
+		"ssess.headTitle": "Le mie sessioni – Praesto",
+		"ssess.title": "🤖 Sessioni di allenamento IA",
+		"ssess.subtitle":
+			"Qui vedi tutte le tue sessioni di allenamento. Riprendi le sessioni aperte o avviane una nuova.",
+		"ssess.newSession": "➕ Avvia nuova sessione",
+		"ssess.closedAlert": "La sessione è stata chiusa.",
+		"ssess.total": "Totale",
+		"ssess.open": "Aperta",
+		"ssess.closed": "Conclusa",
+		"ssess.emptyTitle": "Ancora nessuna sessione",
+		"ssess.emptyText":
+			"Avvia il tuo primo allenamento IA ed esercitati per i colloqui di lavoro!",
+		"ssess.firstSession": "Avvia la prima sessione",
+		"ssess.messages": "Messaggi:",
+		"ssess.toAssignment": "Per il compito:",
+		"ssess.yes": "Sì",
+		"ssess.endedAt": "Conclusa il:",
+		"ssess.confirmDelete": "Eliminare davvero?",
+		"ssess.yesDelete": "Sì, elimina",
+		"ssess.cancel": "Annulla",
+		"ssess.continue": "▶️ Riprendi",
+		"ssess.ending": "⏳ Chiusura...",
+		"ssess.end": "⏹️ Chiudi",
+		"ssess.view": "👁️ Visualizza",
+		"ssess.deleteTitle": "Elimina sessione",
+
+		// ===== Chat / dettaglio sessione (schat.) =====
+		"schat.headTraining": "Allenamento IA",
+		"schat.back": "← Indietro",
+		"schat.titleTraining": "Allenamento ai colloqui IA",
+		"schat.assignmentFromTeacher": "Compito del tuo insegnante",
+		"schat.trainingSubtitle":
+			"Esercitati nei colloqui di lavoro con il tuo coach IA personale",
+		"schat.submit": "✓ Consegna",
+		"schat.end": "Chiudi",
+		"schat.submitted": "✓ Consegnata",
+		"schat.closed": "Conclusa",
+		"schat.timeUp": "⏰ Tempo scaduto!",
+		"schat.remaining": "⏱️ Ancora",
+		"schat.goalPrefix": "Obiettivo:",
+		"schat.goalUnit": "min",
+		"schat.greeting":
+			"Ciao! 👋 Sono il tuo coach per i colloqui. Ti aiuto a prepararti ai colloqui di lavoro. Dimmi quale professione ti interessa!",
+		"schat.submitError": "Errore durante la consegna: ",
+		"schat.connectionError": "Errore di connessione",
+		"schat.placeholder": "Scrivi la tua risposta...",
+		"schat.hint": "💡 Premi Invio per inviare, Shift+Invio per una nuova riga",
+		"schat.submittedNotice":
+			"✅ Questo compito è stato consegnato. Il tuo insegnante può ora valutarlo.",
+		"schat.closedNotice":
+			"📋 Questa sessione è stata conclusa. Puoi consultare la cronologia.",
+		"schat.toAssignments": "Ai compiti",
+		"schat.toOverview": "Alla panoramica",
+		"schat.modalTitle": "Tempo scaduto!",
+		"schat.modalText1a": "Il tempo previsto di",
+		"schat.modalText1b": "minuti",
+		"schat.modalText1c": "è terminato.",
+		"schat.modalText2":
+			"Vuoi terminare l'allenamento e consegnarlo, oppure continuare?",
+		"schat.continueTraining": "Continua",
+		"schat.submitting": "Consegna in corso...",
+		"schat.submitNow": "✓ Consegna ora"
+	}
+};

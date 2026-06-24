@@ -19,7 +19,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
 public class StudentDashboardControllerTest {
 
     @Autowired
@@ -33,7 +32,7 @@ public class StudentDashboardControllerTest {
     public void testGetDashboard_AsStudent() throws Exception {
         mvc.perform(get("/api/student/dashboard")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -42,7 +41,7 @@ public class StudentDashboardControllerTest {
     public void testGetDashboard_AsTeacher_Forbidden() throws Exception {
         mvc.perform(get("/api/student/dashboard")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -52,6 +51,6 @@ public class StudentDashboardControllerTest {
         mvc.perform(get("/api/student/dashboard")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 }

@@ -212,6 +212,7 @@ public class SessionService {
         String studentEmail = userService.getEmail().toLowerCase();
 
         Session.SessionBuilder sessionBuilder = Session.builder()
+                .schoolId(userService.getCurrentSchoolId())
                 .studentId(studentId)
                 .studentEmail(studentEmail)
                 .status(SessionStatus.OPEN)
@@ -440,7 +441,9 @@ public class SessionService {
 
         // Submission erstellen
         Submission submission = Submission.builder()
+                .schoolId(session.getSchoolId())
                 .assignmentId(session.getAssignmentId())
+                .studentId(studentId)
                 .studentEmail(studentEmail)
                 .type(AssignmentType.AI_INTERVIEW)
                 .chatSessionId(sessionId)
@@ -466,7 +469,9 @@ public class SessionService {
         boolean isStudent = userService.userHasRole(STUDENT);
         boolean isTeacher = userService.userHasRole("TEACHER");
 
-        Session session = sessionRepository.findById(sessionId)
+        // Mandanten-sicher: Session muss in der eigenen Schule liegen
+        Session session = sessionRepository
+                .findByIdAndSchoolId(sessionId, userService.getCurrentSchoolId())
                 .orElseThrow(() -> new NotFoundException(SESSION_NICHT_GEFUNDEN));
 
         if (isStudent && !userId.equals(session.getStudentId())) {
@@ -487,5 +492,25 @@ public class SessionService {
         List<Session> sessions = sessionRepository.findByStudentId(studentId);
         sessions.sort(Comparator.comparing(Session::getStartedAt).reversed());
         return sessions;
+    }
+
+    /**
+     * Eine eigene Session löschen (nur Schüler, nur eigene).
+     */
+    public void deleteSession(String sessionId) {
+        if (!userService.userHasRole(STUDENT)) {
+            throw new ForbiddenException("Nur Schueler duerfen Sessions loeschen");
+        }
+
+        String studentId = userService.getUserId();
+        Session session = sessionRepository
+                .findByIdAndSchoolId(sessionId, userService.getCurrentSchoolId())
+                .orElseThrow(() -> new NotFoundException(SESSION_NICHT_GEFUNDEN));
+
+        if (!studentId.equals(session.getStudentId())) {
+            throw new ForbiddenException("Keine Berechtigung fuer diese Session");
+        }
+
+        sessionRepository.delete(session);
     }
 }

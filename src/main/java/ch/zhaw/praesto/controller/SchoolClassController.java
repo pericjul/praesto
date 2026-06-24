@@ -66,25 +66,25 @@ public class SchoolClassController {
     }
 
     /**
-     * POST /api/classes/{id}/students - Schüler zur Klasse hinzufügen (per Email)
+     * POST /api/classes/{id}/students - Schüler zur Klasse hinzufügen (per User-Id)
      */
     @PostMapping("/{id}/students")
     public ResponseEntity<SchoolClass> addStudent(
             @PathVariable String id,
             @RequestBody Map<String, String> body) {
-        String studentEmail = body.get("email");
-        SchoolClass schoolClass = schoolClassService.addStudentToClass(id, studentEmail);
+        String userId = body.get("userId");
+        SchoolClass schoolClass = schoolClassService.addStudentToClass(id, userId);
         return ResponseEntity.ok(schoolClass);
     }
 
     /**
-     * DELETE /api/classes/{id}/students/{email} - Schüler aus Klasse entfernen
+     * DELETE /api/classes/{id}/students/{userId} - Schüler aus Klasse entfernen
      */
-    @DeleteMapping("/{id}/students/{email}")
+    @DeleteMapping("/{id}/students/{userId}")
     public ResponseEntity<SchoolClass> removeStudent(
             @PathVariable String id,
-            @PathVariable String email) {
-        SchoolClass schoolClass = schoolClassService.removeStudentFromClass(id, email);
+            @PathVariable String userId) {
+        SchoolClass schoolClass = schoolClassService.removeStudentFromClass(id, userId);
         return ResponseEntity.ok(schoolClass);
     }
 

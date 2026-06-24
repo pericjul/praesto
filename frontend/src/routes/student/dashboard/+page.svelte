@@ -1,27 +1,28 @@
 <script>
-    export let data;
+    import { t } from "$lib/i18n";
 
-    const dashboard = data.dashboard ?? {};
+    let { data } = $props();
 
-    const {
-        studentName = "Student",
-        openAssignmentsCount = 0,
-        openAssignments = [],
-        lastSessionStartedAt,
-        totalSessionsCount = 0,
-        badgesCount = 0,
-        earnedBadgeIcons = [],
-        applicationsCount = 0,
-        notifications = []
-    } = dashboard;
+    let dashboard = $derived(data.dashboard ?? {});
 
-    const assignmentTypes = {
-        AI_INTERVIEW: { label: "🤖 KI-Interview", color: "#8b5cf6" },
-        DOCUMENT_UPLOAD: { label: "📄 Dokument", color: "#3b82f6" },
-        SELF_REFLECTION: { label: "✍️ Reflexion", color: "#10b981" },
-        VIDEO_PITCH: { label: "🎥 Video", color: "#f59e0b" },
-        RESEARCH: { label: "🔍 Recherche", color: "#6366f1" }
-    };
+    let studentName = $derived(dashboard.studentName ?? "Student");
+    let openAssignmentsCount = $derived(dashboard.openAssignmentsCount ?? 0);
+    let openAssignments = $derived(dashboard.openAssignments ?? []);
+    let totalSessionsCount = $derived(dashboard.totalSessionsCount ?? 0);
+    let streakDays = $derived(dashboard.streakDays ?? 0);
+    let badgesCount = $derived(dashboard.badgesCount ?? 0);
+    let applicationsCount = $derived(dashboard.applicationsCount ?? 0);
+    let notifications = $derived(dashboard.notifications ?? []);
+    let openSessionId = $derived(dashboard.openSessionId ?? null);
+    let upcomingEvents = $derived(dashboard.upcomingEvents ?? []);
+
+    let assignmentTypes = $derived({
+        AI_INTERVIEW: { label: $t("sdash.typeInterview"), color: "#8b5cf6" },
+        DOCUMENT_UPLOAD: { label: $t("sdash.typeDocument"), color: "#3b82f6" },
+        SELF_REFLECTION: { label: $t("sdash.typeReflection"), color: "#10b981" },
+        VIDEO_PITCH: { label: $t("sdash.typeVideo"), color: "#f59e0b" },
+        RESEARCH: { label: $t("sdash.typeResearch"), color: "#6366f1" }
+    });
 
     function getTypeInfo(type) {
         return assignmentTypes[type] ?? { label: type, color: "#6b7280" };
@@ -51,35 +52,42 @@
 </script>
 
 <svelte:head>
-    <title>Dashboard – Praesto</title>
+    <title>{$t('sdash.headTitle')}</title>
 </svelte:head>
 
 <div class="dashboard">
     <!-- ORIGINAL HERO -->
     <section class="hero">
         <div class="hero-left">
-            <p class="hero-eyebrow">Willkommen zurück 👋</p>
-            <h1 class="hero-title">Hi {studentName}</h1>
+            <p class="hero-eyebrow">{$t('sdash.welcomeBack')}</p>
+            <h1 class="hero-title">{$t('sdash.hi')} {studentName}</h1>
             <p class="hero-subtitle">
-                Hier findest du alles, um dich optimal auf Bewerbungen vorzubereiten.
+                {$t('sdash.subtitle')}
             </p>
             <div class="hero-actions">
-                <a href="/student/assignments" class="btn btn-primary">Zu den Aufgaben</a>
-                <a href="/student/sessions" class="btn btn-ghost">KI-Training starten</a>
+                {#if openSessionId}
+                    <a href="/student/sessions/{openSessionId}" class="btn btn-primary">{$t('sdash.continueSession')}</a>
+                {/if}
+                <a href="/student/assignments" class="btn btn-primary">{$t('sdash.toTasks')}</a>
+                <a href="/student/sessions" class="btn btn-ghost">{$t('sdash.startTraining')}</a>
             </div>
         </div>
 
         <div class="hero-right">
             <div class="hero-stat">
-                <span class="hero-stat-label">Offene Aufgaben</span>
+                <span class="hero-stat-label">{$t('sdash.statOpenTasks')}</span>
                 <span class="hero-stat-value">{openAssignmentsCount}</span>
             </div>
             <div class="hero-stat">
-                <span class="hero-stat-label">KI-Trainings</span>
+                <span class="hero-stat-label">{$t('sdash.statTrainings')}</span>
                 <span class="hero-stat-value">{totalSessionsCount}</span>
             </div>
+            <div class="hero-stat" title={$t('sdash.statStreakTitle')}>
+                <span class="hero-stat-label">{$t('sdash.statStreak')}</span>
+                <span class="hero-stat-value">{streakDays}</span>
+            </div>
             <a href="/student/badges" class="hero-stat hero-stat-link">
-                <span class="hero-stat-label">🏅 Badges</span>
+                <span class="hero-stat-label">{$t('sdash.statBadges')}</span>
                 <span class="hero-stat-value">{badgesCount}</span>
             </a>
         </div>
@@ -91,16 +99,16 @@
         <!-- LINKE SPALTE: Aufgaben-Fokus -->
         <section class="tasks-section">
             <div class="section-header">
-                <h2>📚 Nächste Aufgaben</h2>
-                <a href="/student/assignments" class="link-all">Alle ansehen →</a>
+                <h2>{$t('sdash.nextTasks')}</h2>
+                <a href="/student/assignments" class="link-all">{$t('sdash.viewAll')}</a>
             </div>
 
             {#if openAssignments.length === 0}
                 <div class="empty-state">
                     <span class="empty-icon">🎉</span>
-                    <p>Keine offenen Aufgaben!</p>
-                    <span class="empty-hint">Du hast alles erledigt. Zeit für ein Training?</span>
-                    <a href="/student/sessions" class="btn btn-accent">KI-Training starten</a>
+                    <p>{$t('sdash.emptyTitle')}</p>
+                    <span class="empty-hint">{$t('sdash.emptyHint')}</span>
+                    <a href="/student/sessions" class="btn btn-accent">{$t('sdash.startTraining')}</a>
                 </div>
             {:else}
                 <div class="task-list">
@@ -119,20 +127,20 @@
                                         {getTypeInfo(assignment.type).label}
                                     </span>
                                     {#if assignment.durationMin}
-                                        <span class="task-duration">⏱️ {assignment.durationMin} Min</span>
+                                        <span class="task-duration">⏱️ {assignment.durationMin} {$t('sdash.min')}</span>
                                     {/if}
                                 </div>
                             </div>
 
                             <div class="task-deadline">
                                 {#if isOverdue(assignment.dueDate)}
-                                    <span class="deadline overdue">⚠️ Überfällig</span>
+                                    <span class="deadline overdue">{$t('sdash.overdue')}</span>
                                 {:else if isUrgent(assignment.dueDate)}
-                                    <span class="deadline urgent">🔥 {getDaysUntil(assignment.dueDate) === 0 ? "Heute!" : "Morgen!"}</span>
+                                    <span class="deadline urgent">🔥 {getDaysUntil(assignment.dueDate) === 0 ? $t('sdash.today') : $t('sdash.tomorrow')}</span>
                                 {:else if assignment.dueDate}
                                     <span class="deadline">{formatDate(assignment.dueDate)}</span>
                                 {:else}
-                                    <span class="deadline muted">Kein Datum</span>
+                                    <span class="deadline muted">{$t('sdash.noDate')}</span>
                                 {/if}
                             </div>
                         </a>
@@ -141,7 +149,7 @@
 
                 {#if openAssignments.length > 4}
                     <a href="/student/assignments" class="btn btn-outline show-more">
-                        +{openAssignments.length - 4} weitere Aufgaben
+                        +{openAssignments.length - 4} {$t('sdash.moreTasksSuffix')}
                     </a>
                 {/if}
             {/if}
@@ -149,11 +157,35 @@
 
         <!-- RECHTE SPALTE: Feedback + Schnellzugriff -->
         <aside class="sidebar">
-            
+
+            <!-- Anstehende Termine -->
+            {#if upcomingEvents.length > 0}
+                <section class="card events-card">
+                    <h3>{$t('sdash.upcomingTitle')}</h3>
+                    <div class="events-list">
+                        {#each upcomingEvents as ev}
+                            <div class="event-item">
+                                <span class="event-icon">{ev.type === 'INTERVIEW' ? '💼' : '📋'}</span>
+                                <div class="event-content">
+                                    <span class="event-title">
+                                        {ev.type === 'INTERVIEW' ? $t('sdash.evInterview') : $t('sdash.evDeadline')}: {ev.title}
+                                    </span>
+                                    <span class="event-when">
+                                        {#if getDaysUntil(ev.date) <= 0}{$t('sdash.today')}
+                                        {:else if getDaysUntil(ev.date) === 1}{$t('sdash.tomorrow')}
+                                        {:else}{$t('sdash.inDaysPre')} {getDaysUntil(ev.date)} {$t('sdash.inDaysPost')}{/if}
+                                    </span>
+                                </div>
+                            </div>
+                        {/each}
+                    </div>
+                </section>
+            {/if}
+
             <!-- Feedback (nur wenn vorhanden) -->
             {#if notifications.length > 0}
                 <section class="card feedback-card">
-                    <h3>🔔 Neues Feedback</h3>
+                    <h3>{$t('sdash.newFeedback')}</h3>
                     <div class="feedback-list">
                         {#each notifications.slice(0, 3) as notification}
                             <a href="/student/assignments/{notification.assignmentId}" class="feedback-item">
@@ -161,40 +193,40 @@
                                 <div class="feedback-content">
                                     <span class="feedback-title">{notification.title}</span>
                                     {#if notification.grade != null}
-                                        <span class="feedback-grade">Note: {notification.grade}</span>
+                                        <span class="feedback-grade">{$t('sdash.grade')} {notification.grade}</span>
                                     {/if}
                                 </div>
                             </a>
                         {/each}
                     </div>
                     {#if notifications.length > 3}
-                        <span class="more-count">+{notifications.length - 3} weitere</span>
+                        <span class="more-count">+{notifications.length - 3} {$t('sdash.moreSuffix')}</span>
                     {/if}
                 </section>
             {/if}
 
             <!-- Schnellzugriff -->
             <section class="card">
-                <h3>⚡ Schnellzugriff</h3>
+                <h3>{$t('sdash.quickAccess')}</h3>
                 <nav class="quick-links">
                     <a href="/student/sessions" class="quick-link">
                         <span class="quick-icon">🤖</span>
-                        <span>KI-Training</span>
+                        <span>{$t('sdash.quickTraining')}</span>
                         <span class="quick-arrow">→</span>
                     </a>
                     <a href="/student/applications" class="quick-link">
                         <span class="quick-icon">💼</span>
-                        <span>Bewerbungen</span>
+                        <span>{$t('sdash.quickApplications')}</span>
                         <span class="quick-count">{applicationsCount}</span>
                     </a>
                     <a href="/student/notes" class="quick-link">
                         <span class="quick-icon">📝</span>
-                        <span>Notizen</span>
+                        <span>{$t('sdash.quickNotes')}</span>
                         <span class="quick-arrow">→</span>
                     </a>
                     <a href="/student/badges" class="quick-link">
                         <span class="quick-icon">🏅</span>
-                        <span>Badges</span>
+                        <span>{$t('sdash.quickBadges')}</span>
                         <span class="quick-count">{badgesCount}</span>
                     </a>
                 </nav>
@@ -202,8 +234,8 @@
 
             <!-- Tipp des Tages (optional, nice-to-have) -->
             <section class="card tip-card">
-                <h3>💡 Tipp</h3>
-                <p>Übe regelmässig mit dem KI-Training – so wirst du sicherer im echten Bewerbungsgespräch!</p>
+                <h3>{$t('sdash.tip')}</h3>
+                <p>{$t('sdash.tipText')}</p>
             </section>
 
         </aside>
@@ -499,6 +531,49 @@
         margin: 0 0 1rem;
         font-size: 0.95rem;
         color: #2d2141;
+    }
+
+    /* Upcoming Events Card */
+    .events-card {
+        background: #eef2ff;
+        border-color: #c7d2fe;
+    }
+
+    .events-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .event-item {
+        display: flex;
+        gap: 0.6rem;
+        align-items: flex-start;
+        padding: 0.55rem 0.7rem;
+        background: #fff;
+        border-radius: 0.5rem;
+    }
+
+    .event-icon {
+        font-size: 1.1rem;
+    }
+
+    .event-content {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .event-title {
+        font-size: 0.85rem;
+        color: #2d2141;
+        font-weight: 500;
+    }
+
+    .event-when {
+        font-size: 0.78rem;
+        color: #4338ca;
+        font-weight: 600;
     }
 
     /* Feedback Card */

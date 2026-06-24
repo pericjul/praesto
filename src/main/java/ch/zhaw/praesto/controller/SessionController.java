@@ -70,6 +70,13 @@ public class SessionController {
         return ResponseEntity.ok(submitted);
     }
 
+    // Session löschen (nur Student, nur eigene)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSession(@PathVariable String id) {
+        sessionService.deleteSession(id);
+        return ResponseEntity.noContent().build();
+    }
+
     // eigene Sessions ansehen (nur Student)
     @GetMapping("")
     public ResponseEntity<List<Session>> mySessions() {

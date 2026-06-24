@@ -6,14 +6,22 @@ export async function load({ locals }) {
     throw redirect(302, "/login");
   }
 
-  const roles = locals.user?.user_roles ?? [];
+  const role = locals.user?.role;
 
-  if (roles.includes("STUDENT")) {
+  if (role === "STUDENT") {
     throw redirect(302, "/student/dashboard");
   }
 
-  if (roles.includes("TEACHER")) {
+  if (role === "TEACHER") {
     throw redirect(302, "/teacher/dashboard");
+  }
+
+  if (role === "SCHOOL_ADMIN" || role === "DEMO_USER") {
+    throw redirect(302, "/admin/dashboard");
+  }
+
+  if (role === "SUPER_ADMIN") {
+    throw redirect(302, "/super/dashboard");
   }
 
   // Falls jemand keine passende Rolle hat

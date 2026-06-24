@@ -1,22 +1,74 @@
 package ch.zhaw.praesto.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.List;
+
+/**
+ * Stateless Security für die REST-API. Authentifizierung erfolgt über das
+ * plattform-eigene JWT ({@link JwtAuthenticationFilter}); CSRF ist deaktiviert,
+ * CORS für die bekannten Frontends erlaubt.
+ */
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-@Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-  http
-    .authorizeHttpRequests(auth -> auth
-      .requestMatchers("/health").permitAll()
-      .requestMatchers("/api/**").authenticated()
-      .anyRequest().permitAll()
-    )
-    .oauth2ResourceServer(oauth2 -> oauth2.jwt());
-  return http.build();
-}
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/health").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/invite/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/demo/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll()
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "https://praesto.ch",
+                "https://www.praesto.ch"
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // BCrypt mit strength 12 (Mindestanforderung)
+        return new BCryptPasswordEncoder(12);
+    }
 }
