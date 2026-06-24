@@ -109,11 +109,14 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- H2 In-Memory-DB für Tests: @SpringBootTest läuft ohne externe DB -->
+		<!-- H2 In-Memory-DB: für Tests UND für den Demo-Betrieb ohne externe DB.
+		     runtime statt test, damit die App mit DB_URL=jdbc:h2:... ganz ohne
+		     PostgreSQL laufen kann (z.B. öffentliche Demo auf Azure, 0 CHF DB-Kosten).
+		     Die Demo-Daten werden beim Start automatisch erzeugt (DemoDataSeeder). -->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<scope>test</scope>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
