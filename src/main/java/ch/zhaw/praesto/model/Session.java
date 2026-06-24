@@ -1,9 +1,7 @@
 package ch.zhaw.praesto.model;
 
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -14,33 +12,45 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "sessions")
+@Entity
+@Table(name = "sessions", indexes = {
+        @Index(name = "idx_session_school", columnList = "schoolId"),
+        @Index(name = "idx_session_student", columnList = "studentId")
+})
 public class Session {
 
     @Id
     private String id;
 
-    @Indexed
+    @PrePersist
+    void ensureId() {
+        if (id == null) {
+            id = java.util.UUID.randomUUID().toString();
+        }
+    }
+
     private String schoolId;      // Mandanten-Isolation (Pflichtfeld)
 
     private String studentId;     // User.id
     private String studentEmail;  // für Submission
     private String assignmentId;  // optional - wenn für Aufgabe
 
-    // Assignment-Infos (wenn vorhanden)
     private String assignmentTitle;
-    private Integer targetDurationMin;  // Soll-Dauer von der Aufgabe
+    private Integer targetDurationMin;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "session_messages", joinColumns = @JoinColumn(name = "session_id"))
+    @OrderColumn(name = "msg_order")
     @Builder.Default
     private List<SessionMessage> messages = new ArrayList<>();
 
-    private Integer score;        // spaeter fuer Auswertung
+    private Integer score;
 
-    private SessionStatus status; // OPEN oder CLOSED
+    @Enumerated(EnumType.STRING)
+    private SessionStatus status;
 
     private Instant startedAt;
     private Instant closedAt;
-    
-    // Wurde diese Session als Abgabe eingereicht?
+
     private boolean submittedAsAssignment;
 }

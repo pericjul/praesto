@@ -1,9 +1,7 @@
 package ch.zhaw.praesto.model;
 
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
@@ -12,15 +10,26 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "user_badges")
-@CompoundIndex(name = "student_badge_idx", def = "{'studentId': 1, 'badgeId': 1}", unique = true)
+@Entity
+@Table(name = "user_badges", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_student_badge", columnNames = {"studentId", "badgeId"})
+}, indexes = {
+        @Index(name = "idx_userbadge_student", columnList = "studentId")
+})
 public class UserBadge {
 
     @Id
     private String id;
 
+    @PrePersist
+    void ensureId() {
+        if (id == null) {
+            id = java.util.UUID.randomUUID().toString();
+        }
+    }
+
     private String studentId;   // User ID
     private String badgeId;     // Referenz zum Badge
-    
-    private Instant earnedAt;   // Wann verdient
+
+    private Instant earnedAt;
 }

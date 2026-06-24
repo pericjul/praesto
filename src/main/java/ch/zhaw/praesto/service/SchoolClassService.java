@@ -96,8 +96,9 @@ public class SchoolClassService {
         if (!userService.userHasRole("STUDENT")) {
             throw new ForbiddenException("Nur Schueler haben eine Klasse");
         }
-        return schoolClassRepository.findFirstBySchoolIdAndStudentIdsContaining(
+        return schoolClassRepository.findClassesOfStudentInSchool(
                         userService.getCurrentSchoolId(), userService.getCurrentUserId())
+                .stream().findFirst()
                 .orElseThrow(() -> new NotFoundException("Du bist keiner Klasse zugeordnet"));
     }
 
@@ -105,8 +106,9 @@ public class SchoolClassService {
      * ClassId des aktuellen Schülers holen (für Dashboard etc.).
      */
     public String getMyClassId() {
-        return schoolClassRepository.findFirstBySchoolIdAndStudentIdsContaining(
+        return schoolClassRepository.findClassesOfStudentInSchool(
                         userService.getCurrentSchoolId(), userService.getCurrentUserId())
+                .stream().findFirst()
                 .map(SchoolClass::getId)
                 .orElse(null);
     }

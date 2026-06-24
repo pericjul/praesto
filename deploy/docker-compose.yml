@@ -1,0 +1,28 @@
+# Praesto-Deployment auf einer Exoscale-VM (Docker).
+# Liegt auf dem Server unter /opt/praesto/ zusammen mit Caddyfile + .env.
+# Start/Update:  docker compose pull && docker compose up -d
+services:
+  app:
+    # Image wird von der GitHub-Action gebaut und nach ghcr.io gepusht.
+    image: ghcr.io/pericjul/praesto:latest
+    restart: unless-stopped
+    env_file: .env          # Geheimnisse/DB-Zugang – NUR auf dem Server, nie in git
+    expose:
+      - "80"               # nur intern; Caddy terminiert HTTPS davor
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data     # speichert die Let's-Encrypt-Zertifikate
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  caddy_data:
+  caddy_config:

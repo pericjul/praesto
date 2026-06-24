@@ -1,8 +1,7 @@
 package ch.zhaw.praesto.model;
 
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
@@ -11,16 +10,28 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "notes")
+@Entity
+@Table(name = "notes", indexes = {
+        @Index(name = "idx_note_student", columnList = "studentId")
+})
 public class Note {
 
     @Id
     private String id;
 
-    private String studentId;      // aus JWT
-    private String companyName;    // optional
-    private String position;       // optional
-    private String text;           // Notiztext
+    @PrePersist
+    void ensureId() {
+        if (id == null) {
+            id = java.util.UUID.randomUUID().toString();
+        }
+    }
+
+    private String studentId;
+    private String companyName;
+    private String position;
+
+    @Column(columnDefinition = "text")
+    private String text;
 
     private Instant createdAt;
     private Instant lastUpdated;

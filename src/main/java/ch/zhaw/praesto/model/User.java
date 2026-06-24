@@ -1,29 +1,37 @@
 package ch.zhaw.praesto.model;
 
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
 /**
- * Plattform-Benutzer. Ersetzt Auth0 vollständig: Authentifizierung läuft über
- * email + bcrypt-Passwort, Autorisierung über {@link UserRole}.
- * Jeder User (ausser SUPER_ADMIN) gehört über {@code schoolId} zu genau einer Schule.
+ * Plattform-Benutzer. Authentifizierung über email + bcrypt-Passwort,
+ * Autorisierung über {@link UserRole}. Jeder User (ausser SUPER_ADMIN) gehört
+ * über {@code schoolId} zu genau einer Schule.
  */
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "users")
+@Entity
+@Table(name = "users", indexes = {
+        @Index(name = "idx_user_school", columnList = "schoolId")
+})
 public class User {
 
     @Id
     private String id;
 
-    @Indexed(unique = true)
+    @PrePersist
+    void ensureId() {
+        if (id == null) {
+            id = java.util.UUID.randomUUID().toString();
+        }
+    }
+
+    @Column(unique = true, nullable = false)
     private String email;          // lowercase, trimmed
 
     private String passwordHash;   // bcrypt, strength >= 12
@@ -31,9 +39,9 @@ public class User {
     private String firstName;
     private String lastName;
 
+    @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    @Indexed
     private String schoolId;       // null nur für SUPER_ADMIN
 
     @Builder.Default
@@ -45,6 +53,7 @@ public class User {
     /**
      * Voller Anzeigename. Fällt auf den Email-Localpart zurück, wenn kein Name gesetzt ist.
      */
+    @Transient
     public String getFullName() {
         String first = firstName != null ? firstName.trim() : "";
         String last = lastName != null ? lastName.trim() : "";

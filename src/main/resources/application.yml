@@ -6,11 +6,19 @@ spring:
       # Default "local-dev" erlaubt App-Start ohne echten Key (Chat antwortet dann mit Fallback)
       api-key: ${OPEN_AI_KEY:local-dev}
 
-  data:
-    mongodb:
-      # Default = lokale MongoDB (Docker). In Prod via MONGODB_URI überschrieben.
-      uri: ${MONGODB_URI:mongodb://localhost:27017/Praesto}
-      database: Praesto
+  datasource:
+    # Default = lokale PostgreSQL. In Prod via DB_URL/DB_USERNAME/DB_PASSWORD überschrieben
+    # (z.B. Azure Database for PostgreSQL, Switzerland North).
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/praesto}
+    username: ${DB_USERNAME:praesto}
+    password: ${DB_PASSWORD:praesto}
+  jpa:
+    hibernate:
+      ddl-auto: ${DB_DDL:update}
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
 
   servlet:
     multipart:

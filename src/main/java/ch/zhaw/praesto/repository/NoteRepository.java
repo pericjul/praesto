@@ -1,11 +1,11 @@
 package ch.zhaw.praesto.repository;
 
 import ch.zhaw.praesto.model.Note;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface NoteRepository extends MongoRepository<Note, String> {
+public interface NoteRepository extends JpaRepository<Note, String> {
 
     List<Note> findByStudentId(String studentId);
 

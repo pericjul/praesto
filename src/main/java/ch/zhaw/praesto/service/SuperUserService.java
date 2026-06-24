@@ -7,6 +7,7 @@ import ch.zhaw.praesto.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -86,6 +87,7 @@ public class SuperUserService {
     /**
      * Löscht die Person und alle zugehörigen Daten endgültig.
      */
+    @Transactional
     public void deleteUserData(String userId) {
         requireSuper();
         User user = userRepository.findById(userId)

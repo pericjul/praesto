@@ -3,8 +3,9 @@ name: Build and deploy a container to an Azure Web App
 env:
   AZURE_WEBAPP_NAME: praesto
 
+# Azure-Deploy nur noch manuell – produktiv läuft Praesto auf Exoscale (Schweiz).
+# Siehe .github/workflows/deploy-exoscale.yml
 on:
-  push:
   workflow_dispatch:
 
 permissions:

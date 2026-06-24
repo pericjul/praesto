@@ -1,0 +1,7 @@
+# Automatisches HTTPS (Let's Encrypt) für Praesto.
+# Voraussetzung: DNS A-Record praesto.ch + www.praesto.ch -> öffentliche IP der VM,
+# Ports 80 und 443 offen. Caddy holt & erneuert die Zertifikate automatisch.
+praesto.ch, www.praesto.ch {
+    encode gzip
+    reverse_proxy app:80
+}

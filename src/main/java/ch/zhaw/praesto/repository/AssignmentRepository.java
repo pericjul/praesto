@@ -1,11 +1,11 @@
 package ch.zhaw.praesto.repository;
 
 import ch.zhaw.praesto.model.Assignment;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface AssignmentRepository extends MongoRepository<Assignment, String> {
+public interface AssignmentRepository extends JpaRepository<Assignment, String> {
 
     List<Assignment> findByClassId(String classId);
 

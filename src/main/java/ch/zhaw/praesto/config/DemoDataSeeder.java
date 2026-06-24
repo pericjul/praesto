@@ -10,6 +10,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -58,6 +59,7 @@ public class DemoDataSeeder implements CommandLineRunner {
      * neu aufsetzen, damit Besucher-Änderungen verschwinden.
      */
     @Scheduled(cron = "0 0 3 * * *", zone = "Europe/Zurich")
+    @Transactional
     public void nightlyReset() {
         log.info("Nächtliches Demo-Reset startet...");
         wipeDemoData();

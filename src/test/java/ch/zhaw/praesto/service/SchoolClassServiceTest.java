@@ -214,8 +214,8 @@ class SchoolClassServiceTest {
             when(userService.userHasRole("STUDENT")).thenReturn(true);
             when(userService.getCurrentSchoolId()).thenReturn(SCHOOL);
             when(userService.getCurrentUserId()).thenReturn("stud-1");
-            when(schoolClassRepository.findFirstBySchoolIdAndStudentIdsContaining(SCHOOL, "stud-1"))
-                    .thenReturn(Optional.of(testClass));
+            when(schoolClassRepository.findClassesOfStudentInSchool(SCHOOL, "stud-1"))
+                    .thenReturn(java.util.List.of(testClass));
             assertThat(schoolClassService.getMyClass()).isNotNull();
         }
 
@@ -231,8 +231,8 @@ class SchoolClassServiceTest {
             when(userService.userHasRole("STUDENT")).thenReturn(true);
             when(userService.getCurrentSchoolId()).thenReturn(SCHOOL);
             when(userService.getCurrentUserId()).thenReturn("stud-x");
-            when(schoolClassRepository.findFirstBySchoolIdAndStudentIdsContaining(SCHOOL, "stud-x"))
-                    .thenReturn(Optional.empty());
+            when(schoolClassRepository.findClassesOfStudentInSchool(SCHOOL, "stud-x"))
+                    .thenReturn(java.util.List.of());
             assertThatThrownBy(() -> schoolClassService.getMyClass())
                     .isInstanceOf(NotFoundException.class);
         }
@@ -241,8 +241,8 @@ class SchoolClassServiceTest {
         void getMyClassId_studentInClass_returnsId() {
             when(userService.getCurrentSchoolId()).thenReturn(SCHOOL);
             when(userService.getCurrentUserId()).thenReturn("stud-1");
-            when(schoolClassRepository.findFirstBySchoolIdAndStudentIdsContaining(SCHOOL, "stud-1"))
-                    .thenReturn(Optional.of(testClass));
+            when(schoolClassRepository.findClassesOfStudentInSchool(SCHOOL, "stud-1"))
+                    .thenReturn(java.util.List.of(testClass));
             assertThat(schoolClassService.getMyClassId()).isEqualTo(CLASS_ID);
         }
 
@@ -250,8 +250,8 @@ class SchoolClassServiceTest {
         void getMyClassId_notInClass_returnsNull() {
             when(userService.getCurrentSchoolId()).thenReturn(SCHOOL);
             when(userService.getCurrentUserId()).thenReturn("stud-x");
-            when(schoolClassRepository.findFirstBySchoolIdAndStudentIdsContaining(SCHOOL, "stud-x"))
-                    .thenReturn(Optional.empty());
+            when(schoolClassRepository.findClassesOfStudentInSchool(SCHOOL, "stud-x"))
+                    .thenReturn(java.util.List.of());
             assertThat(schoolClassService.getMyClassId()).isNull();
         }
     }

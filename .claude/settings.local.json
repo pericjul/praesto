@@ -55,7 +55,12 @@
       "Bash(echo \"BUILD: $?\")",
       "Bash(echo \"TEST-COMPILE EXIT: $?\")",
       "Bash(awk -F'[:,]' '{r+=$2; f+=$4; e+=$6; s+=$8} END {print \"TOTAL Tests run:\"r\" Failures:\"f\" Errors:\"e\" Skipped:\"s}')",
-      "Bash(git check-ignore *)"
+      "Bash(git check-ignore *)",
+      "Bash(git commit *)",
+      "Bash(echo \"COMMIT EXIT: $?\")",
+      "Bash(grep -iE \"Tests run: [0-9]+, Failures.*Errors.*Skipped: [0-9]+$\" /tmp/test_jpa2.log)",
+      "Bash(perl -0pi -e ' *)",
+      "Bash(grep -iE \"Tests run: [0-9]+, Failures.*Skipped: [0-9]+$\" /tmp/test_jpa3.log)"
     ]
   }
 }

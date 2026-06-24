@@ -35,6 +35,7 @@ build/
 ### Lokales Start-Script mit Geheimnissen ###
 start-backend.sh
 .env
+deploy/.env
 
 ### Hochgeladene Dateien (lokal/ephemer) ###
 uploads/*
