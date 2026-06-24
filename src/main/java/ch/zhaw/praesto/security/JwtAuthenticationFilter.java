@@ -55,6 +55,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (userOpt.isPresent() && userOpt.get().isActive()) {
                     User user = userOpt.get();
 
+                    // Zeitlich begrenzte Demo-Schule: Zugang nur am gebuchten Tag
+                    if (!user.isWithinDemoWindow(java.time.Instant.now())) {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                                "Demo-Zugang ist ausserhalb des gebuchten Zeitraums");
+                        return;
+                    }
+
                     // Read-only Demo-Account: schreibende Zugriffe blockieren
                     if (user.getRole() == UserRole.DEMO_USER && isMutating(request)) {
                         response.sendError(HttpServletResponse.SC_FORBIDDEN,

@@ -41,6 +41,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     private final ApplicationRepository applicationRepository;
     private final UserBadgeRepository userBadgeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ch.zhaw.praesto.service.SchoolDataCleaner schoolDataCleaner;
 
     @Value("${praesto.demo.school-name:Demo Schule Praesto}")
     private String demoSchoolName;
@@ -73,22 +74,7 @@ public class DemoDataSeeder implements CommandLineRunner {
      */
     private void wipeDemoData() {
         schoolRepository.findByName(demoSchoolName).ifPresent(school -> {
-            String schoolId = school.getId();
-            List<String> userIds = userRepository.findBySchoolId(schoolId).stream()
-                    .map(User::getId)
-                    .toList();
-            if (!userIds.isEmpty()) {
-                noteRepository.deleteByStudentIdIn(userIds);
-                applicationRepository.deleteByStudentIdIn(userIds);
-                userBadgeRepository.deleteByStudentIdIn(userIds);
-            }
-            submissionRepository.deleteBySchoolId(schoolId);
-            sessionRepository.deleteBySchoolId(schoolId);
-            assignmentRepository.deleteBySchoolId(schoolId);
-            schoolClassRepository.deleteBySchoolId(schoolId);
-            inviteTokenRepository.deleteBySchoolId(schoolId);
-            userRepository.deleteBySchoolId(schoolId);
-            schoolRepository.delete(school);
+            schoolDataCleaner.deleteSchoolAndData(school.getId());
             log.info("Demo-Schule '{}' geleert", demoSchoolName);
         });
     }

@@ -85,6 +85,29 @@ public class InviteService {
         return toCreatedDTO(token, null);
     }
 
+    /**
+     * Schulleiter-Invite mit exaktem Ablaufzeitpunkt (für zeitlich begrenzte Demo-Schulen).
+     */
+    public InviteCreatedDTO createSchoolAdminInvite(String schoolId, Instant expiresAt) {
+        requireRole(UserRole.SUPER_ADMIN);
+        schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new NotFoundException("Schule nicht gefunden"));
+        Instant now = Instant.now();
+        InviteToken token = InviteToken.builder()
+                .token(UUID.randomUUID().toString())
+                .schoolId(schoolId)
+                .type(InviteType.SCHOOL_ADMIN)
+                .createdByUserId(userService.getCurrentUserId())
+                .expiresAt(expiresAt)
+                .maxUses(null)
+                .usedCount(0)
+                .isActive(true)
+                .createdAt(now)
+                .build();
+        inviteTokenRepository.save(token);
+        return toCreatedDTO(token, null);
+    }
+
     // ============================================================
     // SCHOOL_ADMIN: Lehrer-Invites
     // ============================================================

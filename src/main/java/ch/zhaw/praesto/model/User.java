@@ -50,6 +50,26 @@ public class User {
     private Instant createdAt;
     private Instant lastLoginAt;
 
+    // ----- Zeitlich begrenzter Demo-Zugang (Stufe B) -----
+    // Wird beim Registrieren aus der Demo-Schule übernommen. null = unbegrenzt.
+    private Instant demoAccessFrom;
+    private Instant demoAccessUntil;
+
+    /**
+     * Ist der (ggf. zeitlich begrenzte) Zugang gerade aktiv? Normale User ohne
+     * Demo-Fenster sind immer aktiv.
+     */
+    @Transient
+    public boolean isWithinDemoWindow(Instant now) {
+        if (demoAccessFrom == null && demoAccessUntil == null) {
+            return true;
+        }
+        if (demoAccessFrom != null && now.isBefore(demoAccessFrom)) {
+            return false;
+        }
+        return demoAccessUntil == null || !now.isAfter(demoAccessUntil);
+    }
+
     /**
      * Voller Anzeigename. Fällt auf den Email-Localpart zurück, wenn kein Name gesetzt ist.
      */

@@ -5,6 +5,7 @@ import ch.zhaw.praesto.exception.ForbiddenException;
 import ch.zhaw.praesto.exception.NotFoundException;
 import ch.zhaw.praesto.model.*;
 import ch.zhaw.praesto.repository.SchoolClassRepository;
+import ch.zhaw.praesto.repository.SchoolRepository;
 import ch.zhaw.praesto.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final SchoolClassRepository schoolClassRepository;
+    private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
     private final InviteService inviteService;
 
@@ -61,6 +63,10 @@ public class AuthService {
 
         if (!user.isActive()) {
             throw new ForbiddenException("Dieser Account ist deaktiviert");
+        }
+
+        if (!user.isWithinDemoWindow(Instant.now())) {
+            throw new ForbiddenException("Dieser Demo-Zugang ist nur am gebuchten Tag aktiv.");
         }
 
         loginAttempts.remove(normalized);
@@ -116,6 +122,15 @@ public class AuthService {
                 .isActive(true)
                 .createdAt(now)
                 .build();
+
+        // Bei einer zeitlich begrenzten Demo-Schule das Zugangsfenster vererben,
+        // damit auch nachträglich angelegte Lehrer/Schüler nur am Demo-Tag rein können.
+        schoolRepository.findById(invite.getSchoolId())
+                .filter(School::isDemo)
+                .ifPresent(school -> {
+                    user.setDemoAccessFrom(school.getDemoAccessFrom());
+                    user.setDemoAccessUntil(school.getDemoAccessUntil());
+                });
 
         User saved = userRepository.save(user);
 

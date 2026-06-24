@@ -36,4 +36,12 @@ public class School {
     private boolean isActive = true;
 
     private Instant createdAt;
+
+    // ----- Zeitlich begrenzte Demo-Schule (Stufe B) -----
+    // isDemo=true => Zugang nur im Fenster [demoAccessFrom, demoAccessUntil] möglich.
+    @Builder.Default
+    private boolean isDemo = false;
+
+    private Instant demoAccessFrom;
+    private Instant demoAccessUntil;
 }

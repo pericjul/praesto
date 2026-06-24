@@ -52,6 +52,7 @@
     ];
     if (isSuperAdmin) return [
       { href: "/super/dashboard", label: $t("nav.schools") },
+      { href: "/super/demo-requests", label: $t("nav.demoRequests") },
       { href: "/super/inquiries", label: $t("nav.inquiries") },
       { href: "/super/users", label: $t("nav.userData") }
     ];

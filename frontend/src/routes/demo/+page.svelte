@@ -182,6 +182,48 @@
                 </section>
             {/each}
 
+            <!-- Demo mit Schreibzugriff buchen (Termin anfragen) -->
+            <section class="booking" id="booking">
+                <h2>📅 {$t('demoReq.title')}</h2>
+                <p class="booking-intro">{$t('demoReq.intro')}</p>
+
+                {#if form?.requested}
+                    <div class="ok">✅ {$t('demoReq.success')}</div>
+                {:else}
+                    {#if form?.requestError}
+                        <div class="err">{$t('demoReq.error')}</div>
+                    {/if}
+                    <form method="POST" action="?/request" use:enhance class="booking-form">
+                        <div class="row">
+                            <label>
+                                <span>{$t('demoReq.school')} *</span>
+                                <input type="text" name="schoolName" required />
+                            </label>
+                            <label>
+                                <span>{$t('demoReq.contact')}</span>
+                                <input type="text" name="contactName" />
+                            </label>
+                        </div>
+                        <div class="row">
+                            <label>
+                                <span>{$t('demoReq.email')} *</span>
+                                <input type="email" name="email" required />
+                            </label>
+                            <label>
+                                <span>{$t('demoReq.date')}</span>
+                                <input type="date" name="preferredDate" />
+                            </label>
+                        </div>
+                        <label>
+                            <span>{$t('demoReq.message')}</span>
+                            <textarea name="message" rows="3"></textarea>
+                        </label>
+                        <p class="booking-hint">🔒 {$t('demoReq.hint')}</p>
+                        <button type="submit" class="booking-btn">{$t('demoReq.submit')}</button>
+                    </form>
+                {/if}
+            </section>
+
             <!-- CTA: Rolle wählen und wirklich ausprobieren -->
             <section class="cta" id="cta">
                 <h2>{$t('guide.ctaTitle')}</h2>
@@ -190,15 +232,15 @@
                     <div class="alert">{form.error}</div>
                 {/if}
                 <div class="role-buttons">
-                    <form method="POST" use:enhance>
+                    <form method="POST" action="?/role" use:enhance>
                         <input type="hidden" name="as" value="student" />
                         <button type="submit" class="cta-btn">{$t('demo.tryStudent')}</button>
                     </form>
-                    <form method="POST" use:enhance>
+                    <form method="POST" action="?/role" use:enhance>
                         <input type="hidden" name="as" value="teacher" />
                         <button type="submit" class="cta-btn">{$t('demo.tryTeacher')}</button>
                     </form>
-                    <form method="POST" use:enhance>
+                    <form method="POST" action="?/role" use:enhance>
                         <input type="hidden" name="as" value="admin" />
                         <button type="submit" class="cta-btn">{$t('demo.tryAdmin')}</button>
                     </form>
@@ -451,8 +493,56 @@
         opacity: 0.9;
     }
 
+    /* Booking-Formular */
+    .booking {
+        background: var(--color-bg-card, #fff);
+        border: 1px solid var(--color-border, #e6d9cc);
+        border-radius: 1rem;
+        padding: 1.5rem 1.75rem;
+        margin-bottom: 1.25rem;
+        scroll-margin-top: calc(var(--header-height, 54px) + 1rem);
+    }
+
+    .booking h2 { margin: 0 0 0.5rem; color: var(--color-primary, #2F124D); font-size: 1.3rem; }
+    .booking-intro { margin: 0 0 1rem; color: var(--color-text-muted, #5E4C6F); line-height: 1.6; }
+
+    .booking-form { display: grid; gap: 0.85rem; }
+    .booking-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+    .booking-form label { display: grid; gap: 0.3rem; }
+    .booking-form label span { font-size: 0.85rem; color: var(--color-text-secondary, #2d2141); font-weight: 600; }
+    .booking-form input,
+    .booking-form textarea {
+        border: 1px solid var(--color-border, #e6d9cc);
+        border-radius: 0.6rem;
+        padding: 0.6rem 0.75rem;
+        font: inherit;
+        background: #fff;
+        color: #2d2141;
+    }
+    .booking-form input:focus,
+    .booking-form textarea:focus { outline: 2px solid var(--color-primary, #2F124D); outline-offset: 1px; }
+
+    .booking-hint { font-size: 0.85rem; color: var(--color-text-muted, #5E4C6F); margin: 0; }
+
+    .booking-btn {
+        justify-self: start;
+        background: var(--color-primary, #2F124D);
+        color: #fff;
+        border: none;
+        border-radius: 999px;
+        padding: 0.7rem 1.8rem;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .booking-btn:hover { background: #41205f; }
+
+    .ok { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; border-radius: 0.6rem; padding: 0.85rem 1rem; line-height: 1.5; }
+    .err { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 0.6rem; padding: 0.7rem 1rem; margin-bottom: 0.75rem; }
+
     @media (max-width: 820px) {
         .hb-layout { grid-template-columns: 1fr; }
         .toc { position: static; }
+        .booking-form .row { grid-template-columns: 1fr; }
     }
 </style>
