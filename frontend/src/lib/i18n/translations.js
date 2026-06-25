@@ -21,6 +21,8 @@ import { demoBooking } from "./messages/demoBooking.js";
 import { teacherInsights } from "./messages/teacherInsights.js";
 import { studentFacts } from "./messages/studentFacts.js";
 import { challenge } from "./messages/challenge.js";
+import { dossier } from "./messages/dossier.js";
+import { generators } from "./messages/generators.js";
 
 export const LANGUAGES = [
 	{ code: "de", label: "Deutsch", flag: "🇩🇪" },
@@ -748,5 +750,7 @@ export const translations = deepMerge([
 	demoBooking,
 	teacherInsights,
 	studentFacts,
-	challenge
+	challenge,
+	dossier,
+	generators
 ]);

@@ -39,6 +39,7 @@
       { href: "/student/sessions", label: $t("nav.training") },
       { href: "/student/notes", label: $t("nav.notes") },
       { href: "/student/applications", label: $t("nav.applications") },
+      { href: "/student/dossier", label: "📁 " + $t("nav.dossier") },
       { href: "/student/badges", label: "🏅 " + $t("nav.badges") }
     ];
     if (isTeacher) return [

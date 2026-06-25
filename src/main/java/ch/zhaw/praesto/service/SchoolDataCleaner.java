@@ -26,6 +26,7 @@ public class SchoolDataCleaner {
     private final NoteRepository noteRepository;
     private final ApplicationRepository applicationRepository;
     private final UserBadgeRepository userBadgeRepository;
+    private final DocumentRepository documentRepository;
     private final SchoolRepository schoolRepository;
 
     @Transactional
@@ -37,6 +38,7 @@ public class SchoolDataCleaner {
             noteRepository.deleteByStudentIdIn(userIds);
             applicationRepository.deleteByStudentIdIn(userIds);
             userBadgeRepository.deleteByStudentIdIn(userIds);
+            documentRepository.deleteByStudentIdIn(userIds);
         }
         submissionRepository.deleteBySchoolId(schoolId);
         sessionRepository.deleteBySchoolId(schoolId);
