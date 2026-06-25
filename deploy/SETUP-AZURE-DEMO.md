@@ -25,7 +25,9 @@ Azure-Portal → dein Web App `praesto` → **Settings → Environment variables
 | `JWT_SECRET` | *(frischer Zufallswert, siehe unten – NICHT der aus dem Repo)* |
 | `SUPER_ADMIN_EMAIL` | `admin@praesto.ch` |
 | `SUPER_ADMIN_PASSWORD` | *(ein Passwort deiner Wahl, nur für die Demo)* |
-| `OPEN_AI_KEY` | `local-dev` *(optional: echter Key, dann antwortet der KI-Coach in der Demo wirklich)* |
+| `AZURE_OPENAI_KEY` | *(optional: Key deiner Azure-OpenAI-Ressource, dann antwortet der KI-Coach wirklich)* |
+| `AZURE_OPENAI_ENDPOINT` | `https://<dein-openai>.openai.azure.com/` |
+| `AZURE_OPENAI_DEPLOYMENT` | `gpt-4o-mini` |
 | `NODE_ENV` | `production` |
 | `WEBSITES_PORT` | `80` |
 

@@ -69,7 +69,9 @@ Web App → **Settings → Environment variables** → diese anlegen:
 | `JWT_SECRET` | *(frischer Zufallswert: `openssl rand -base64 32`)* |
 | `SUPER_ADMIN_EMAIL` | `admin@praesto.ch` |
 | `SUPER_ADMIN_PASSWORD` | *(Passwort deiner Wahl)* |
-| `OPEN_AI_KEY` | `local-dev` *(optional echter Key für den KI-Coach)* |
+| `AZURE_OPENAI_KEY` | *(Key deiner Azure-OpenAI-Ressource – leer = KI nutzt Fallbacks)* |
+| `AZURE_OPENAI_ENDPOINT` | `https://<dein-openai>.openai.azure.com/` |
+| `AZURE_OPENAI_DEPLOYMENT` | `gpt-4o-mini` *(Name deines Modell-Deployments)* |
 | `NODE_ENV` | `production` |
 | `WEBSITES_PORT` | `80` |
 

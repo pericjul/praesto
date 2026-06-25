@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.Answers;
-import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,9 +42,9 @@ public class SchoolClassControllerTest {
     @Autowired
     private UserRepository userRepository;
 
-    // Mock OpenAiChatModel wie in Übung 11 beschrieben
+    // Mock ChatModel wie in Übung 11 beschrieben
     @MockitoBean(answers = Answers.RETURNS_DEEP_STUBS)
-    private OpenAiChatModel chatModel;
+    private ChatModel chatModel;
 
     /**
      * Stellt sicher, dass der Test-Schüler (Principal von TestSecurityConfig.student())

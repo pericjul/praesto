@@ -3,7 +3,7 @@ package ch.zhaw.praesto.controller;
 import ch.zhaw.praesto.security.TestSecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
-import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,7 +24,7 @@ public class HealthControllerTest {
     private MockMvc mvc;
 
     @MockitoBean(answers = Answers.RETURNS_DEEP_STUBS)
-    private OpenAiChatModel chatModel;
+    private ChatModel chatModel;
 
     @Test
     public void testHealth() throws Exception {

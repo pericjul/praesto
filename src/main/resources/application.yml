@@ -2,9 +2,16 @@ spring:
   application:
     name: praesto
   ai:
-    openai:
-      # Default "local-dev" erlaubt App-Start ohne echten Key (Chat antwortet dann mit Fallback)
-      api-key: ${OPEN_AI_KEY:local-dev}
+    # Azure OpenAI (Switzerland North) – Daten bleiben in der Schweiz.
+    # Defaults erlauben App-Start ohne echte Werte (KI-Aufrufe fallen dann auf Fallbacks zurück).
+    azure:
+      openai:
+        api-key: ${AZURE_OPENAI_KEY:dummy-key}
+        endpoint: ${AZURE_OPENAI_ENDPOINT:https://example.openai.azure.com/}
+        chat:
+          options:
+            deployment-name: ${AZURE_OPENAI_DEPLOYMENT:gpt-4o-mini}
+            temperature: 0.7
 
   datasource:
     # Default = lokale PostgreSQL. In Prod via DB_URL/DB_USERNAME/DB_PASSWORD überschrieben

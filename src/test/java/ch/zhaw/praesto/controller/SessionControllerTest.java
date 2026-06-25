@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.Answers;
-import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,9 +34,9 @@ public class SessionControllerTest {
     @Autowired
     private SessionRepository sessionRepository;
 
-    // Mock OpenAiChatModel wie in Übung 11 beschrieben
+    // Mock ChatModel wie in Übung 11 beschrieben
     @MockitoBean(answers = Answers.RETURNS_DEEP_STUBS)
-    private OpenAiChatModel chatModel;
+    private ChatModel chatModel;
 
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static String session_id = "";
