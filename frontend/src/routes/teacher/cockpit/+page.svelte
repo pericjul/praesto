@@ -1,11 +1,21 @@
 <script>
     import { t } from "$lib/i18n";
+    import { enhance } from "$app/forms";
+    import { invalidateAll } from "$app/navigation";
 
     let { data } = $props();
 
     let classes = $derived(data.classes ?? []);
     let cockpit = $derived(data.cockpit);
+    let challenge = $derived(data.challenge);
     let selectedId = $derived(data.selectedId);
+
+    function refresh() {
+        return async ({ result, update }) => {
+            if (result.type === "success") await invalidateAll();
+            await update({ reset: false });
+        };
+    }
 
     function reasonText(code) {
         return {
@@ -53,6 +63,35 @@
                 <div class="sum-card"><span class="sv">{cockpit.avgClassScore != null ? cockpit.avgClassScore + '%' : '–'}</span><span class="sl">{$t('cockpit.sumAvg')}</span></div>
                 <div class="sum-card attention"><span class="sv">{cockpit.needAttentionCount}</span><span class="sl">{$t('cockpit.sumAttention')}</span></div>
             </div>
+
+            <!-- Klassen-Challenge -->
+            <section class="challenge-panel">
+                {#if challenge}
+                    <div class="ch-head">
+                        <h2>🚀 {challenge.title || $t('challenge.defaultTitle')}</h2>
+                        <form method="POST" action="?/endChallenge" use:enhance={refresh}>
+                            <input type="hidden" name="classId" value={selectedId} />
+                            <button type="submit" class="ch-end">{$t('challenge.end')}</button>
+                        </form>
+                    </div>
+                    <div class="ch-bar"><div class="ch-fill" style="width:{challenge.percent}%"></div></div>
+                    <p class="ch-progress">
+                        <strong>{challenge.current} / {challenge.target}</strong> {$t('challenge.interviews')}
+                        {#if challenge.percent >= 100}<span class="ch-done">{$t('challenge.done')}</span>{/if}
+                    </p>
+                {:else}
+                    <div class="ch-start">
+                        <div>
+                            <h2>🚀 {$t('challenge.title')}</h2>
+                            <p>{$t('challenge.startHint')}</p>
+                        </div>
+                        <form method="POST" action="?/startChallenge" use:enhance={refresh}>
+                            <input type="hidden" name="classId" value={selectedId} />
+                            <button type="submit" class="ch-start-btn">{$t('challenge.start')}</button>
+                        </form>
+                    </div>
+                {/if}
+            </section>
 
             <!-- Gesprächsleitfaden -->
             <section class="guidance">
@@ -144,4 +183,19 @@
 
     .flag { color: #b45309; font-size: 0.82rem; }
     .ok { color: #16a34a; font-size: 0.85rem; }
+
+    /* Klassen-Challenge */
+    .challenge-panel { background: #fff; border: 1px solid #e8e0f0; border-radius: 1rem; padding: 1.1rem 1.25rem; margin-bottom: 1.25rem; }
+    .ch-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .ch-head h2 { margin: 0; font-size: 1.1rem; color: #2F124D; }
+    .ch-end { background: #faf8fc; border: 1px solid #e8e0f0; border-radius: 0.5rem; padding: 0.4rem 0.85rem; cursor: pointer; font-size: 0.82rem; color: #2d2141; }
+    .ch-bar { height: 14px; background: #eee; border-radius: 999px; overflow: hidden; margin: 0.75rem 0 0.5rem; }
+    .ch-fill { height: 100%; background: linear-gradient(90deg, #2F124D, #c97d3c); border-radius: 999px; transition: width 0.3s; }
+    .ch-progress { margin: 0; color: #374151; }
+    .ch-done { color: #16a34a; font-weight: 700; margin-left: 0.5rem; }
+    .ch-start { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .ch-start h2 { margin: 0 0 0.2rem; font-size: 1.1rem; color: #2F124D; }
+    .ch-start p { margin: 0; color: #6b647a; font-size: 0.9rem; }
+    .ch-start-btn { background: #2F124D; color: #fff; border: none; border-radius: 999px; padding: 0.7rem 1.5rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .ch-start-btn:hover { background: #41205f; }
 </style>

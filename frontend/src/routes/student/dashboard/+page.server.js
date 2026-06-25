@@ -26,8 +26,20 @@ export async function load({ locals, fetch }) {
 
     const dashboard = await res.json();
 
+    // Aktive Klassen-Challenge (optional)
+    let challenge = null;
+    try {
+      const chRes = await fetch(`${API_BASE}/student/challenge`, { headers });
+      if (chRes.ok) {
+        challenge = await chRes.json().catch(() => null);
+      }
+    } catch {
+      challenge = null;
+    }
+
     return {
       dashboard,
+      challenge,
       user: locals.user
     };
 

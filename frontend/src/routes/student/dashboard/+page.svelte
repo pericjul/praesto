@@ -16,6 +16,7 @@
     let openSessionId = $derived(dashboard.openSessionId ?? null);
     let upcomingEvents = $derived(dashboard.upcomingEvents ?? []);
     let classFacts = $derived(dashboard.classFacts ?? null);
+    let challenge = $derived(data.challenge ?? null);
 
     let factOfDay = $derived(buildFactOfDay(classFacts));
 
@@ -88,6 +89,17 @@
         <section class="fact-card">
             <span class="fact-badge">💡 {$t('fact.title')}</span>
             <p class="fact-text">{factOfDay}</p>
+        </section>
+    {/if}
+
+    {#if challenge}
+        <section class="challenge-card">
+            <div class="cc-head">
+                <span class="cc-title">🚀 {challenge.title || $t('challenge.studentTitle')}</span>
+                <span class="cc-count">{challenge.current} / {challenge.target}</span>
+            </div>
+            <div class="cc-bar"><div class="cc-fill" style="width:{challenge.percent}%"></div></div>
+            <p class="cc-sub">{challenge.percent >= 100 ? $t('challenge.done') : $t('challenge.studentHint')}</p>
         </section>
     {/if}
 
@@ -307,6 +319,21 @@
         white-space: nowrap;
     }
     .fact-text { margin: 0; font-size: 1.05rem; font-weight: 600; line-height: 1.4; }
+
+    /* ===== Klassen-Challenge ===== */
+    .challenge-card {
+        background: var(--color-bg-card, #fff);
+        border: 1px solid var(--color-border, #e6d9cc);
+        border-radius: 1rem;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+    .cc-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+    .cc-title { font-weight: 700; color: var(--color-primary, #2F124D); }
+    .cc-count { font-weight: 800; color: var(--color-primary, #2F124D); }
+    .cc-bar { height: 14px; background: #eee; border-radius: 999px; overflow: hidden; margin: 0.6rem 0 0.4rem; }
+    .cc-fill { height: 100%; background: linear-gradient(90deg, #2F124D, #c97d3c); border-radius: 999px; transition: width 0.3s; }
+    .cc-sub { margin: 0; font-size: 0.88rem; color: var(--color-text-muted, #5E4C6F); }
 
     /* ===== ORIGINAL HERO ===== */
     .hero {

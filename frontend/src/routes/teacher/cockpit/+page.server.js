@@ -16,12 +16,40 @@ export async function load({ locals, fetch, url }) {
 	const selectedId = url.searchParams.get("class") || (classes[0]?.id ?? null);
 
 	let cockpit = null;
+	let challenge = null;
 	if (selectedId) {
 		const res = await fetch(`${API_BASE}/classes/${selectedId}/cockpit`, { headers });
 		if (res.ok) {
 			cockpit = await res.json();
 		}
+		const chRes = await fetch(`${API_BASE}/classes/${selectedId}/challenge`, { headers });
+		if (chRes.ok) {
+			challenge = await chRes.json().catch(() => null);
+		}
 	}
 
-	return { classes, cockpit, selectedId };
+	return { classes, cockpit, challenge, selectedId };
 }
+
+export const actions = {
+	startChallenge: async ({ request, locals, fetch }) => {
+		const data = await request.formData();
+		const classId = data.get("classId");
+		const res = await fetch(`${API_BASE}/classes/${classId}/challenge`, {
+			method: "POST",
+			headers: apiHeaders(locals.jwt_token),
+			body: JSON.stringify({})
+		});
+		return { success: res.ok };
+	},
+
+	endChallenge: async ({ request, locals, fetch }) => {
+		const data = await request.formData();
+		const classId = data.get("classId");
+		const res = await fetch(`${API_BASE}/classes/${classId}/challenge`, {
+			method: "DELETE",
+			headers: apiHeaders(locals.jwt_token)
+		});
+		return { success: res.ok };
+	}
+};
