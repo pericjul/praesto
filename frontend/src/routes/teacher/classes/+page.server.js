@@ -1,14 +1,14 @@
 import { redirect } from "@sveltejs/kit";
 
-const API_BASE = "http://localhost:8080/api";
+import { API_BASE } from "$lib/server/api.js";
 
 export async function load({ locals, fetch }) {
     if (!locals.isAuthenticated) {
         throw redirect(302, "/login");
     }
 
-    const roles = locals.user?.user_roles ?? [];
-    if (!roles.includes("TEACHER")) {
+    const role = locals.user?.role;
+    if (role !== "TEACHER") {
         throw redirect(302, "/");
     }
 
@@ -27,7 +27,27 @@ export async function load({ locals, fetch }) {
         }
 
         const classes = await res.json();
-        return { classes };
+
+        // studentIds → Schüler-Details auflösen (für Namens-Anzeige)
+        const ids = [...new Set(classes.flatMap((c) => c.studentIds ?? []))];
+        const idToUser = {};
+        await Promise.all(
+            ids.map(async (id) => {
+                const r = await fetch(`${API_BASE}/users/${id}`, { headers });
+                if (r.ok) {
+                    idToUser[id] = await r.json();
+                }
+            })
+        );
+
+        const enriched = classes.map((c) => ({
+            ...c,
+            students: (c.studentIds ?? []).map(
+                (id) => idToUser[id] ?? { id, firstName: "?", lastName: "", email: id }
+            )
+        }));
+
+        return { classes: enriched };
     } catch (err) {
         console.error("Netzwerkfehler", err);
         return { classes: [], error: "Verbindungsfehler" };
@@ -135,7 +155,7 @@ export const actions = {
         return { success: true, action: "deleted" };
     },
 
-    // Schüler hinzufügen (per Email)
+    // Schüler hinzufügen (per User-Id, via Suchfeld ausgewählt)
     addStudent: async ({ locals, fetch, request }) => {
         if (!locals.isAuthenticated) {
             throw redirect(302, "/login");
@@ -149,16 +169,16 @@ export const actions = {
 
         const formData = await request.formData();
         const classId = formData.get("classId")?.toString();
-        const email = formData.get("email")?.toString().trim();
+        const userId = formData.get("userId")?.toString().trim();
 
-        if (!email) {
-            return { error: "Bitte gib eine Schüler-Email ein" };
+        if (!userId) {
+            return { error: "Bitte wähle einen Schüler aus" };
         }
 
         const res = await fetch(`${API_BASE}/classes/${classId}/students`, {
             method: "POST",
             headers,
-            body: JSON.stringify({ email })
+            body: JSON.stringify({ userId })
         });
 
         if (!res.ok) {
@@ -166,8 +186,8 @@ export const actions = {
             if (text.includes("bereits in der Klasse")) {
                 return { error: "Dieser Schüler ist bereits in der Klasse" };
             }
-            if (text.includes("Ungueltige Email")) {
-                return { error: "Ungültige Email-Adresse" };
+            if (text.includes("gehört nicht zu deiner Schule")) {
+                return { error: "Dieser Schüler gehört nicht zu deiner Schule" };
             }
             return { error: "Schüler konnte nicht hinzugefügt werden" };
         }
@@ -175,7 +195,7 @@ export const actions = {
         return { success: true, action: "studentAdded" };
     },
 
-    // Schüler entfernen
+    // Schüler entfernen (per User-Id)
     removeStudent: async ({ locals, fetch, request }) => {
         if (!locals.isAuthenticated) {
             throw redirect(302, "/login");
@@ -189,9 +209,9 @@ export const actions = {
 
         const formData = await request.formData();
         const classId = formData.get("classId")?.toString();
-        const email = formData.get("email")?.toString();
+        const userId = formData.get("userId")?.toString();
 
-        const res = await fetch(`${API_BASE}/classes/${classId}/students/${encodeURIComponent(email)}`, {
+        const res = await fetch(`${API_BASE}/classes/${classId}/students/${encodeURIComponent(userId)}`, {
             method: "DELETE",
             headers
         });

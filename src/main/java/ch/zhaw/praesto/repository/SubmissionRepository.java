@@ -2,17 +2,22 @@ package ch.zhaw.praesto.repository;
 
 import ch.zhaw.praesto.model.Submission;
 import ch.zhaw.praesto.model.SubmissionStatus;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface SubmissionRepository extends MongoRepository<Submission, String> {
+public interface SubmissionRepository extends JpaRepository<Submission, String> {
 
     /**
      * Alle Abgaben eines Schülers
      */
     List<Submission> findByStudentEmail(String studentEmail);
+
+    /**
+     * Abgabe, zu der eine hochgeladene Datei gehört (für die Download-Autorisierung).
+     */
+    Optional<Submission> findFirstByFileUrl(String fileUrl);
 
     /**
      * Alle Abgaben für eine Aufgabe
@@ -44,4 +49,18 @@ public interface SubmissionRepository extends MongoRepository<Submission, String
     long countByStudentEmailAndTeacherFeedbackIsNotNull(String studentEmail);
 
     long countByStudentEmailAndGradeIsNotNull(String studentEmail);
+
+    // ===== Mandanten-sichere (schoolId-gefilterte) Varianten =====
+
+    Optional<Submission> findByIdAndSchoolId(String id, String schoolId);
+
+    long countBySchoolId(String schoolId);
+
+    // ===== Personenbezogen (DSG-Export/Löschung) =====
+
+    List<Submission> findByStudentId(String studentId);
+
+    void deleteByStudentId(String studentId);
+
+    void deleteBySchoolId(String schoolId);
 }

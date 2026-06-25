@@ -2,17 +2,59 @@ spring:
   application:
     name: praesto
   ai:
-    openai:
-      api-key: ${OPEN_AI_KEY}
+    # Azure OpenAI (Switzerland North) – Daten bleiben in der Schweiz.
+    # Defaults erlauben App-Start ohne echte Werte (KI-Aufrufe fallen dann auf Fallbacks zurück).
+    azure:
+      openai:
+        api-key: ${AZURE_OPENAI_KEY:dummy-key}
+        endpoint: ${AZURE_OPENAI_ENDPOINT:https://example.openai.azure.com/}
+        chat:
+          options:
+            deployment-name: ${AZURE_OPENAI_DEPLOYMENT:gpt-4o-mini}
+            temperature: 0.7
 
-  data:
-    mongodb:
-      uri: ${MONGODB_URI}
-      database: Praesto
+  datasource:
+    # Default = lokale PostgreSQL. In Prod via DB_URL/DB_USERNAME/DB_PASSWORD überschrieben
+    # (z.B. Azure Database for PostgreSQL, Switzerland North).
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/praesto}
+    username: ${DB_USERNAME:praesto}
+    password: ${DB_PASSWORD:praesto}
+  jpa:
+    hibernate:
+      ddl-auto: ${DB_DDL:update}
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://${AUTH0_DOMAIN}/
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
 
+  # E-Mail (optional): nur aktiv wenn MAIL_HOST gesetzt ist. Sonst werden
+  # Kontaktanfragen nur in der DB gespeichert (Super-Admin → "Anfragen").
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+praesto:
+  jwt:
+    secret: ${JWT_SECRET}          # min 256-bit (32 Bytes), in Azure App Settings
+    expiration-hours: 24
+  super-admin:
+    email: ${SUPER_ADMIN_EMAIL}
+    password: ${SUPER_ADMIN_PASSWORD}
+  demo:
+    school-name: "Demo Schule Praesto"
+  contact:
+    recipient: ${CONTACT_RECIPIENT_EMAIL:}
+    from: ${MAIL_FROM:}

@@ -1,6 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 
-const API_BASE = "http://localhost:8080/api";
+import { API_BASE } from "$lib/server/api.js";
 
 export async function load({ locals, fetch }) {
 
@@ -8,9 +8,9 @@ export async function load({ locals, fetch }) {
     throw redirect(302, "/login");
   }
 
-  const roles = locals.user?.user_roles ?? [];
+  const role = locals.user?.role;
 
-  if (!roles.includes("STUDENT")) {
+  if (role !== "STUDENT") {
     throw redirect(302, "/");
   }
 
@@ -26,8 +26,32 @@ export async function load({ locals, fetch }) {
 
     const dashboard = await res.json();
 
+    // Aktive Klassen-Challenge (optional)
+    let challenge = null;
+    try {
+      const chRes = await fetch(`${API_BASE}/student/challenge`, { headers });
+      if (chRes.ok) {
+        challenge = await chRes.json().catch(() => null);
+      }
+    } catch {
+      challenge = null;
+    }
+
+    // Kalender-Termine (optional)
+    let calendar = [];
+    try {
+      const calRes = await fetch(`${API_BASE}/student/calendar`, { headers });
+      if (calRes.ok) {
+        calendar = await calRes.json().catch(() => []);
+      }
+    } catch {
+      calendar = [];
+    }
+
     return {
       dashboard,
+      challenge,
+      calendar,
       user: locals.user
     };
 

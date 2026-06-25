@@ -3,7 +3,7 @@ package ch.zhaw.praesto.controller;
 import ch.zhaw.praesto.security.TestSecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
-import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,21 +19,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
 public class StudentDashboardControllerTest {
 
     @Autowired
     private MockMvc mvc;
 
-    // Mock OpenAiChatModel wie in Übung 11 beschrieben
+    // Mock ChatModel wie in Übung 11 beschrieben
     @MockitoBean(answers = Answers.RETURNS_DEEP_STUBS)
-    private OpenAiChatModel chatModel;
+    private ChatModel chatModel;
 
     @Test
     public void testGetDashboard_AsStudent() throws Exception {
         mvc.perform(get("/api/student/dashboard")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -42,7 +41,7 @@ public class StudentDashboardControllerTest {
     public void testGetDashboard_AsTeacher_Forbidden() throws Exception {
         mvc.perform(get("/api/student/dashboard")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -52,6 +51,6 @@ public class StudentDashboardControllerTest {
         mvc.perform(get("/api/student/dashboard")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 }

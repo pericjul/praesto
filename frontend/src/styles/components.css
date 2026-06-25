@@ -236,6 +236,8 @@
   border-radius: 1.25rem;
   width: 90%;
   max-width: 500px;
+  /* Höhe = Inhalt, aber nie höher als 90vh (dann scrollt der Body) */
+  height: auto;
   max-height: 90vh;
   overflow: hidden;
   z-index: 999;
@@ -263,7 +265,8 @@
 .modal-body {
   padding: 1.5rem;
   overflow-y: auto;
-  flex: 1;
+  /* 0 1 auto = Inhalts-Höhe, kein erzwungenes Wachsen (verhindert riesige leere Modals) */
+  flex: 0 1 auto;
 }
 
 .modal-footer {

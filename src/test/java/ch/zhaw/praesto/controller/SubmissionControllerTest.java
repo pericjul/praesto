@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.mockito.Answers;
-import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,7 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
 @TestMethodOrder(OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SubmissionControllerTest {
@@ -46,7 +45,7 @@ public class SubmissionControllerTest {
     private SchoolClassRepository schoolClassRepository;
 
     @MockitoBean(answers = Answers.RETURNS_DEEP_STUBS)
-    private OpenAiChatModel chatModel;
+    private ChatModel chatModel;
 
     private static ObjectMapper objectMapper = new ObjectMapper();
     private String classId = "";
@@ -55,32 +54,25 @@ public class SubmissionControllerTest {
 
     @BeforeAll
     public void setUp() {
-        // Test-Klasse mit Student erstellen
-        SchoolClass testClass = schoolClassRepository.findByName("SubmissionTestClass")
-                .orElseGet(() -> {
-                    SchoolClass c = SchoolClass.builder()
-                            .name("SubmissionTestClass")
-                            .teacherId("test-user-id")
-                            .studentEmails(new ArrayList<>())
-                            .build();
-                    c.getStudentEmails().add("test@test.ch"); // Student hinzufügen
-                    return schoolClassRepository.save(c);
-                });
+        // Test-Klasse mit Test-Student (per User-Id) in der Schule des Test-Lehrers
+        SchoolClass c = SchoolClass.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
+                .name("SubmissionTestClass")
+                .teacherId(TestSecurityConfig.TEACHER_ID)
+                .studentIds(new ArrayList<>())
+                .build();
+        c.addStudent(TestSecurityConfig.STUDENT_ID);
+        SchoolClass testClass = schoolClassRepository.save(c);
         classId = testClass.getId();
-
-        // Sicherstellen dass Student in Klasse ist
-        if (!testClass.getStudentEmails().contains("test@test.ch")) {
-            testClass.getStudentEmails().add("test@test.ch");
-            schoolClassRepository.save(testClass);
-        }
 
         // Test-Assignment erstellen
         Assignment assignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Submission Test Assignment")
                 .description("Test")
                 .type(AssignmentType.SELF_REFLECTION)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         assignment = assignmentRepository.save(assignment);
@@ -112,7 +104,7 @@ public class SubmissionControllerTest {
         var result = mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.assignmentId").value(assignmentId))
@@ -137,7 +129,7 @@ public class SubmissionControllerTest {
         mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
@@ -147,7 +139,7 @@ public class SubmissionControllerTest {
     public void testGetMySubmissions() throws Exception {
         mvc.perform(get("/api/submissions/my")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -157,7 +149,7 @@ public class SubmissionControllerTest {
     public void testGetSubmission() throws Exception {
         mvc.perform(get("/api/submissions/" + submissionId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(submissionId));
@@ -168,7 +160,7 @@ public class SubmissionControllerTest {
     public void testCheckSubmission_HasSubmitted() throws Exception {
         mvc.perform(get("/api/submissions/check/" + assignmentId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.hasSubmitted").value(true));
@@ -179,7 +171,7 @@ public class SubmissionControllerTest {
     public void testGetSubmissionsForAssignment_AsTeacher() throws Exception {
         mvc.perform(get("/api/submissions/assignment/" + assignmentId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -189,7 +181,7 @@ public class SubmissionControllerTest {
     public void testGetSubmission_AsTeacher() throws Exception {
         mvc.perform(get("/api/submissions/" + submissionId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -207,7 +199,7 @@ public class SubmissionControllerTest {
         mvc.perform(put("/api/submissions/" + submissionId + "/feedback")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.teacherFeedback").value("Gute Reflexion!"))
@@ -220,7 +212,7 @@ public class SubmissionControllerTest {
         mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}")
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -229,7 +221,7 @@ public class SubmissionControllerTest {
     public void testGetMySubmissions_AsTeacher_Forbidden() throws Exception {
         mvc.perform(get("/api/submissions/my")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -238,7 +230,7 @@ public class SubmissionControllerTest {
     public void testGetSubmissionsForAssignment_AsStudent_Forbidden() throws Exception {
         mvc.perform(get("/api/submissions/assignment/" + assignmentId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -248,7 +240,7 @@ public class SubmissionControllerTest {
         mvc.perform(put("/api/submissions/" + submissionId + "/feedback")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"feedback\": \"test\"}")
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -257,7 +249,7 @@ public class SubmissionControllerTest {
     public void testCheckSubmission_AsTeacher_Forbidden() throws Exception {
         mvc.perform(get("/api/submissions/check/" + assignmentId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -275,10 +267,11 @@ public class SubmissionControllerTest {
     public void testCreateSubmission_TextTooShort() throws Exception {
         // Erstelle neues Assignment für diesen Test
         Assignment shortTextAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Short Text Test")
                 .type(AssignmentType.SELF_REFLECTION)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         shortTextAssignment = assignmentRepository.save(shortTextAssignment);
@@ -293,7 +286,7 @@ public class SubmissionControllerTest {
         mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
@@ -305,10 +298,11 @@ public class SubmissionControllerTest {
     public void testCreateSubmission_DocumentUpload_MissingUrl() throws Exception {
         // Erstelle Assignment für Dokument-Upload
         Assignment docAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Doc Upload Test")
                 .type(AssignmentType.DOCUMENT_UPLOAD)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         docAssignment = assignmentRepository.save(docAssignment);
@@ -322,7 +316,7 @@ public class SubmissionControllerTest {
         mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
@@ -334,10 +328,11 @@ public class SubmissionControllerTest {
     public void testCreateSubmission_AIInterview_MissingSessionId() throws Exception {
         // Erstelle Assignment für AI Interview
         Assignment aiAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("AI Interview Test")
                 .type(AssignmentType.AI_INTERVIEW)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         aiAssignment = assignmentRepository.save(aiAssignment);
@@ -351,7 +346,7 @@ public class SubmissionControllerTest {
         mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
@@ -371,7 +366,7 @@ public class SubmissionControllerTest {
         mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -380,7 +375,7 @@ public class SubmissionControllerTest {
     public void testGetSubmission_NotFound() throws Exception {
         mvc.perform(get("/api/submissions/nonexistent-id")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -390,7 +385,7 @@ public class SubmissionControllerTest {
         mvc.perform(put("/api/submissions/nonexistent-id/feedback")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"feedback\": \"test\"}")
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -398,10 +393,11 @@ public class SubmissionControllerTest {
     @Test
     public void testCreateSubmission_Research_TextTooShort() throws Exception {
         Assignment researchAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Research Test")
                 .type(AssignmentType.RESEARCH)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         researchAssignment = assignmentRepository.save(researchAssignment);
@@ -416,7 +412,7 @@ public class SubmissionControllerTest {
         mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
@@ -426,10 +422,11 @@ public class SubmissionControllerTest {
     @Test
     public void testCreateSubmission_VideoPitch_MissingUrl() throws Exception {
         Assignment videoAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Video Pitch Test")
                 .type(AssignmentType.VIDEO_PITCH)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         videoAssignment = assignmentRepository.save(videoAssignment);
@@ -443,7 +440,7 @@ public class SubmissionControllerTest {
         mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
@@ -453,10 +450,11 @@ public class SubmissionControllerTest {
     @Test
     public void testCreateSubmission_SelfReflection_NullText() throws Exception {
         Assignment reflectionAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Reflection Null Test")
                 .type(AssignmentType.SELF_REFLECTION)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         reflectionAssignment = assignmentRepository.save(reflectionAssignment);
@@ -470,7 +468,7 @@ public class SubmissionControllerTest {
         mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
@@ -480,10 +478,11 @@ public class SubmissionControllerTest {
     @Test
     public void testCreateSubmission_DocumentUpload_BlankUrl() throws Exception {
         Assignment docAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Doc Blank URL Test")
                 .type(AssignmentType.DOCUMENT_UPLOAD)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         docAssignment = assignmentRepository.save(docAssignment);
@@ -498,7 +497,7 @@ public class SubmissionControllerTest {
         mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
@@ -508,10 +507,11 @@ public class SubmissionControllerTest {
     @Test
     public void testCreateSubmission_AIInterview_BlankSessionId() throws Exception {
         Assignment aiAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("AI Blank Session Test")
                 .type(AssignmentType.AI_INTERVIEW)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         aiAssignment = assignmentRepository.save(aiAssignment);
@@ -526,7 +526,7 @@ public class SubmissionControllerTest {
         mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
@@ -540,10 +540,11 @@ public class SubmissionControllerTest {
     @Test
     public void testCreateSubmission_DocumentUpload_Success() throws Exception {
         Assignment docAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Doc Upload Success Test")
                 .type(AssignmentType.DOCUMENT_UPLOAD)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         docAssignment = assignmentRepository.save(docAssignment);
@@ -559,7 +560,7 @@ public class SubmissionControllerTest {
         var result = mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.fileUrl").value("https://example.com/document.pdf"))
@@ -576,10 +577,11 @@ public class SubmissionControllerTest {
     @Test
     public void testCreateSubmission_VideoPitch_Success() throws Exception {
         Assignment videoAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Video Pitch Success Test")
                 .type(AssignmentType.VIDEO_PITCH)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         videoAssignment = assignmentRepository.save(videoAssignment);
@@ -595,7 +597,7 @@ public class SubmissionControllerTest {
         var result = mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.type").value("VIDEO_PITCH"))
@@ -611,10 +613,11 @@ public class SubmissionControllerTest {
     @Test
     public void testCreateSubmission_AIInterview_Success() throws Exception {
         Assignment aiAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("AI Interview Success Test")
                 .type(AssignmentType.AI_INTERVIEW)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         aiAssignment = assignmentRepository.save(aiAssignment);
@@ -629,7 +632,7 @@ public class SubmissionControllerTest {
         var result = mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.chatSessionId").value("session-123-abc"))
@@ -646,10 +649,11 @@ public class SubmissionControllerTest {
     @Test
     public void testCreateSubmission_Research_Success() throws Exception {
         Assignment researchAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Research Success Test")
                 .type(AssignmentType.RESEARCH)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         researchAssignment = assignmentRepository.save(researchAssignment);
@@ -666,7 +670,7 @@ public class SubmissionControllerTest {
         var result = mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.type").value("RESEARCH"))
@@ -687,18 +691,20 @@ public class SubmissionControllerTest {
     public void testCreateSubmission_StudentNotInClass() throws Exception {
         // Erstelle Klasse ohne den Test-Student
         SchoolClass otherClass = SchoolClass.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .name("OtherClassForSubmissionTest")
-                .teacherId("test-user-id")
-                .studentEmails(new ArrayList<>())
+                .teacherId(TestSecurityConfig.TEACHER_ID)
+                .studentIds(new ArrayList<>())
                 .build();
-        otherClass.getStudentEmails().add("other@student.ch");
+        otherClass.addStudent("some-other-student-id");
         otherClass = schoolClassRepository.save(otherClass);
 
         Assignment assignmentOtherClass = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Assignment Other Class")
                 .type(AssignmentType.SELF_REFLECTION)
                 .classId(otherClass.getId())
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         assignmentOtherClass = assignmentRepository.save(assignmentOtherClass);
@@ -713,7 +719,7 @@ public class SubmissionControllerTest {
         mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
@@ -729,6 +735,7 @@ public class SubmissionControllerTest {
         // Assignment
         // mit anderem Teacher erstellen
         Assignment otherTeacherAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Other Teacher Assignment")
                 .type(AssignmentType.SELF_REFLECTION)
                 .classId(classId)
@@ -739,7 +746,7 @@ public class SubmissionControllerTest {
 
         mvc.perform(get("/api/submissions/assignment/" + otherTeacherAssignment.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
@@ -751,7 +758,7 @@ public class SubmissionControllerTest {
     public void testGetSubmissionsForAssignment_NotFound() throws Exception {
         mvc.perform(get("/api/submissions/assignment/nonexistent-assignment-id")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -760,6 +767,7 @@ public class SubmissionControllerTest {
     public void testGiveFeedback_OtherTeacher_Forbidden() throws Exception {
         // Erstelle Submission für Assignment eines anderen Teachers
         Assignment otherTeacherAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Feedback Other Teacher Test")
                 .type(AssignmentType.SELF_REFLECTION)
                 .classId(classId)
@@ -769,6 +777,7 @@ public class SubmissionControllerTest {
         otherTeacherAssignment = assignmentRepository.save(otherTeacherAssignment);
 
         Submission otherSubmission = Submission.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .assignmentId(otherTeacherAssignment.getId())
                 .studentEmail("test@test.ch")
                 .type(AssignmentType.SELF_REFLECTION)
@@ -780,7 +789,7 @@ public class SubmissionControllerTest {
         mvc.perform(put("/api/submissions/" + otherSubmission.getId() + "/feedback")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"feedback\": \"test\"}")
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
@@ -797,17 +806,18 @@ public class SubmissionControllerTest {
     public void testCheckSubmission_NotSubmitted() throws Exception {
         // Erstelle neues Assignment ohne Abgabe
         Assignment newAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Check Not Submitted Test")
                 .type(AssignmentType.SELF_REFLECTION)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         newAssignment = assignmentRepository.save(newAssignment);
 
         mvc.perform(get("/api/submissions/check/" + newAssignment.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.hasSubmitted").value(false));
@@ -825,15 +835,17 @@ public class SubmissionControllerTest {
     public void testGiveFeedback_OnlyFeedback() throws Exception {
         // Erstelle neue Submission für diesen Test
         Assignment feedbackAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Only Feedback Test")
                 .type(AssignmentType.SELF_REFLECTION)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         feedbackAssignment = assignmentRepository.save(feedbackAssignment);
 
         Submission feedbackSubmission = Submission.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .assignmentId(feedbackAssignment.getId())
                 .studentEmail("test@test.ch")
                 .type(AssignmentType.SELF_REFLECTION)
@@ -851,7 +863,7 @@ public class SubmissionControllerTest {
         mvc.perform(put("/api/submissions/" + feedbackSubmission.getId() + "/feedback")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.teacherFeedback").value("Nur Feedback ohne Note"))
@@ -865,15 +877,17 @@ public class SubmissionControllerTest {
     @Test
     public void testGiveFeedback_OnlyGrade() throws Exception {
         Assignment gradeAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Only Grade Test")
                 .type(AssignmentType.SELF_REFLECTION)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         gradeAssignment = assignmentRepository.save(gradeAssignment);
 
         Submission gradeSubmission = Submission.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .assignmentId(gradeAssignment.getId())
                 .studentEmail("test@test.ch")
                 .type(AssignmentType.SELF_REFLECTION)
@@ -891,7 +905,7 @@ public class SubmissionControllerTest {
         mvc.perform(put("/api/submissions/" + gradeSubmission.getId() + "/feedback")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.grade").value(6))
@@ -910,6 +924,7 @@ public class SubmissionControllerTest {
     public void testGetSubmission_OtherStudent_Forbidden() throws Exception {
         // Erstelle Submission eines anderen Students
         Submission otherStudentSubmission = Submission.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .assignmentId(assignmentId)
                 .studentEmail("other@student.ch")
                 .type(AssignmentType.SELF_REFLECTION)
@@ -920,7 +935,7 @@ public class SubmissionControllerTest {
 
         mvc.perform(get("/api/submissions/" + otherStudentSubmission.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
@@ -932,6 +947,7 @@ public class SubmissionControllerTest {
     public void testGetSubmission_TeacherOtherAssignment_Forbidden() throws Exception {
         // Erstelle Assignment eines anderen Teachers
         Assignment otherAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Other Teacher Get Test")
                 .type(AssignmentType.SELF_REFLECTION)
                 .classId(classId)
@@ -941,6 +957,7 @@ public class SubmissionControllerTest {
         otherAssignment = assignmentRepository.save(otherAssignment);
 
         Submission otherSubmission = Submission.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .assignmentId(otherAssignment.getId())
                 .studentEmail("test@test.ch")
                 .type(AssignmentType.SELF_REFLECTION)
@@ -951,7 +968,7 @@ public class SubmissionControllerTest {
 
         mvc.perform(get("/api/submissions/" + otherSubmission.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
 
@@ -969,7 +986,7 @@ public class SubmissionControllerTest {
         mvc.perform(get("/api/submissions/my")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -977,7 +994,7 @@ public class SubmissionControllerTest {
         mvc.perform(get("/api/submissions/" + submissionId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -985,7 +1002,7 @@ public class SubmissionControllerTest {
         mvc.perform(get("/api/submissions/check/" + assignmentId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -993,7 +1010,7 @@ public class SubmissionControllerTest {
         mvc.perform(get("/api/submissions/assignment/" + assignmentId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -1013,10 +1030,11 @@ public class SubmissionControllerTest {
     @Test
     public void testCreateSubmission_WithComment() throws Exception {
         Assignment commentAssignment = Assignment.builder()
+                .schoolId(TestSecurityConfig.SCHOOL_ID)
                 .title("Comment Test")
                 .type(AssignmentType.SELF_REFLECTION)
                 .classId(classId)
-                .createdByTeacherId("test-user-id")
+                .createdByTeacherId(TestSecurityConfig.TEACHER_ID)
                 .status(AssignmentStatus.ASSIGNED)
                 .build();
         commentAssignment = assignmentRepository.save(commentAssignment);
@@ -1033,7 +1051,7 @@ public class SubmissionControllerTest {
         var result = mvc.perform(post("/api/submissions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.comment").value("Bitte beachten Sie meine Anmerkungen"))

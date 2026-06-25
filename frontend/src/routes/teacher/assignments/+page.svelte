@@ -1,6 +1,8 @@
 <script>
     import { enhance } from "$app/forms";
     import { invalidateAll } from "$app/navigation";
+    import { t } from "$lib/i18n";
+    import { get } from "svelte/store";
 
     let { data, form } = $props();
 
@@ -18,13 +20,13 @@
     let sortBy = $state("deadline");
     let visibleCount = $state(20);
 
-    const assignmentTypes = [
-        { value: "AI_INTERVIEW", label: "🤖 KI-Interview", hasDuration: true },
-        { value: "DOCUMENT_UPLOAD", label: "📄 Dokument", hasDuration: false },
-        { value: "SELF_REFLECTION", label: "✍️ Reflexion", hasDuration: false },
-        { value: "VIDEO_PITCH", label: "🎥 Video", hasDuration: true },
-        { value: "RESEARCH", label: "🔍 Recherche", hasDuration: false }
-    ];
+    let assignmentTypes = $derived([
+        { value: "AI_INTERVIEW", label: $t('tasks.typeInterview'), hasDuration: true },
+        { value: "DOCUMENT_UPLOAD", label: $t('tasks.typeDocument'), hasDuration: false },
+        { value: "SELF_REFLECTION", label: $t('tasks.typeReflection'), hasDuration: false },
+        { value: "VIDEO_PITCH", label: $t('tasks.typeVideo'), hasDuration: true },
+        { value: "RESEARCH", label: $t('tasks.typeResearch'), hasDuration: false }
+    ]);
 
     // Derived
     let assignments = $derived(data?.assignments ?? []);
@@ -118,10 +120,10 @@
     }
 
     function getDeadlineText(assignment) {
-        if (assignment.isOverdue) return "Beendet";
+        if (assignment.isOverdue) return get(t)('tasks.deadlineEnded');
         const days = Math.ceil((new Date(assignment.dueDate) - new Date()) / 86400000);
-        if (days === 0) return "Heute";
-        if (days === 1) return "Morgen";
+        if (days === 0) return get(t)('tasks.deadlineToday');
+        if (days === 1) return get(t)('tasks.deadlineTomorrow');
         if (days <= 7) return `${days}d`;
         return formatDate(assignment.dueDate);
     }
@@ -136,14 +138,14 @@
 </script>
 
 <svelte:head>
-    <title>Aufgaben – Praesto</title>
+    <title>{$t('tasks.headTitle')}</title>
 </svelte:head>
 
 <div class="page-wrapper">
     <header class="page-header">
-        <h1 class="title">📚 Aufgaben</h1>
+        <h1 class="title">📚 {$t('tasks.title')}</h1>
         <button type="button" class="btn btn-primary" onclick={openNewModal}>
-            ➕ Neue Aufgabe
+            ➕ {$t('tasks.newAssignment')}
         </button>
     </header>
 
@@ -151,24 +153,24 @@
         <div class="alert alert-danger">{form.error}</div>
     {/if}
     {#if form?.success}
-        <div class="alert alert-success">✓ Erfolgreich</div>
+        <div class="alert alert-success">✓ {$t('tasks.success')}</div>
     {/if}
 
     <!-- Quick Filter Pills -->
     <div class="quick-filters">
         <button class="pill" class:active={filterStatus === "all"} onclick={() => { filterStatus = "all"; visibleCount = 20; }}>
-            Alle ({assignments.length})
+            {$t('tasks.filterAll')} ({assignments.length})
         </button>
         <button class="pill" class:active={filterStatus === "open"} onclick={() => { filterStatus = "open"; visibleCount = 20; }}>
-            🟢 Offen ({openCount})
+            🟢 {$t('tasks.filterOpen')} ({openCount})
         </button>
         {#if needsFeedbackCount > 0}
             <button class="pill pill-alert" class:active={filterStatus === "needsFeedback"} onclick={() => { filterStatus = "needsFeedback"; visibleCount = 20; }}>
-                🔔 Feedback nötig ({needsFeedbackCount})
+                🔔 {$t('tasks.filterNeedsFeedback')} ({needsFeedbackCount})
             </button>
         {/if}
         <button class="pill" class:active={filterStatus === "closed"} onclick={() => { filterStatus = "closed"; visibleCount = 20; }}>
-            ✓ Beendet
+            ✓ {$t('tasks.filterClosed')}
         </button>
     </div>
 
@@ -176,62 +178,62 @@
     <div class="filter-bar">
         <div class="filter-group search-wrapper">
             <span class="search-icon">🔍</span>
-            <input type="text" class="filter-input" placeholder="Aufgabe suchen..." bind:value={searchQuery} />
+            <input type="text" class="filter-input" placeholder={$t('tasks.searchPlaceholder')} bind:value={searchQuery} />
             {#if searchQuery}
                 <button class="clear-btn" onclick={() => searchQuery = ""}>✕</button>
             {/if}
         </div>
 
         <select bind:value={filterClass} class="filter-select">
-            <option value="all">Alle Klassen</option>
+            <option value="all">{$t('tasks.allClasses')}</option>
             {#each classes as c}
                 <option value={c.id}>{c.name}</option>
             {/each}
         </select>
 
         <select bind:value={filterType} class="filter-select">
-            <option value="all">Alle Typen</option>
-            {#each assignmentTypes as t}
-                <option value={t.value}>{t.label}</option>
+            <option value="all">{$t('tasks.allTypes')}</option>
+            {#each assignmentTypes as item}
+                <option value={item.value}>{item.label}</option>
             {/each}
         </select>
 
         <select bind:value={sortBy} class="filter-select">
-            <option value="deadline">Nach Deadline</option>
-            <option value="title">Nach Titel</option>
-            <option value="class">Nach Klasse</option>
+            <option value="deadline">{$t('tasks.sortDeadline')}</option>
+            <option value="title">{$t('tasks.sortTitle')}</option>
+            <option value="class">{$t('tasks.sortClass')}</option>
         </select>
     </div>
 
     {#if searchQuery || filterClass !== "all" || filterType !== "all"}
         <div class="results-info">
-            <span>{filteredAssignments().length} Ergebnisse</span>
-            <button class="btn-link" onclick={resetFilters}>Filter zurücksetzen</button>
+            <span>{filteredAssignments().length} {$t('tasks.results')}</span>
+            <button class="btn-link" onclick={resetFilters}>{$t('tasks.resetFilters')}</button>
         </div>
     {/if}
 
     {#if assignments.length === 0}
         <div class="empty-state">
             <div class="empty-icon">📚</div>
-            <h2>Noch keine Aufgaben</h2>
-            <p>Erstelle deine erste Aufgabe.</p>
-            <button type="button" class="btn btn-primary" onclick={openNewModal}>Aufgabe erstellen</button>
+            <h2>{$t('tasks.emptyTitle')}</h2>
+            <p>{$t('tasks.emptyText')}</p>
+            <button type="button" class="btn btn-primary" onclick={openNewModal}>{$t('tasks.createAssignment')}</button>
         </div>
     {:else if filteredAssignments().length === 0}
         <div class="empty-state small">
-            <p>Keine Aufgaben gefunden.</p>
-            <button class="btn-link" onclick={resetFilters}>Filter zurücksetzen</button>
+            <p>{$t('tasks.noResults')}</p>
+            <button class="btn-link" onclick={resetFilters}>{$t('tasks.resetFilters')}</button>
         </div>
     {:else}
         <div class="table-wrapper">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Aufgabe</th>
-                        <th>Klasse</th>
-                        <th>Deadline</th>
-                        <th>Abgaben</th>
-                        <th>Status</th>
+                        <th>{$t('tasks.colAssignment')}</th>
+                        <th>{$t('tasks.colClass')}</th>
+                        <th>{$t('tasks.colDeadline')}</th>
+                        <th>{$t('tasks.colSubmissions')}</th>
+                        <th>{$t('tasks.colStatus')}</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -245,13 +247,13 @@
                                 <div class="assignment-meta-row">
                                     <span class="type-tag">{getTypeLabel(assignment.type)}</span>
                                     {#if assignment.durationMin}
-                                        <span class="duration-tag">⏱️ {assignment.durationMin} Min</span>
+                                        <span class="duration-tag">⏱️ {assignment.durationMin} {$t('tasks.min')}</span>
                                     {/if}
                                 </div>
                             </td>
                             <td>
                                 <span class="class-name">{assignment.className}</span>
-                                <span class="student-count">{assignment.totalStudents} Schüler</span>
+                                <span class="student-count">{assignment.totalStudents} {$t('tasks.students')}</span>
                             </td>
                             <td>
                                 <span class="deadline-text {getDeadlineClass(assignment)}">{getDeadlineText(assignment)}</span>
@@ -260,39 +262,39 @@
                             <td>
                                 <div class="submission-stats">
                                     <span class="submission-count">{assignment.submissionCount} / {assignment.totalStudents}</span>
-                                    <span class="submission-label">abgegeben</span>
+                                    <span class="submission-label">{$t('tasks.submitted')}</span>
                                 </div>
                                 <div class="review-stats">
                                     {#if assignment.submissionCount === 0}
-                                        <span class="stat-muted">Noch keine Abgaben</span>
+                                        <span class="stat-muted">{$t('tasks.noSubmissionsYet')}</span>
                                     {:else if assignment.reviewedCount === assignment.submissionCount}
-                                        <span class="stat-success">✓ Alle bewertet</span>
+                                        <span class="stat-success">✓ {$t('tasks.allReviewed')}</span>
                                     {:else if assignment.reviewedCount > 0}
-                                        <span class="stat-success">✓ {assignment.reviewedCount} bewertet</span>
-                                        <span class="stat-warning">· {assignment.pendingFeedback} offen</span>
+                                        <span class="stat-success">✓ {assignment.reviewedCount} {$t('tasks.reviewedSuffix')}</span>
+                                        <span class="stat-warning">· {assignment.pendingFeedback} {$t('tasks.openSuffix')}</span>
                                     {:else}
-                                        <span class="stat-warning">{assignment.pendingFeedback} warten auf Feedback</span>
+                                        <span class="stat-warning">{assignment.pendingFeedback} {$t('tasks.waitingForFeedback')}</span>
                                     {/if}
                                 </div>
                             </td>
                             <td>
                                 {#if assignment.pendingFeedback > 0}
-                                    <span class="status-badge status-action">🔔 Feedback nötig</span>
+                                    <span class="status-badge status-action">🔔 {$t('tasks.statusNeedsFeedback')}</span>
                                 {:else if allSubmitted && allReviewed}
-                                    <span class="status-badge status-done">✅ Abgeschlossen</span>
+                                    <span class="status-badge status-done">✅ {$t('tasks.statusDone')}</span>
                                 {:else if assignment.isOverdue}
-                                    <span class="status-badge status-closed">⏹️ Beendet</span>
+                                    <span class="status-badge status-closed">⏹️ {$t('tasks.statusClosed')}</span>
                                 {:else if assignment.submissionCount > 0}
-                                    <span class="status-badge status-progress">📥 In Bearbeitung</span>
+                                    <span class="status-badge status-progress">📥 {$t('tasks.statusInProgress')}</span>
                                 {:else}
-                                    <span class="status-badge status-waiting">⏳ Wartet</span>
+                                    <span class="status-badge status-waiting">⏳ {$t('tasks.statusWaiting')}</span>
                                 {/if}
                             </td>
                             <td>
                                 <div class="list-item-actions">
-                                    <a href="/teacher/assignments/{assignment.id}" class="btn-icon" title="Ansehen">👁️</a>
-                                    <button type="button" class="btn-icon" onclick={() => openEditModal(assignment)} title="Bearbeiten">✏️</button>
-                                    <button type="button" class="btn-icon btn-danger" onclick={() => confirmDelete(assignment.id)} title="Löschen">🗑️</button>
+                                    <a href="/teacher/assignments/{assignment.id}" class="btn-icon" title={$t('tasks.view')}>👁️</a>
+                                    <button type="button" class="btn-icon" onclick={() => openEditModal(assignment)} title={$t('tasks.edit')}>✏️</button>
+                                    <button type="button" class="btn-icon btn-danger" onclick={() => confirmDelete(assignment.id)} title={$t('tasks.delete')}>🗑️</button>
                                 </div>
                             </td>
                         </tr>
@@ -300,7 +302,7 @@
                             <tr>
                                 <td colspan="6">
                                     <div class="delete-confirm">
-                                        <span class="delete-confirm-text">Aufgabe <strong>{assignment.title}</strong> löschen?</span>
+                                        <span class="delete-confirm-text">{$t('tasks.deletePrefix')} <strong>{assignment.title}</strong> {$t('tasks.deleteSuffix')}</span>
                                         <div class="delete-actions">
                                             <form method="POST" action="?/delete" use:enhance={() => {
                                                 return async ({ result }) => {
@@ -309,9 +311,9 @@
                                                 };
                                             }}>
                                                 <input type="hidden" name="assignmentId" value={assignment.id} />
-                                                <button type="submit" class="btn btn-danger">Ja, löschen</button>
+                                                <button type="submit" class="btn btn-danger">{$t('tasks.confirmDelete')}</button>
                                             </form>
-                                            <button type="button" class="btn btn-secondary" onclick={cancelDelete}>Abbrechen</button>
+                                            <button type="button" class="btn btn-secondary" onclick={cancelDelete}>{$t('tasks.cancel')}</button>
                                         </div>
                                     </div>
                                 </td>
@@ -324,7 +326,7 @@
 
         {#if hasMore}
             <div class="load-more">
-                <button type="button" class="btn btn-secondary" onclick={loadMore}>Mehr laden</button>
+                <button type="button" class="btn btn-secondary" onclick={loadMore}>{$t('tasks.loadMore')}</button>
             </div>
         {/if}
     {/if}
@@ -332,11 +334,11 @@
 
 <!-- Modal -->
 {#if showModal}
-    <button type="button" class="modal-backdrop" onclick={closeModal} aria-label="Modal schliessen"></button>
+    <button type="button" class="modal-backdrop" onclick={closeModal} aria-label={$t('tasks.closeModal')}></button>
     <div class="modal" role="dialog" aria-modal="true">
         <div class="modal-header">
-            <h2>{editingAssignment ? "Aufgabe bearbeiten" : "Neue Aufgabe"}</h2>
-            <button type="button" class="btn-close-modal" onclick={closeModal} aria-label="Schliessen">✕</button>
+            <h2>{editingAssignment ? $t('tasks.editAssignment') : $t('tasks.newAssignment')}</h2>
+            <button type="button" class="btn-close-modal" onclick={closeModal} aria-label={$t('tasks.close')}>✕</button>
         </div>
 
         <form method="POST" action={editingAssignment ? "?/update" : "?/create"}
@@ -354,27 +356,39 @@
                 {/if}
 
                 <div class="form-group">
-                    <label for="title">Titel *</label>
+                    <label for="title">{$t('tasks.fieldTitle')} *</label>
                     <input type="text" id="title" name="title" required
-                        placeholder="z.B. Bewerbungsgespräch üben" value={editingAssignment?.title ?? ""} />
+                        placeholder={$t('tasks.titlePlaceholder')} value={editingAssignment?.title ?? ""} />
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="classId">Klasse *</label>
-                        <select id="classId" name="classId" required>
-                            <option value="">Wählen...</option>
-                            {#each classes as c}
-                                <option value={c.id} selected={editingAssignment?.classId === c.id}>{c.name}</option>
-                            {/each}
-                        </select>
+                        {#if editingAssignment}
+                            <label for="classId">{$t('tasks.fieldClass')} *</label>
+                            <select id="classId" name="classId" required>
+                                <option value="">{$t('tasks.choose')}</option>
+                                {#each classes as c}
+                                    <option value={c.id} selected={editingAssignment?.classId === c.id}>{c.name}</option>
+                                {/each}
+                            </select>
+                        {:else}
+                            <label>{$t('tasks.fieldClasses')} * <span class="hint-inline">{$t('tasks.multiSelectHint')}</span></label>
+                            <div class="class-checkboxes">
+                                {#each classes as c}
+                                    <label class="class-checkbox">
+                                        <input type="checkbox" name="classIds" value={c.id} />
+                                        <span>{c.name}</span>
+                                    </label>
+                                {/each}
+                            </div>
+                        {/if}
                     </div>
                     <div class="form-group">
-                        <label for="type">Typ *</label>
+                        <label for="type">{$t('tasks.fieldType')} *</label>
                         <select id="type" name="type" required bind:value={selectedType}>
-                            <option value="">Wählen...</option>
-                            {#each assignmentTypes as t}
-                                <option value={t.value} selected={editingAssignment?.type === t.value}>{t.label}</option>
+                            <option value="">{$t('tasks.choose')}</option>
+                            {#each assignmentTypes as item}
+                                <option value={item.value} selected={editingAssignment?.type === item.value}>{item.label}</option>
                             {/each}
                         </select>
                     </div>
@@ -382,13 +396,13 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="dueDate">Deadline *</label>
+                        <label for="dueDate">{$t('tasks.fieldDeadline')} *</label>
                         <input type="datetime-local" id="dueDate" name="dueDate" required
                             value={formatDateTimeLocal(editingAssignment?.dueDate)} />
                     </div>
                     {#if typeHasDuration(selectedType)}
                         <div class="form-group">
-                            <label for="durationMin">Dauer (Min)</label>
+                            <label for="durationMin">{$t('tasks.fieldDuration')}</label>
                             <input type="number" id="durationMin" name="durationMin" min="1" max="120"
                                 value={editingAssignment?.durationMin ?? 15} />
                         </div>
@@ -396,15 +410,15 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="description">Beschreibung</label>
+                    <label for="description">{$t('tasks.fieldDescription')}</label>
                     <textarea id="description" name="description" rows="3"
-                        placeholder="Optional: Weitere Details...">{editingAssignment?.description ?? ""}</textarea>
+                        placeholder={$t('tasks.descriptionPlaceholder')}>{editingAssignment?.description ?? ""}</textarea>
                 </div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick={closeModal}>Abbrechen</button>
-                <button type="submit" class="btn btn-primary">{editingAssignment ? "Speichern" : "Erstellen"}</button>
+                <button type="button" class="btn btn-secondary" onclick={closeModal}>{$t('tasks.cancel')}</button>
+                <button type="submit" class="btn btn-primary">{editingAssignment ? $t('tasks.save') : $t('tasks.create')}</button>
             </div>
         </form>
     </div>
@@ -638,5 +652,35 @@
         .assignment-meta-row {
             flex-wrap: wrap;
         }
+    }
+
+    .hint-inline {
+        font-weight: 400;
+        font-size: 0.75rem;
+        color: var(--color-text-light, #6b647a);
+    }
+
+    .class-checkboxes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        max-height: 140px;
+        overflow-y: auto;
+    }
+
+    .class-checkbox {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.6rem;
+        border: 1px solid #e8e0f0;
+        border-radius: 0.5rem;
+        background: #faf8fc;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    .class-checkbox input {
+        margin: 0;
     }
 </style>

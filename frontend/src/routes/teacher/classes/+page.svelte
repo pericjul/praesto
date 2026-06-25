@@ -1,6 +1,8 @@
 <script>
     import { enhance } from "$app/forms";
     import { invalidateAll } from "$app/navigation";
+    import { t, locale } from "$lib/i18n";
+    import { get } from "svelte/store";
 
     let { data, form } = $props();
 
@@ -9,10 +11,40 @@
     let editingClass = $state(null);
     let expandedClassId = $state(null);
     let deleteConfirmId = $state(null);
-    let newStudentId = $state("");
+
+    // Schüler-Suche (debounced)
+    let searchQuery = $state("");
+    let searchResults = $state([]);
+    let searching = $state(false);
+    let debounceTimer;
 
     // Derived
     let classes = $derived(data?.classes ?? []);
+
+    function onSearchInput() {
+        clearTimeout(debounceTimer);
+        const q = searchQuery;
+        if (q.trim().length < 2) {
+            searchResults = [];
+            return;
+        }
+        debounceTimer = setTimeout(async () => {
+            searching = true;
+            try {
+                const res = await fetch(`/api/students/search?q=${encodeURIComponent(q)}`);
+                searchResults = res.ok ? await res.json() : [];
+            } catch {
+                searchResults = [];
+            } finally {
+                searching = false;
+            }
+        }, 300);
+    }
+
+    function resetSearch() {
+        searchQuery = "";
+        searchResults = [];
+    }
 
     function openNewModal() {
         editingClass = null;
@@ -34,7 +66,7 @@
             expandedClassId = null;
         } else {
             expandedClassId = classId;
-            newStudentId = "";
+            resetSearch();
         }
     }
 
@@ -48,7 +80,8 @@
 
     function formatDate(date) {
         if (!date) return "-";
-        return new Date(date).toLocaleDateString("de-CH", {
+        const localeMap = { de: "de-CH", en: "en-GB", fr: "fr-CH", it: "it-CH" };
+        return new Date(date).toLocaleDateString(localeMap[get(locale)] ?? "de-CH", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric"
@@ -57,17 +90,17 @@
 </script>
 
 <svelte:head>
-    <title>Klassenverwaltung – Praesto</title>
+    <title>{$t('tclass.pageTitle')}</title>
 </svelte:head>
 
 <div class="page-wrapper">
     <header class="page-header">
         <div>
-            <h1 class="title">🎓 Klassenverwaltung</h1>
-            <p class="subtitle">Erstelle Klassen und ordne Schüler zu.</p>
+            <h1 class="title">{$t('tclass.title')}</h1>
+            <p class="subtitle">{$t('tclass.subtitle')}</p>
         </div>
         <button type="button" class="btn btn-primary" onclick={openNewModal}>
-            ➕ Neue Klasse
+            {$t('tclass.newClass')}
         </button>
     </header>
 
@@ -77,11 +110,11 @@
 
     {#if form?.success}
         <div class="alert alert-success">
-            {#if form.action === "created"}Klasse wurde erstellt.
-            {:else if form.action === "updated"}Klasse wurde aktualisiert.
-            {:else if form.action === "deleted"}Klasse wurde gelöscht.
-            {:else if form.action === "studentAdded"}Schüler wurde hinzugefügt.
-            {:else if form.action === "studentRemoved"}Schüler wurde entfernt.
+            {#if form.action === "created"}{$t('tclass.createdMsg')}
+            {:else if form.action === "updated"}{$t('tclass.updatedMsg')}
+            {:else if form.action === "deleted"}{$t('tclass.deletedMsg')}
+            {:else if form.action === "studentAdded"}{$t('tclass.studentAddedMsg')}
+            {:else if form.action === "studentRemoved"}{$t('tclass.studentRemovedMsg')}
             {/if}
         </div>
     {/if}
@@ -89,21 +122,21 @@
     <div class="stats-bar">
         <div class="stat-card">
             <span class="stat-value">{classes.length}</span>
-            <span class="stat-label">Klassen</span>
+            <span class="stat-label">{$t('tclass.statClasses')}</span>
         </div>
         <div class="stat-card">
-            <span class="stat-value">{classes.reduce((sum, c) => sum + (c.studentEmails?.length || 0), 0)}</span>
-            <span class="stat-label">Schüler total</span>
+            <span class="stat-value">{classes.reduce((sum, c) => sum + (c.students?.length || 0), 0)}</span>
+            <span class="stat-label">{$t('tclass.statStudentsTotal')}</span>
         </div>
     </div>
 
     {#if classes.length === 0}
         <div class="empty-state">
             <div class="empty-icon">🎓</div>
-            <h2>Noch keine Klassen</h2>
-            <p>Erstelle deine erste Klasse und füge Schüler hinzu.</p>
+            <h2>{$t('tclass.emptyTitle')}</h2>
+            <p>{$t('tclass.emptyText')}</p>
             <button type="button" class="btn btn-primary" onclick={openNewModal}>
-                Erste Klasse erstellen
+                {$t('tclass.emptyAction')}
             </button>
         </div>
     {:else}
@@ -114,18 +147,18 @@
                         <div class="class-info">
                             <h3 class="class-name">{cls.name}</h3>
                             <span class="class-meta">
-                                {cls.studentEmails?.length || 0} Schüler · Erstellt am {formatDate(cls.createdAt)}
+                                {cls.students?.length || 0} {$t('tclass.students')} · {$t('tclass.createdOn')} {formatDate(cls.createdAt)}
                             </span>
                         </div>
                         <div class="class-actions">
                             <button type="button" class="btn-icon" onclick={() => toggleExpand(cls.id)}
-                                title={expandedClassId === cls.id ? "Schliessen" : "Schüler verwalten"}>
+                                title={expandedClassId === cls.id ? $t('tclass.close') : $t('tclass.manageStudents')}>
                                 {expandedClassId === cls.id ? "▲" : "▼"}
                             </button>
-                            <button type="button" class="btn-icon" onclick={() => openEditModal(cls)} title="Bearbeiten">
+                            <button type="button" class="btn-icon" onclick={() => openEditModal(cls)} title={$t('tclass.edit')}>
                                 ✏️
                             </button>
-                            <button type="button" class="btn-icon btn-danger" onclick={() => confirmDelete(cls.id)} title="Löschen">
+                            <button type="button" class="btn-icon btn-danger" onclick={() => confirmDelete(cls.id)} title={$t('tclass.delete')}>
                                 🗑️
                             </button>
                         </div>
@@ -133,7 +166,7 @@
 
                     {#if deleteConfirmId === cls.id}
                         <div class="delete-confirm">
-                            <span class="delete-confirm-text">Klasse <strong>{cls.name}</strong> wirklich löschen?</span>
+                            <span class="delete-confirm-text">{$t('tclass.confirmDeletePre')} <strong>{cls.name}</strong> {$t('tclass.confirmDeletePost')}</span>
                             <div class="delete-actions">
                                 <form method="POST" action="?/delete" use:enhance={() => {
                                     return async ({ result }) => {
@@ -142,39 +175,59 @@
                                     };
                                 }}>
                                     <input type="hidden" name="classId" value={cls.id} />
-                                    <button type="submit" class="btn btn-danger">Ja, löschen</button>
+                                    <button type="submit" class="btn btn-danger">{$t('tclass.confirmDeleteYes')}</button>
                                 </form>
-                                <button type="button" class="btn btn-secondary" onclick={cancelDelete}>Abbrechen</button>
+                                <button type="button" class="btn btn-secondary" onclick={cancelDelete}>{$t('tclass.cancel')}</button>
                             </div>
                         </div>
                     {/if}
 
                     {#if expandedClassId === cls.id}
                         <div class="students-section">
-                            <h4>Schüler in dieser Klasse</h4>
-                            
-                            <form method="POST" action="?/addStudent" class="add-student-form"
-                                use:enhance={() => {
-                                    return async ({ result }) => {
-                                        if (result.type === 'success') {
-                                            newStudentId = "";
-                                            await invalidateAll();
-                                        }
-                                    };
-                                }}>
-                                <input type="hidden" name="classId" value={cls.id} />
-                                <input type="email" name="email" placeholder="Schüler-Email eingeben"
-                                    bind:value={newStudentId} class="filter-input" />
-                                <button type="submit" class="btn btn-primary btn-sm" disabled={!newStudentId}>
-                                    ➕ Hinzufügen
-                                </button>
-                            </form>
+                            <h4>{$t('tclass.studentsInClass')}</h4>
 
-                            {#if cls.studentEmails && cls.studentEmails.length > 0}
+                            <div class="student-search">
+                                <input type="search" class="filter-input"
+                                    placeholder={$t('tclass.searchPlaceholder')}
+                                    bind:value={searchQuery} oninput={onSearchInput} />
+
+                                {#if searching}
+                                    <p class="search-hint">{$t('tclass.searching')}</p>
+                                {:else if searchQuery.trim().length >= 2 && searchResults.length === 0}
+                                    <p class="search-hint">{$t('tclass.noResults')}</p>
+                                {:else if searchResults.length > 0}
+                                    <ul class="search-results">
+                                        {#each searchResults as s (s.id)}
+                                            <li>
+                                                <form method="POST" action="?/addStudent"
+                                                    use:enhance={() => {
+                                                        return async ({ result }) => {
+                                                            if (result.type === 'success') {
+                                                                resetSearch();
+                                                                await invalidateAll();
+                                                            }
+                                                        };
+                                                    }}>
+                                                    <input type="hidden" name="classId" value={cls.id} />
+                                                    <input type="hidden" name="userId" value={s.id} />
+                                                    <button type="submit" class="result-btn">
+                                                        <span class="result-name">{s.firstName} {s.lastName}</span>
+                                                        <span class="result-email">{s.email}</span>
+                                                        <span class="result-add">{$t('tclass.add')}</span>
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        {/each}
+                                    </ul>
+                                {/if}
+                            </div>
+
+                            {#if cls.students && cls.students.length > 0}
                                 <ul class="students-list">
-                                    {#each cls.studentEmails as email}
+                                    {#each cls.students as student (student.id)}
                                         <li class="student-item">
-                                            <span class="student-email">{email}</span>
+                                            <span class="student-name">{student.firstName} {student.lastName}</span>
+                                            <span class="student-email">{student.email}</span>
                                             <form method="POST" action="?/removeStudent"
                                                 use:enhance={() => {
                                                     return async ({ result }) => {
@@ -182,14 +235,14 @@
                                                     };
                                                 }}>
                                                 <input type="hidden" name="classId" value={cls.id} />
-                                                <input type="hidden" name="email" value={email} />
-                                                <button type="submit" class="btn-remove" title="Entfernen">✕</button>
+                                                <input type="hidden" name="userId" value={student.id} />
+                                                <button type="submit" class="btn-remove" title={$t('tclass.remove')}>✕</button>
                                             </form>
                                         </li>
                                     {/each}
                                 </ul>
                             {:else}
-                                <p class="no-students">Noch keine Schüler in dieser Klasse.</p>
+                                <p class="no-students">{$t('tclass.noStudents')}</p>
                             {/if}
                         </div>
                     {/if}
@@ -201,11 +254,11 @@
 
 <!-- Modal -->
 {#if showModal}
-    <button type="button" class="modal-backdrop" onclick={closeModal} aria-label="Modal schliessen"></button>
+    <button type="button" class="modal-backdrop" onclick={closeModal} aria-label={$t('tclass.modalClose')}></button>
     <div class="modal" role="dialog" aria-modal="true">
         <div class="modal-header">
-            <h2>{editingClass ? "Klasse bearbeiten" : "Neue Klasse"}</h2>
-            <button type="button" class="btn-close-modal" onclick={closeModal} aria-label="Schliessen">✕</button>
+            <h2>{editingClass ? $t('tclass.modalEditTitle') : $t('tclass.modalNewTitle')}</h2>
+            <button type="button" class="btn-close-modal" onclick={closeModal} aria-label={$t('tclass.close')}>✕</button>
         </div>
 
         <form method="POST" action={editingClass ? "?/update" : "?/create"}
@@ -222,16 +275,16 @@
                     <input type="hidden" name="classId" value={editingClass.id} />
                 {/if}
                 <div class="form-group">
-                    <label for="className">Klassenname</label>
+                    <label for="className">{$t('tclass.classNameLabel')}</label>
                     <input type="text" id="className" name="name" required
-                        placeholder="z.B. BM2a" value={editingClass?.name ?? ""} />
+                        placeholder={$t('tclass.classNamePlaceholder')} value={editingClass?.name ?? ""} />
                 </div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick={closeModal}>Abbrechen</button>
+                <button type="button" class="btn btn-secondary" onclick={closeModal}>{$t('tclass.cancel')}</button>
                 <button type="submit" class="btn btn-primary">
-                    {editingClass ? "Speichern" : "Erstellen"}
+                    {editingClass ? $t('tclass.save') : $t('tclass.createBtn')}
                 </button>
             </div>
         </form>
@@ -353,6 +406,77 @@
         color: var(--color-text-muted);
         font-size: var(--font-size-sm);
         font-style: italic;
+    }
+
+    /* Schüler-Suche */
+    .student-search {
+        position: relative;
+        margin-bottom: var(--space-lg);
+    }
+
+    .student-search .filter-input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .search-hint {
+        margin: var(--space-xs) 0 0;
+        font-size: var(--font-size-sm);
+        color: var(--color-text-muted);
+    }
+
+    .search-results {
+        list-style: none;
+        margin: var(--space-xs) 0 0;
+        padding: 0;
+        border: 1px solid var(--color-border-light);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        background: var(--color-bg-card);
+    }
+
+    .result-btn {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        width: 100%;
+        padding: var(--space-sm) var(--space-md);
+        background: none;
+        border: none;
+        border-bottom: 1px solid var(--color-border-light);
+        cursor: pointer;
+        text-align: left;
+        font-size: var(--font-size-sm);
+    }
+
+    .result-btn:hover {
+        background: var(--color-bg-muted);
+    }
+
+    .result-name {
+        font-weight: 600;
+        color: var(--color-text-secondary);
+    }
+
+    .result-email {
+        color: var(--color-text-muted);
+    }
+
+    .result-add {
+        margin-left: auto;
+        color: var(--color-primary);
+        font-weight: 600;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+    }
+
+    .student-item .student-email {
+        margin-left: var(--space-sm);
+        margin-right: auto;
     }
 
     @media (max-width: 600px) {

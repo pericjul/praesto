@@ -1,26 +1,34 @@
 package ch.zhaw.praesto.model;
 
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "badges")
+@Entity
+@Table(name = "badges")
 public class Badge {
 
     @Id
     private String id;
 
-    private String icon;        // Emoji: 🎯, 🔥, etc.
-    private String title;       // z.B. "Erste Session"
-    private String description; // z.B. "Dein erstes KI-Training absolviert!"
-    
-    private BadgeRuleType ruleType;  // Enum für die Regel
-    private int threshold;           // Schwellwert (z.B. 5 für "5 Sessions")
-    
-    private int sortOrder;           // Für Sortierung in der Anzeige
+    @PrePersist
+    void ensureId() {
+        if (id == null) {
+            id = java.util.UUID.randomUUID().toString();
+        }
+    }
+
+    private String icon;
+    private String title;
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    private BadgeRuleType ruleType;
+
+    private int threshold;
+    private int sortOrder;
 }

@@ -1,6 +1,6 @@
 import { redirect, error } from "@sveltejs/kit";
 
-const API_BASE = "http://localhost:8080/api";
+import { API_BASE } from "$lib/server/api.js";
 
 export async function load({ locals, fetch, params }) {
     if (!locals.isAuthenticated) {

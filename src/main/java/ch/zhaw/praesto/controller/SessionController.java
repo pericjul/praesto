@@ -28,7 +28,8 @@ public class SessionController {
             throw new ForbiddenException("Nur Schueler duerfen Sessions starten");
         }
         String assignmentId = (request != null) ? request.getAssignmentId() : null;
-        Session session = sessionService.startSession(assignmentId);
+        boolean roast = request != null && request.isRoast();
+        Session session = sessionService.startSession(assignmentId, roast);
         return ResponseEntity.ok(session);
     }
 
@@ -68,6 +69,13 @@ public class SessionController {
         }
         Session submitted = sessionService.closeAndSubmitAsAssignment(id);
         return ResponseEntity.ok(submitted);
+    }
+
+    // Session löschen (nur Student, nur eigene)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSession(@PathVariable String id) {
+        sessionService.deleteSession(id);
+        return ResponseEntity.noContent().build();
     }
 
     // eigene Sessions ansehen (nur Student)

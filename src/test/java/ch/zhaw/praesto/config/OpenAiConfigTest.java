@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.chat.model.ChatModel;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.*;
 class OpenAiConfigTest {
 
     @Mock
-    private OpenAiChatModel chatModel;
+    private ChatModel chatModel;
 
     @InjectMocks
     private OpenAiConfig openAiConfig;

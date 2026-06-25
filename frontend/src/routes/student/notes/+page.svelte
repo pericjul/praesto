@@ -1,6 +1,7 @@
 <script>
     import { enhance } from "$app/forms";
     import { invalidateAll } from "$app/navigation";
+    import { t } from "$lib/i18n";
 
     let { data, form } = $props();
 
@@ -97,17 +98,17 @@
 </script>
 
 <svelte:head>
-    <title>Meine Notizen – Praesto</title>
+    <title>{$t('snotes.headTitle')}</title>
 </svelte:head>
 
 <div class="page-wrapper">
     <header class="page-header">
         <div>
-            <h1 class="title">📝 Meine Notizen</h1>
-            <p class="subtitle">Halte wichtige Informationen zu Unternehmen und deinem Bewerbungsprozess fest.</p>
+            <h1 class="title">📝 {$t('snotes.title')}</h1>
+            <p class="subtitle">{$t('snotes.subtitle')}</p>
         </div>
         <button type="button" class="btn btn-primary" onclick={openNewModal}>
-            ➕ Neue Notiz
+            ➕ {$t('snotes.newNote')}
         </button>
     </header>
 
@@ -117,9 +118,9 @@
 
     {#if form?.success}
         <div class="alert alert-success">
-            {#if form.action === "created"}Notiz wurde erstellt.
-            {:else if form.action === "updated"}Notiz wurde aktualisiert.
-            {:else if form.action === "deleted"}Notiz wurde gelöscht.
+            {#if form.action === "created"}{$t('snotes.successCreated')}
+            {:else if form.action === "updated"}{$t('snotes.successUpdated')}
+            {:else if form.action === "deleted"}{$t('snotes.successDeleted')}
             {/if}
         </div>
     {/if}
@@ -127,20 +128,20 @@
     {#if allNotes.length > 0}
         <div class="filter-bar">
             <div class="stats-inline">
-                <span class="badge badge-primary">{allNotes.length} Total</span>
+                <span class="badge badge-primary">{allNotes.length} {$t('snotes.total')}</span>
                 {#if notes().length !== allNotes.length}
-                    <span class="badge badge-muted">{notes().length} Gefiltert</span>
+                    <span class="badge badge-muted">{notes().length} {$t('snotes.filtered')}</span>
                 {/if}
             </div>
 
             <div class="filter-group">
-                <input type="text" placeholder="🔍 Suchen..." bind:value={searchQuery} class="filter-input" />
+                <input type="text" placeholder={$t('snotes.searchPlaceholder')} bind:value={searchQuery} class="filter-input" />
             </div>
 
             <div class="filter-group">
                 <select bind:value={filterCompany} class="filter-select">
-                    <option value="all">Alle Firmen</option>
-                    <option value="none">Ohne Firma</option>
+                    <option value="all">{$t('snotes.allCompanies')}</option>
+                    <option value="none">{$t('snotes.noCompany')}</option>
                     {#each uniqueCompanies() as company}
                         <option value={company}>{company}</option>
                     {/each}
@@ -149,15 +150,15 @@
 
             <div class="filter-group">
                 <select bind:value={sortBy} class="filter-select">
-                    <option value="newest">Neueste zuerst</option>
-                    <option value="oldest">Älteste zuerst</option>
-                    <option value="updated">Zuletzt bearbeitet</option>
-                    <option value="company">Nach Firma</option>
+                    <option value="newest">{$t('snotes.sortNewest')}</option>
+                    <option value="oldest">{$t('snotes.sortOldest')}</option>
+                    <option value="updated">{$t('snotes.sortUpdated')}</option>
+                    <option value="company">{$t('snotes.sortCompany')}</option>
                 </select>
             </div>
 
             {#if searchQuery || filterCompany !== "all" || sortBy !== "newest"}
-                <button type="button" class="btn-reset" onclick={resetFilters}>✕ Filter zurücksetzen</button>
+                <button type="button" class="btn-reset" onclick={resetFilters}>✕ {$t('snotes.resetFilters')}</button>
             {/if}
         </div>
     {/if}
@@ -165,18 +166,18 @@
     {#if allNotes.length === 0}
         <div class="empty-state">
             <div class="empty-icon">📋</div>
-            <h2>Noch keine Notizen</h2>
-            <p>Erstelle deine erste Notiz, um wichtige Informationen festzuhalten!</p>
+            <h2>{$t('snotes.emptyTitle')}</h2>
+            <p>{$t('snotes.emptyText')}</p>
             <button type="button" class="btn btn-primary" onclick={openNewModal}>
-                Erste Notiz erstellen
+                {$t('snotes.emptyButton')}
             </button>
         </div>
     {:else if notes().length === 0}
         <div class="empty-state">
             <div class="empty-icon">🔍</div>
-            <h2>Keine Notizen gefunden</h2>
-            <p>Passe deine Filter an oder erstelle eine neue Notiz.</p>
-            <button type="button" class="btn btn-secondary" onclick={resetFilters}>Filter zurücksetzen</button>
+            <h2>{$t('snotes.noResultsTitle')}</h2>
+            <p>{$t('snotes.noResultsText')}</p>
+            <button type="button" class="btn btn-secondary" onclick={resetFilters}>{$t('snotes.resetFilters')}</button>
         </div>
     {:else}
         <div class="notes-grid">
@@ -190,7 +191,7 @@
                             <span class="note-tag note-position">💼 {note.position}</span>
                         {/if}
                         {#if !note.companyName && !note.position}
-                            <span class="note-tag note-general">📌 Allgemeine Notiz</span>
+                            <span class="note-tag note-general">📌 {$t('snotes.generalNote')}</span>
                         {/if}
                     </div>
 
@@ -201,14 +202,14 @@
                     <div class="note-footer">
                         <span class="note-date">{formatDate(note.lastUpdated || note.createdAt)}</span>
                         <div class="note-actions">
-                            <button type="button" class="btn-icon" onclick={() => openEditModal(note)} title="Bearbeiten">✏️</button>
-                            <button type="button" class="btn-icon btn-danger" onclick={() => confirmDelete(note.id)} title="Löschen">🗑️</button>
+                            <button type="button" class="btn-icon" onclick={() => openEditModal(note)} title={$t('snotes.edit')}>✏️</button>
+                            <button type="button" class="btn-icon btn-danger" onclick={() => confirmDelete(note.id)} title={$t('snotes.delete')}>🗑️</button>
                         </div>
                     </div>
 
                     {#if deleteConfirmId === note.id}
                         <div class="delete-overlay">
-                            <p>Wirklich löschen?</p>
+                            <p>{$t('snotes.confirmDelete')}</p>
                             <div class="delete-actions">
                                 <form method="POST" action="?/delete" use:enhance={() => {
                                     return async ({ result }) => {
@@ -217,9 +218,9 @@
                                     };
                                 }}>
                                     <input type="hidden" name="noteId" value={note.id} />
-                                    <button type="submit" class="btn btn-danger">Ja, löschen</button>
+                                    <button type="submit" class="btn btn-danger">{$t('snotes.confirmYes')}</button>
                                 </form>
-                                <button type="button" class="btn btn-secondary" onclick={cancelDelete}>Abbrechen</button>
+                                <button type="button" class="btn btn-secondary" onclick={cancelDelete}>{$t('snotes.cancel')}</button>
                             </div>
                         </div>
                     {/if}
@@ -231,11 +232,11 @@
 
 <!-- Modal -->
 {#if showModal}
-    <button type="button" class="modal-backdrop" onclick={closeModal} aria-label="Modal schliessen"></button>
+    <button type="button" class="modal-backdrop" onclick={closeModal} aria-label={$t('snotes.closeModal')}></button>
     <div class="modal" role="dialog" aria-modal="true">
         <div class="modal-header">
-            <h2>{editingNote ? "Notiz bearbeiten" : "Neue Notiz"}</h2>
-            <button type="button" class="btn-close-modal" onclick={closeModal} aria-label="Schliessen">✕</button>
+            <h2>{editingNote ? $t('snotes.editNote') : $t('snotes.newNote')}</h2>
+            <button type="button" class="btn-close-modal" onclick={closeModal} aria-label={$t('snotes.close')}>✕</button>
         </div>
 
         <form method="POST" action={editingNote ? "?/update" : "?/create"}
@@ -253,27 +254,27 @@
                 {/if}
 
                 <div class="form-group">
-                    <label for="companyName">Firma (optional)</label>
+                    <label for="companyName">{$t('snotes.labelCompany')}</label>
                     <input type="text" id="companyName" name="companyName"
-                        placeholder="z.B. Google" value={editingNote?.companyName ?? ""} />
+                        placeholder={$t('snotes.placeholderCompany')} value={editingNote?.companyName ?? ""} />
                 </div>
 
                 <div class="form-group">
-                    <label for="position">Position (optional)</label>
+                    <label for="position">{$t('snotes.labelPosition')}</label>
                     <input type="text" id="position" name="position"
-                        placeholder="z.B. Software Engineer" value={editingNote?.position ?? ""} />
+                        placeholder={$t('snotes.placeholderPosition')} value={editingNote?.position ?? ""} />
                 </div>
 
                 <div class="form-group">
-                    <label for="text">Notiz *</label>
+                    <label for="text">{$t('snotes.labelText')}</label>
                     <textarea id="text" name="text" required rows="5"
-                        placeholder="Deine Notiz...">{editingNote?.text ?? ""}</textarea>
+                        placeholder={$t('snotes.placeholderText')}>{editingNote?.text ?? ""}</textarea>
                 </div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick={closeModal}>Abbrechen</button>
-                <button type="submit" class="btn btn-primary">{editingNote ? "Speichern" : "Erstellen"}</button>
+                <button type="button" class="btn btn-secondary" onclick={closeModal}>{$t('snotes.cancel')}</button>
+                <button type="submit" class="btn btn-primary">{editingNote ? $t('snotes.save') : $t('snotes.create')}</button>
             </div>
         </form>
     </div>

@@ -1,125 +1,95 @@
-import axios from "axios";
-// Load environment variables from .env file for local development
-import 'dotenv/config'; 
-const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
-const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID
+// Server-side auth helper. Talks to the Spring Boot backend's self-hosted JWT
+// endpoints (no Auth0, no axios). Stores the JWT and a small user-info object in
+// httpOnly cookies.
+import { API_BASE } from "$lib/server/api.js";
 
-// Auth0 signup endpoint documentation: see https://auth0.com/docs/libraries/custom-signup#using-the-api
-async function signup(
-  email,
-  password,
-  firstName = null,
-  lastName = null,
-  cookies
-) {
-  var options = {
-    method: "post",
-    url: `https://${AUTH0_DOMAIN}/dbconnections/signup`,
-    data: {
-      client_id: AUTH0_CLIENT_ID,
-      email: email,
-      password: password,
-      connection: "Username-Password-Authentication",
-      // you can set any of these properties as well if needed
-      // username: "johndoe", // if not provided, email will be used as username for login. if provided, username has to be validated (must not already exist)
-      // given_name: "John",
-      // family_name: "Doe",
-      // nickname: "Johnny", // if not provided, the part before the @ of the e-mail address will be used
-      // name: "John Doe",
-      // picture: "http://example.org/jdoe.png",
-    },
-  };
-
-  if (firstName && firstName.length > 0) {
-    options.data.given_name = firstName;
-  }
-
-  if (lastName && lastName.length > 0) {
-    options.data.family_name = lastName;
-  }
-
-  try {
-    const response = await axios(options);
-    
-    // wait 2 seconds. Explanation: The user roles are set automatically on signup,
-    // but we have to wait a short amount of time to make sure that the roles are
-    // stored in the database of auth0. Otherwise the roles may not be in the
-    // userinfo object on the first login.
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    return await login(email, password, cookies);
-  } catch (error) {
-    throw error;
-  }
-}
-
-async function login(username, password, cookies) {
-  var options = {
-    method: "post",
-    url: `https://${AUTH0_DOMAIN}/oauth/token`,
-    data: {
-      grant_type: "password",
-      username: username,
-      password: password,
-      audience: `https://${AUTH0_DOMAIN}/api/v2/`,
-      scope: "openid profile email",
-      client_id: AUTH0_CLIENT_ID,
-    },
-  };
-
-  try {
-    const response = await axios(options);
-    const { id_token, access_token } = response.data;
-
-    console.log(id_token);
-    
-    // Get user info and set cookies
-    const userInfo = await getUserInfo(access_token);
-    
-    // Set cookies via SvelteKit cookies API
-    cookies.set('jwt_token', id_token, {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      sameSite: 'lax',
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production'
-    });
-    
-    cookies.set('user_info', JSON.stringify(userInfo), {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      sameSite: 'lax',
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production'
-    });
-    
-    return { success: true };
-  } catch (error) {
-    throw error;
-  }
-}
-
-async function getUserInfo(access_token) {
-  var options = {
-    method: "get",
-    url: `https://${AUTH0_DOMAIN}/oauth/userinfo`,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + access_token,
-    },
-  };
-
-  try {
-    const response = await axios(options);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-}
-
-const auth = {
-  signup,
-  login,
+const COOKIE_OPTIONS = {
+  path: "/",
+  maxAge: 60 * 60 * 24 * 7, // 7 days
+  sameSite: "lax",
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production"
 };
 
+function setSession(cookies, token, user) {
+  cookies.set("jwt_token", token, COOKIE_OPTIONS);
+  cookies.set("user_info", encodeURIComponent(JSON.stringify(user)), COOKIE_OPTIONS);
+}
+
+async function parseError(res, fallback) {
+  try {
+    const body = await res.json();
+    return body.message || body.error || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+async function login(email, password, cookies) {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res, "Login fehlgeschlagen"));
+  }
+  const data = await res.json();
+  setSession(cookies, data.token, data.user);
+  cookies.delete("demo_mode", { path: "/" }); // echtes Login → kein Demo-Modus
+  return data.user;
+}
+
+async function register(token, userData, cookies) {
+  const res = await fetch(`${API_BASE}/auth/register/${encodeURIComponent(token)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(userData)
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res, "Registrierung fehlgeschlagen"));
+  }
+  const data = await res.json();
+  setSession(cookies, data.token, data.user);
+  cookies.delete("demo_mode", { path: "/" });
+  return data.user;
+}
+
+async function demoLogin(as, cookies) {
+  const url = as ? `${API_BASE}/demo/login?as=${encodeURIComponent(as)}` : `${API_BASE}/demo/login`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(await parseError(res, "Demo-Login fehlgeschlagen"));
+  }
+  const data = await res.json();
+  setSession(cookies, data.token, data.user);
+  // Demo-Modus merken, damit der Rollen-Switcher angezeigt wird
+  cookies.set("demo_mode", "1", COOKIE_OPTIONS);
+  return data.user;
+}
+
+function logout(cookies) {
+  cookies.delete("jwt_token", { path: "/" });
+  cookies.delete("user_info", { path: "/" });
+  cookies.delete("demo_mode", { path: "/" });
+}
+
+// Maps a user role to its landing dashboard.
+export function dashboardForRole(role) {
+  switch (role) {
+    case "STUDENT":
+      return "/student/dashboard";
+    case "TEACHER":
+      return "/teacher/dashboard";
+    case "SCHOOL_ADMIN":
+    case "DEMO_USER":
+      return "/admin/dashboard";
+    case "SUPER_ADMIN":
+      return "/super/dashboard";
+    default:
+      return "/";
+  }
+}
+
+const auth = { login, register, demoLogin, logout };
 export default auth;

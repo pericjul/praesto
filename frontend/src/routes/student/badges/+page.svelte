@@ -1,4 +1,6 @@
 <script>
+    import { t } from "$lib/i18n";
+
     let { data } = $props();
 
     let badges = $derived(data?.badges ?? []);
@@ -23,18 +25,18 @@
 </script>
 
 <svelte:head>
-    <title>Meine Badges – Praesto</title>
+    <title>{$t('badges.headTitle')}</title>
 </svelte:head>
 
 <div class="page-wrapper">
     <header class="page-header">
         <div>
-            <h1 class="title">🏅 Meine Badges</h1>
-            <p class="subtitle">Sammle Badges durch deine Aktivitäten!</p>
+            <h1 class="title">{$t('badges.title')}</h1>
+            <p class="subtitle">{$t('badges.subtitle')}</p>
         </div>
         <div class="progress-card">
             <span class="progress-number">{earnedCount}/{totalCount}</span>
-            <span class="progress-label">Badges verdient</span>
+            <span class="progress-label">{$t('badges.earnedLabel')}</span>
         </div>
     </header>
 
@@ -47,7 +49,7 @@
         <div class="progress-bar">
             <div class="progress-fill" style="width: {totalCount > 0 ? (earnedCount / totalCount * 100) : 0}%"></div>
         </div>
-        <span class="progress-text">{Math.round(earnedCount / totalCount * 100 || 0)}% abgeschlossen</span>
+        <span class="progress-text">{Math.round(earnedCount / totalCount * 100 || 0)}% {$t('badges.completed')}</span>
     </div>
 
     <!-- Badge Sections -->
@@ -63,9 +65,9 @@
                                 <h3 class="badge-title">{item.badge.title}</h3>
                                 <p class="badge-desc">{item.badge.description}</p>
                                 {#if item.earned}
-                                    <span class="badge-date">✓ Verdient am {formatDate(item.earnedAt)}</span>
+                                    <span class="badge-date">{$t('badges.earnedOn')} {formatDate(item.earnedAt)}</span>
                                 {:else}
-                                    <span class="badge-locked">🔒 Noch nicht freigeschaltet</span>
+                                    <span class="badge-locked">{$t('badges.notUnlocked')}</span>
                                 {/if}
                             </div>
                         </div>
@@ -75,23 +77,23 @@
         {/if}
     {/snippet}
 
-    {@render badgeSection("🤖 KI-Training", sessionBadges)}
-    {@render badgeSection("📝 Notizen", noteBadges)}
-    {@render badgeSection("💼 Bewerbungen", applicationCountBadges)}
-    {@render badgeSection("🎯 Bewerbungs-Meilensteine", applicationStatusBadges)}
-    {@render badgeSection("✅ Aufgaben-Abgaben", submissionBadges)}
-    {@render badgeSection("💬 Feedback", feedbackBadges)}
-    {@render badgeSection("🎓 Bewertungen", gradeBadges)}
+    {@render badgeSection($t('badges.sectionTraining'), sessionBadges)}
+    {@render badgeSection($t('badges.sectionNotes'), noteBadges)}
+    {@render badgeSection($t('badges.sectionApplications'), applicationCountBadges)}
+    {@render badgeSection($t('badges.sectionMilestones'), applicationStatusBadges)}
+    {@render badgeSection($t('badges.sectionSubmissions'), submissionBadges)}
+    {@render badgeSection($t('badges.sectionFeedback'), feedbackBadges)}
+    {@render badgeSection($t('badges.sectionGrades'), gradeBadges)}
 
     <!-- Legende -->
     <div class="legend">
         <div class="legend-item">
             <span class="legend-badge earned-example">🎯</span>
-            <span>Verdient</span>
+            <span>{$t('badges.legendEarned')}</span>
         </div>
         <div class="legend-item">
             <span class="legend-badge locked-example">🔒</span>
-            <span>Noch nicht freigeschaltet</span>
+            <span>{$t('badges.legendLocked')}</span>
         </div>
     </div>
 </div>

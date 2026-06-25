@@ -6,9 +6,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,8 +84,12 @@ public class StudentDashboardService {
                                 .max(Comparator.comparing(Session::getStartedAt))
                                 .orElse(null);
 
+                // Übungs-Streak: aufeinanderfolgende Tage mit mind. einer Session
+                int streakDays = calculateStreak(sessions);
+
                 // Bewerbungen
-                int applicationsCount = applicationRepository.findByStudentId(studentId).size();
+                List<Application> myApplications = applicationRepository.findByStudentId(studentId);
+                int applicationsCount = myApplications.size();
 
                 // Badges
                 long badgesCount = badgeService.getEarnedBadgeCount(studentId);
@@ -123,6 +131,9 @@ public class StudentDashboardService {
                 // Nach Datum sortieren (neueste zuerst)
                 notifications.sort(Comparator.comparing(NotificationInfo::getCreatedAt).reversed());
 
+                // Anstehende Termine: Aufgaben-Deadlines + bevorstehende Bewerbungsgespräche
+                List<UpcomingEvent> upcomingEvents = buildUpcomingEvents(openAssignments, myApplications);
+
                 return StudentDashboardResponse.builder()
                                 .studentName(studentName)
                                 .openAssignmentsCount((long) openAssignments.size())
@@ -131,10 +142,117 @@ public class StudentDashboardService {
                                 .lastSessionStartedAt(lastSession != null ? lastSession.getStartedAt() : null)
                                 .totalSessionsCount(totalSessionsCount)
                                 .openSessionId(openSession != null ? openSession.getId() : null)
+                                .streakDays(streakDays)
                                 .applicationsCount(applicationsCount)
                                 .badgesCount(badgesCount)
                                 .earnedBadgeIcons(earnedBadgeIcons)
                                 .notifications(notifications)
+                                .upcomingEvents(upcomingEvents)
+                                .classFacts(computeClassFacts(studentId, classId))
                                 .build();
+        }
+
+        /**
+         * Anonyme Aggregat-Zahlen über die Klasse (ohne sich selbst) für den „Fakt des Tages".
+         */
+        private StudentClassFacts computeClassFacts(String selfId, String classId) {
+                if (classId == null || classId.isBlank()) {
+                        return null;
+                }
+                SchoolClass schoolClass;
+                try {
+                        schoolClass = schoolClassService.getMyClass();
+                } catch (Exception e) {
+                        return null;   // Schüler:in ohne Klasse o.ä. – dann keine Facts
+                }
+                if (schoolClass == null) {
+                        return null;
+                }
+                ZoneId zone = ZoneId.of("Europe/Zurich");
+                LocalDate today = LocalDate.now(zone);
+
+                int classmates = 0;
+                int practiced = 0;
+                int practicedToday = 0;
+                int threePlus = 0;
+                int withApplication = 0;
+
+                for (String sid : schoolClass.getStudentIds()) {
+                        if (sid.equals(selfId)) {
+                                continue;
+                        }
+                        classmates++;
+                        List<Session> sessions = sessionRepository.findByStudentId(sid);
+                        if (!sessions.isEmpty()) {
+                                practiced++;
+                        }
+                        if (sessions.size() >= 3) {
+                                threePlus++;
+                        }
+                        boolean practicedTodayByThis = sessions.stream()
+                                        .map(Session::getStartedAt)
+                                        .filter(Objects::nonNull)
+                                        .anyMatch(i -> i.atZone(zone).toLocalDate().isEqual(today));
+                        if (practicedTodayByThis) {
+                                practicedToday++;
+                        }
+                        if (!applicationRepository.findByStudentId(sid).isEmpty()) {
+                                withApplication++;
+                        }
+                }
+                return new StudentClassFacts(classmates, practiced, practicedToday, threePlus, withApplication);
+        }
+
+        /**
+         * Baut die Liste anstehender Termine: offene Aufgaben mit zukünftiger Deadline
+         * und Bewerbungen mit zukünftigem Gesprächstermin. Sortiert nach Datum, max. 5.
+         */
+        private List<UpcomingEvent> buildUpcomingEvents(List<Assignment> openAssignments, List<Application> applications) {
+                ZoneId zone = ZoneId.of("Europe/Zurich");
+                Instant now = Instant.now();
+                List<UpcomingEvent> events = new ArrayList<>();
+
+                for (Assignment a : openAssignments) {
+                        if (a.getDueDate() != null && a.getDueDate().isAfter(now)) {
+                                events.add(new UpcomingEvent("ASSIGNMENT", a.getTitle(), a.getDueDate()));
+                        }
+                }
+
+                for (Application app : applications) {
+                        if (app.getInterviewDate() != null) {
+                                Instant when = app.getInterviewDate().atStartOfDay(zone).toInstant();
+                                if (when.isAfter(now)) {
+                                        events.add(new UpcomingEvent("INTERVIEW", app.getCompanyName(), when));
+                                }
+                        }
+                }
+
+                events.sort(Comparator.comparing(UpcomingEvent::date));
+                return events.size() > 5 ? events.subList(0, 5) : events;
+        }
+
+        /**
+         * Anzahl aufeinanderfolgender Tage (bis heute oder gestern) mit mind. einer Session.
+         */
+        private int calculateStreak(List<Session> sessions) {
+                ZoneId zone = ZoneId.of("Europe/Zurich");
+                Set<LocalDate> days = sessions.stream()
+                                .map(Session::getStartedAt)
+                                .filter(Objects::nonNull)
+                                .map(i -> i.atZone(zone).toLocalDate())
+                                .collect(Collectors.toSet());
+
+                if (days.isEmpty()) {
+                        return 0;
+                }
+
+                LocalDate today = LocalDate.now(zone);
+                LocalDate cursor = days.contains(today) ? today : today.minusDays(1);
+                int streak = 0;
+                while (days.contains(cursor)) {
+                        streak++;
+                        cursor = cursor.minusDays(1);
+                }
+                return streak;
         }
 }

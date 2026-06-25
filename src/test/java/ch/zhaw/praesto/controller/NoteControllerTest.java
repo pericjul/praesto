@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.Answers;
-import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,7 +26,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
 @TestMethodOrder(OrderAnnotation.class)
 public class NoteControllerTest {
 
@@ -36,9 +35,9 @@ public class NoteControllerTest {
     @Autowired
     private NoteRepository noteRepository;
 
-    // Mock OpenAiChatModel wie in Übung 11 beschrieben
+    // Mock ChatModel wie in Übung 11 beschrieben
     @MockitoBean(answers = Answers.RETURNS_DEEP_STUBS)
-    private OpenAiChatModel chatModel;
+    private ChatModel chatModel;
 
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static String note_id = "";
@@ -59,7 +58,7 @@ public class NoteControllerTest {
         var result = mvc.perform(post("/api/notes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.companyName").value(TEST_COMPANY))
@@ -75,7 +74,7 @@ public class NoteControllerTest {
     public void testGetNote() throws Exception {
         mvc.perform(get("/api/notes/" + note_id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.companyName").value(TEST_COMPANY));
@@ -86,7 +85,7 @@ public class NoteControllerTest {
     public void testGetAllNotes() throws Exception {
         mvc.perform(get("/api/notes")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -103,7 +102,7 @@ public class NoteControllerTest {
         mvc.perform(put("/api/notes/" + note_id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.companyName").value("Microsoft"));
@@ -114,7 +113,7 @@ public class NoteControllerTest {
     public void testDeleteNote() throws Exception {
         mvc.perform(delete("/api/notes/" + note_id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }

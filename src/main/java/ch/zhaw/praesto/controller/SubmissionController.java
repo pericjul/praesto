@@ -43,16 +43,17 @@ public class SubmissionController {
 
         String studentId = userService.getUserId();
         String studentEmail = userService.getEmail().toLowerCase();
+        String schoolId = userService.getCurrentSchoolId();
 
-        // Assignment prüfen
-        Assignment assignment = assignmentRepository.findById(dto.getAssignmentId())
+        // Assignment prüfen (innerhalb der eigenen Schule)
+        Assignment assignment = assignmentRepository.findByIdAndSchoolId(dto.getAssignmentId(), schoolId)
                 .orElseThrow(() -> new NotFoundException(AUFGABE_NICHT_GEFUNDEN));
 
         // Prüfen ob Student in der Klasse ist
-        SchoolClass schoolClass = schoolClassRepository.findById(assignment.getClassId())
+        SchoolClass schoolClass = schoolClassRepository.findByIdAndSchoolId(assignment.getClassId(), schoolId)
                 .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
 
-        if (!schoolClass.hasStudent(studentEmail)) {
+        if (!schoolClass.hasStudent(studentId)) {
             throw new ForbiddenException("Du bist nicht in dieser Klasse");
         }
 
@@ -66,7 +67,9 @@ public class SubmissionController {
 
         // Submission erstellen
         Submission submission = Submission.builder()
+                .schoolId(schoolId)
                 .assignmentId(dto.getAssignmentId())
+                .studentId(studentId)
                 .studentEmail(studentEmail)
                 .type(assignment.getType())
                 .textContent(dto.getTextContent())
@@ -110,8 +113,9 @@ public class SubmissionController {
             throw new ForbiddenException("Nur fuer Lehrer");
         }
 
-        // Prüfen ob Teacher Zugriff auf Assignment hat
-        Assignment assignment = assignmentRepository.findById(assignmentId)
+        // Prüfen ob Teacher Zugriff auf Assignment hat (innerhalb der eigenen Schule)
+        Assignment assignment = assignmentRepository
+                .findByIdAndSchoolId(assignmentId, userService.getCurrentSchoolId())
                 .orElseThrow(() -> new NotFoundException(AUFGABE_NICHT_GEFUNDEN));
 
         if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
@@ -148,13 +152,10 @@ public class SubmissionController {
 
     /**
      * PUT /api/submissions/{id}/feedback - Feedback geben (Teacher)
-     * 
-     * HINWEIS: Badge-Check für FEEDBACK_RECEIVED und GRADES_RECEIVED wird hier
-     * nicht ausgelöst,
-     * da der aktuelle User der Lehrer ist. Die Badges werden vergeben, wenn der
-     * Student
-     * das nächste Mal eine Aktion durchführt (z.B. Aufgabe abgeben, Session
-     * starten).
+     *
+     * Löst nach dem Speichern den Badge-Check für den SCHÜLER aus (nicht für den
+     * Lehrer). Die studentId/-email kommen aus der Submission, damit FEEDBACK_RECEIVED
+     * und GRADES_RECEIVED Badges korrekt vergeben werden.
      */
     @PutMapping("/{id}/feedback")
     public ResponseEntity<Submission> giveFeedback(
@@ -165,11 +166,13 @@ public class SubmissionController {
             throw new ForbiddenException("Nur Lehrer koennen Feedback geben");
         }
 
-        Submission submission = submissionRepository.findById(id)
+        Submission submission = submissionRepository
+                .findByIdAndSchoolId(id, userService.getCurrentSchoolId())
                 .orElseThrow(() -> new NotFoundException("Abgabe nicht gefunden"));
 
-        // Prüfen ob Teacher Zugriff hat
-        Assignment assignment = assignmentRepository.findById(submission.getAssignmentId())
+        // Prüfen ob Teacher Zugriff hat (Aufgabe in eigener Schule + selbst erstellt)
+        Assignment assignment = assignmentRepository
+                .findByIdAndSchoolId(submission.getAssignmentId(), userService.getCurrentSchoolId())
                 .orElseThrow(() -> new NotFoundException(AUFGABE_NICHT_GEFUNDEN));
 
         if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
@@ -187,6 +190,12 @@ public class SubmissionController {
         submission.setReviewedByTeacherId(userService.getUserId());
 
         Submission updated = submissionRepository.save(submission);
+
+        // Badge-Check für den SCHÜLER (FEEDBACK_RECEIVED / GRADES_RECEIVED)
+        if (updated.getStudentId() != null) {
+            badgeService.checkAndAwardBadges(updated.getStudentId(), updated.getStudentEmail());
+        }
+
         return ResponseEntity.ok(updated);
     }
 
@@ -195,21 +204,23 @@ public class SubmissionController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Submission> getSubmission(@PathVariable String id) {
-        Submission submission = submissionRepository.findById(id)
+        Submission submission = submissionRepository
+                .findByIdAndSchoolId(id, userService.getCurrentSchoolId())
                 .orElseThrow(() -> new NotFoundException("Abgabe nicht gefunden"));
 
-        String userEmail = userService.getEmail().toLowerCase();
+        String userId = userService.getUserId();
         boolean isStudent = userService.userHasRole(STUDENT);
         boolean isTeacher = userService.userHasRole(TEACHER);
 
         // Student darf nur eigene sehen
-        if (isStudent && !submission.getStudentEmail().equals(userEmail)) {
+        if (isStudent && !userId.equals(submission.getStudentId())) {
             throw new ForbiddenException("Keine Berechtigung");
         }
 
         // Teacher darf nur Abgaben seiner Aufgaben sehen
         if (isTeacher) {
-            Assignment assignment = assignmentRepository.findById(submission.getAssignmentId())
+            Assignment assignment = assignmentRepository
+                    .findByIdAndSchoolId(submission.getAssignmentId(), userService.getCurrentSchoolId())
                     .orElseThrow(() -> new NotFoundException(AUFGABE_NICHT_GEFUNDEN));
             if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
                 throw new ForbiddenException("Keine Berechtigung");

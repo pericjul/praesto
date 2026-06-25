@@ -10,7 +10,6 @@ import ch.zhaw.praesto.model.Assignment;
 import ch.zhaw.praesto.model.AssignmentCreateDTO;
 import ch.zhaw.praesto.model.AssignmentStatus;
 import ch.zhaw.praesto.model.SchoolClass;
-import ch.zhaw.praesto.service.AssignmentService;
 import ch.zhaw.praesto.service.UserService;
 
 import org.springframework.http.HttpStatus;
@@ -20,28 +19,33 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * Aufgabenverwaltung. Alle Einzelabfragen und Listen sind auf die {@code schoolId}
+ * des aktuellen Users gefiltert (Mandanten-Isolation).
+ */
 @RestController
 @RequestMapping("/api")
 public class AssignmentController {
 
     private static final String ASSIGNMENT_NICHT_GEFUNDEN = "Assignment nicht gefunden";
     private static final String TEACHER = "TEACHER";
+    private static final String KEINE_BERECHTIGUNG = "Keine Berechtigung fuer dieses Assignment";
+
     private final AssignmentRepository assignmentRepository;
     private final SchoolClassRepository schoolClassRepository;
     private final UserService userService;
 
     public AssignmentController(
-            AssignmentRepository assignmentRepository, 
+            AssignmentRepository assignmentRepository,
             SchoolClassRepository schoolClassRepository,
-            UserService userService,
-            AssignmentService assignmentService) {
+            UserService userService) {
         this.assignmentRepository = assignmentRepository;
         this.schoolClassRepository = schoolClassRepository;
         this.userService = userService;
     }
 
     @PostMapping("/assignment")
-    public ResponseEntity<Assignment> createAssignment(@RequestBody AssignmentCreateDTO dto) {
+    public ResponseEntity<List<Assignment>> createAssignment(@RequestBody AssignmentCreateDTO dto) {
 
         if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer dürfen Assignments erstellen");
@@ -50,27 +54,47 @@ public class AssignmentController {
         if (dto.getTitle() == null || dto.getTitle().isBlank()) {
             throw new BadRequestException("Titel darf nicht leer sein");
         }
-        if (dto.getClassId() == null) {
-            throw new BadRequestException("classId fehlt");
-        }
         if (dto.getType() == null) {
             throw new BadRequestException("Aufgabentyp fehlt");
         }
 
-        Assignment assignment = Assignment.builder()
-                .title(dto.getTitle())
-                .description(dto.getDescription())
-                .durationMin(dto.getDurationMin())
-                .dueDate(dto.getDueDate() != null ? Instant.parse(dto.getDueDate()) : null)
-                .classId(dto.getClassId())
-                .type(dto.getType())
-                .status(AssignmentStatus.ASSIGNED)
-                .createdByTeacherId(userService.getUserId())
-                .createdAt(Instant.now())
-                .build();
+        // Klassen bestimmen: classIds (mehrere) hat Vorrang, sonst classId (einzeln)
+        List<String> classIds = (dto.getClassIds() != null && !dto.getClassIds().isEmpty())
+                ? dto.getClassIds()
+                : (dto.getClassId() != null ? List.of(dto.getClassId()) : List.of());
+        if (classIds.isEmpty()) {
+            throw new BadRequestException("Bitte mindestens eine Klasse auswählen");
+        }
 
-        Assignment saved = assignmentRepository.save(assignment);
-        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+        String schoolId = userService.getCurrentSchoolId();
+        String teacherId = userService.getCurrentUserId();
+        Instant now = Instant.now();
+        Instant dueDate = dto.getDueDate() != null ? Instant.parse(dto.getDueDate()) : null;
+
+        List<Assignment> created = new java.util.ArrayList<>();
+        for (String classId : classIds) {
+            SchoolClass schoolClass = schoolClassRepository.findByIdAndSchoolId(classId, schoolId)
+                    .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
+            if (!schoolClass.getTeacherId().equals(teacherId)) {
+                throw new ForbiddenException("Keine Berechtigung fuer diese Klasse");
+            }
+
+            Assignment assignment = Assignment.builder()
+                    .schoolId(schoolId)
+                    .title(dto.getTitle())
+                    .description(dto.getDescription())
+                    .durationMin(dto.getDurationMin())
+                    .dueDate(dueDate)
+                    .classId(classId)
+                    .type(dto.getType())
+                    .status(AssignmentStatus.ASSIGNED)
+                    .createdByTeacherId(teacherId)
+                    .createdAt(now)
+                    .build();
+            created.add(assignmentRepository.save(assignment));
+        }
+
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     // PUT Status nur Teacher
@@ -78,25 +102,16 @@ public class AssignmentController {
     public ResponseEntity<Assignment> updateStatus(
             @PathVariable String id,
             @RequestBody UpdateAssignmentStatusRequest req) {
-        // Rollen Check
         if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen den Status ändern");
         }
-
-        // Request validieren
         if (req.getStatus() == null) {
             throw new BadRequestException("Status fehlt");
         }
 
-        // Assignment existiert?
-        Assignment assignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(ASSIGNMENT_NICHT_GEFUNDEN));
-
-        // Status updaten ueber Service
+        Assignment assignment = requireOwnAssignment(id);
         assignment.setStatus(req.getStatus());
-        Assignment updated = assignmentRepository.save(assignment);
-
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(assignmentRepository.save(assignment));
     }
 
     // GET Alle Assignments des aktuellen Lehrers (MUSS VOR /{classId} kommen!)
@@ -105,54 +120,43 @@ public class AssignmentController {
         if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen ihre Assignments sehen");
         }
-
-        String teacherId = userService.getUserId();
-        List<Assignment> assignments = assignmentRepository.findByCreatedByTeacherIdOrderByCreatedAtDesc(teacherId);
+        List<Assignment> assignments = assignmentRepository
+                .findBySchoolIdAndCreatedByTeacherIdOrderByCreatedAtDesc(
+                        userService.getCurrentSchoolId(), userService.getCurrentUserId());
         return ResponseEntity.ok(assignments);
     }
 
-    // GET Assignments fuer eine Klasse Teacher und Student duerfen lesen
+    // GET Assignments fuer eine Klasse - Teacher und Student duerfen lesen
     @GetMapping("/assignments/class/{classId}")
-    public ResponseEntity<List<Assignment>> getAssignmentsForClass(
-            @PathVariable String classId) {
-        // Rollen Check: nur Teacher oder Student duerfen lesen
+    public ResponseEntity<List<Assignment>> getAssignmentsForClass(@PathVariable String classId) {
         if (!userService.userHasRole(TEACHER) && !userService.userHasRole("STUDENT")) {
             throw new ForbiddenException("Nur Lehrer oder Schueler duerfen Assignments ansehen");
         }
-
-        List<Assignment> assignments = assignmentRepository.findByClassId(classId);
+        List<Assignment> assignments = assignmentRepository
+                .findBySchoolIdAndClassId(userService.getCurrentSchoolId(), classId);
         return ResponseEntity.ok(assignments);
     }
 
-    // GET Eine einzelne Assignment (Teacher und Student)e
+    // GET Eine einzelne Assignment (Teacher und Student)
     @GetMapping("/assignments/{id}")
     public ResponseEntity<Assignment> getAssignmentById(@PathVariable String id) {
-        Assignment assignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(ASSIGNMENT_NICHT_GEFUNDEN));
+        Assignment assignment = requireAssignmentInSchool(id);
 
         boolean isTeacher = userService.userHasRole(TEACHER);
         boolean isStudent = userService.userHasRole("STUDENT");
 
-        // Teacher darf nur eigene sehen
         if (isTeacher) {
-            if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
-                throw new ForbiddenException("Keine Berechtigung fuer dieses Assignment");
+            if (!assignment.getCreatedByTeacherId().equals(userService.getCurrentUserId())) {
+                throw new ForbiddenException(KEINE_BERECHTIGUNG);
             }
-        }
-        // Student darf Assignments seiner Klasse sehen
-        else if (isStudent) {
-            String studentEmail = userService.getEmail().toLowerCase();
-            
-            // Klasse des Assignments laden
-            SchoolClass schoolClass = schoolClassRepository.findById(assignment.getClassId())
+        } else if (isStudent) {
+            SchoolClass schoolClass = schoolClassRepository
+                    .findByIdAndSchoolId(assignment.getClassId(), userService.getCurrentSchoolId())
                     .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
-            
-            // Prüfen ob Student in der Klasse ist
-            if (!schoolClass.hasStudent(studentEmail)) {
+            if (!schoolClass.hasStudent(userService.getCurrentUserId())) {
                 throw new ForbiddenException("Du bist nicht in dieser Klasse");
             }
-        }
-        else {
+        } else {
             throw new ForbiddenException("Keine Berechtigung");
         }
 
@@ -165,15 +169,7 @@ public class AssignmentController {
         if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen Assignments loeschen");
         }
-
-        Assignment assignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(ASSIGNMENT_NICHT_GEFUNDEN));
-
-        // Nur eigene Assignments löschen
-        if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
-            throw new ForbiddenException("Keine Berechtigung fuer dieses Assignment");
-        }
-
+        Assignment assignment = requireOwnAssignment(id);
         assignmentRepository.delete(assignment);
         return ResponseEntity.noContent().build();
     }
@@ -183,25 +179,17 @@ public class AssignmentController {
     public ResponseEntity<Assignment> updateAssignment(
             @PathVariable String id,
             @RequestBody AssignmentCreateDTO dto) {
-        
+
         if (!userService.userHasRole(TEACHER)) {
             throw new ForbiddenException("Nur Lehrer duerfen Assignments bearbeiten");
         }
 
-        Assignment assignment = assignmentRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(ASSIGNMENT_NICHT_GEFUNDEN));
+        Assignment assignment = requireOwnAssignment(id);
 
-        // Nur eigene Assignments bearbeiten
-        if (!assignment.getCreatedByTeacherId().equals(userService.getUserId())) {
-            throw new ForbiddenException("Keine Berechtigung fuer dieses Assignment");
-        }
-
-        // Validierung
         if (dto.getTitle() == null || dto.getTitle().isBlank()) {
             throw new BadRequestException("Titel darf nicht leer sein");
         }
 
-        // Update
         assignment.setTitle(dto.getTitle());
         assignment.setDescription(dto.getDescription());
         assignment.setType(dto.getType());
@@ -211,7 +199,23 @@ public class AssignmentController {
             assignment.setDueDate(Instant.parse(dto.getDueDate()));
         }
 
-        Assignment updated = assignmentRepository.save(assignment);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(assignmentRepository.save(assignment));
+    }
+
+    // ============================================================
+    // Intern
+    // ============================================================
+
+    private Assignment requireAssignmentInSchool(String id) {
+        return assignmentRepository.findByIdAndSchoolId(id, userService.getCurrentSchoolId())
+                .orElseThrow(() -> new NotFoundException(ASSIGNMENT_NICHT_GEFUNDEN));
+    }
+
+    private Assignment requireOwnAssignment(String id) {
+        Assignment assignment = requireAssignmentInSchool(id);
+        if (!assignment.getCreatedByTeacherId().equals(userService.getCurrentUserId())) {
+            throw new ForbiddenException(KEINE_BERECHTIGUNG);
+        }
+        return assignment;
     }
 }

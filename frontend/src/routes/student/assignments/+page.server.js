@@ -1,7 +1,7 @@
 // frontend/src/routes/student/assignments/+page.server.js
 import { redirect } from "@sveltejs/kit";
 
-const API_BASE = "http://localhost:8080/api";
+import { API_BASE, uploadFile } from "$lib/server/api.js";
 
 export async function load({ locals, fetch }) {
     // 1) Nicht eingeloggt → Login
@@ -10,10 +10,10 @@ export async function load({ locals, fetch }) {
     }
 
     const user = locals.user ?? {};
-    const roles = user.user_roles ?? [];
+    const role = user.role;
 
     // 2) Nur Studenten sollen diese Seite sehen
-    if (!roles.includes("STUDENT")) {
+    if (role !== "STUDENT") {
         throw redirect(302, "/dashboard");
     }
 
@@ -109,12 +109,21 @@ export const actions = {
         const document = formData.get("document");
         const comment = formData.get("comment");
 
-        // TODO: Echten File-Upload implementieren (z.B. zu S3/MinIO)
-        // Für jetzt speichern wir nur den Dateinamen
+        if (!document || document.size === 0) {
+            return { error: "Bitte wähle eine Datei aus." };
+        }
+
+        let uploaded;
+        try {
+            uploaded = await uploadFile(document, token);
+        } catch {
+            return { error: "Datei-Upload fehlgeschlagen. Bitte versuche es erneut." };
+        }
+
         const dto = {
             assignmentId,
-            fileUrl: `/uploads/${Date.now()}_${document?.name || "document"}`,
-            fileName: document?.name || "document",
+            fileUrl: uploaded.fileUrl,
+            fileName: uploaded.fileName,
             comment: comment || null
         };
 
@@ -202,11 +211,21 @@ export const actions = {
         const assignmentId = formData.get("assignmentId");
         const video = formData.get("video");
 
-        // TODO: Echten File-Upload implementieren
+        if (!video || video.size === 0) {
+            return { error: "Bitte wähle ein Video aus." };
+        }
+
+        let uploaded;
+        try {
+            uploaded = await uploadFile(video, token);
+        } catch {
+            return { error: "Datei-Upload fehlgeschlagen. Bitte versuche es erneut." };
+        }
+
         const dto = {
             assignmentId,
-            fileUrl: `/uploads/${Date.now()}_${video?.name || "video"}`,
-            fileName: video?.name || "video"
+            fileUrl: uploaded.fileUrl,
+            fileName: uploaded.fileName
         };
 
         try {

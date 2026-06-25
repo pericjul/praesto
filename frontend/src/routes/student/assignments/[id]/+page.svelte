@@ -1,6 +1,8 @@
 <script>
     import { enhance } from "$app/forms";
     import { goto } from "$app/navigation";
+    import { t } from "$lib/i18n";
+    import { get } from "svelte/store";
 
     let { data, form } = $props();
 
@@ -13,12 +15,13 @@
     let researchLinks = $state("");
     let isStartingSession = $state(false);
 
-    const typeLabels = {
-        AI_INTERVIEW: "🤖 KI-Interview",
-        DOCUMENT_UPLOAD: "📄 Dokument",
-        SELF_REFLECTION: "✍️ Reflexion",
-        RESEARCH: "🔍 Recherche"
-    };
+    let typeLabels = $derived({
+        AI_INTERVIEW: $t("stask.typeInterview"),
+        DOCUMENT_UPLOAD: $t("stask.typeDocument"),
+        SELF_REFLECTION: $t("stask.typeReflection"),
+        RESEARCH: $t("stask.typeResearch"),
+        VIDEO_PITCH: $t("stask.typeVideo")
+    });
 
     function formatDate(date) {
         if (!date) return "-";
@@ -59,10 +62,10 @@
                 const newSession = await response.json();
                 goto(`/student/sessions/${newSession.id}`);
             } else {
-                alert("Fehler beim Starten");
+                alert(get(t)("stask.errorStarting"));
             }
         } catch {
-            alert("Verbindungsfehler");
+            alert(get(t)("stask.errorConnection"));
         } finally {
             isStartingSession = false;
         }
@@ -70,39 +73,39 @@
 </script>
 
 <svelte:head>
-    <title>{assignment?.title ?? "Aufgabe"} – Praesto</title>
+    <title>{assignment?.title ?? $t("stask.headFallback")} – Praesto</title>
 </svelte:head>
 
 <div class="page-wrapper">
     {#if !assignment}
         <div class="empty-state">
             <span class="empty-icon">📭</span>
-            <h2>Aufgabe nicht gefunden</h2>
-            <p>Diese Aufgabe existiert nicht oder du hast keinen Zugriff.</p>
-            <a href="/student/assignments" class="btn btn-primary">← Zur Übersicht</a>
+            <h2>{$t("stask.notFoundTitle")}</h2>
+            <p>{$t("stask.notFoundText")}</p>
+            <a href="/student/assignments" class="btn btn-primary">{$t("stask.toOverview")}</a>
         </div>
     {:else}
         <!-- Header -->
         <header class="page-header">
-            <a href="/student/assignments" class="back-link">← Zurück zu Aufgaben</a>
+            <a href="/student/assignments" class="back-link">{$t("stask.back")}</a>
             <h1 class="title">{assignment.title}</h1>
             <div class="header-title-row">
                 <span class="type-badge">{typeLabels[assignment.type] ?? assignment.type}</span>
                 {#if submission}
-                    <span class="status-badge success">✓ Abgegeben</span>
+                    <span class="status-badge success">{$t("stask.badgeSubmitted")}</span>
                 {:else if isOverdue(assignment.dueDate)}
-                    <span class="status-badge danger">⚠️ Überfällig</span>
+                    <span class="status-badge danger">{$t("stask.badgeOverdue")}</span>
                 {:else}
                     {@const days = getDaysRemaining(assignment.dueDate)}
                     {#if days !== null && days <= 3}
-                        <span class="status-badge warning">🔥 Noch {days} {days === 1 ? 'Tag' : 'Tage'}</span>
+                        <span class="status-badge warning">{$t("stask.badgeDayLeft")} {days} {days === 1 ? $t("stask.dayOne") : $t("stask.dayMany")}</span>
                     {:else}
-                        <span class="status-badge">Offen</span>
+                        <span class="status-badge">{$t("stask.badgeOpen")}</span>
                     {/if}
                 {/if}
-                <span class="header-meta">📅 Deadline: {formatDate(assignment.dueDate)}</span>
+                <span class="header-meta">{$t("stask.deadline")} {formatDate(assignment.dueDate)}</span>
                 {#if assignment.durationMin}
-                    <span class="header-meta">⏱️ {assignment.durationMin} Min</span>
+                    <span class="header-meta">⏱️ {assignment.durationMin} {$t("stask.minutes")}</span>
                 {/if}
             </div>
         </header>
@@ -120,7 +123,7 @@
                 <!-- Beschreibung -->
                 {#if assignment.description}
                     <section class="card">
-                        <h2>📋 Beschreibung</h2>
+                        <h2>{$t("stask.descriptionTitle")}</h2>
                         <p class="description">{assignment.description}</p>
                     </section>
                 {/if}
@@ -128,19 +131,36 @@
                 <!-- Bereits abgegeben -->
                 {#if submission}
                     <section class="card card-success">
-                        <h2>✅ Deine Abgabe</h2>
-                        <p class="meta-info">Abgegeben am {formatDateTime(submission.submittedAt)}</p>
+                        <h2>{$t("stask.yourSubmissionTitle")}</h2>
+                        <p class="meta-info">{$t("stask.submittedAt")} {formatDateTime(submission.submittedAt)}</p>
 
                         {#if submission.textContent}
                             <div class="content-box">
-                                <strong>Dein Text:</strong>
+                                <strong>{$t("stask.yourText")}</strong>
                                 <p>{submission.textContent}</p>
                             </div>
                         {/if}
 
+                        {#if submission.links && submission.links.length > 0}
+                            <div class="content-box">
+                                <strong>{$t("stask.yourLinks")}</strong>
+                                <ul class="links-list">
+                                    {#each submission.links as link}
+                                        <li><a href={link} target="_blank" rel="noopener">{link}</a></li>
+                                    {/each}
+                                </ul>
+                            </div>
+                        {/if}
+
+                        {#if submission.fileUrl}
+                            <a href={`/files/${submission.fileUrl}`} class="btn btn-secondary" download>
+                                📎 {submission.fileName ?? $t("stask.fileFallback")} {$t("stask.download")}
+                            </a>
+                        {/if}
+
                         {#if submission.chatSessionId}
                             <a href="/student/sessions/{submission.chatSessionId}" class="btn btn-secondary">
-                                💬 Chat-Verlauf ansehen
+                                {$t("stask.viewChat")}
                             </a>
                         {/if}
                     </section>
@@ -149,65 +169,74 @@
                     {#if submission.teacherFeedback}
                         <section class="card card-feedback">
                             <div class="feedback-header">
-                                <h2>💬 Feedback</h2>
+                                <h2>{$t("stask.feedbackTitle")}</h2>
                                 {#if submission.grade != null}
-                                    <span class="grade-badge">Note {submission.grade}</span>
+                                    <span class="grade-badge">{$t("stask.gradeLabel")} {submission.grade}</span>
                                 {/if}
                             </div>
                             <p class="feedback-text">{submission.teacherFeedback}</p>
                         </section>
                     {:else}
                         <section class="card card-waiting">
-                            <p>⏳ Deine Lehrperson wird deine Abgabe bald bewerten.</p>
+                            <p>{$t("stask.waiting")}</p>
                         </section>
                     {/if}
 
                 {:else}
                     <!-- Noch nicht abgegeben -->
                     <section class="card">
-                        <h2>📝 Aufgabe bearbeiten</h2>
+                        <h2>{$t("stask.workTitle")}</h2>
 
                         {#if assignment.type === "AI_INTERVIEW"}
-                            <p class="info-text">Starte ein KI-Bewerbungsgespräch und reiche es als Abgabe ein.</p>
+                            <p class="info-text">{$t("stask.interviewInfo")}</p>
                             <button class="btn btn-primary btn-large" onclick={startAIInterview} disabled={isStartingSession}>
-                                {isStartingSession ? "Wird gestartet..." : "🤖 Interview starten"}
+                                {isStartingSession ? $t("stask.interviewStarting") : $t("stask.interviewStart")}
                             </button>
 
                         {:else if assignment.type === "SELF_REFLECTION"}
                             <form method="POST" action="?/submitReflection" use:enhance>
-                                <p class="info-text">Schreibe eine Selbstreflexion (mind. 50 Zeichen).</p>
+                                <p class="info-text">{$t("stask.reflectionInfo")}</p>
                                 <div class="form-group">
-                                    <textarea name="reflection" bind:value={reflectionText} rows="6" placeholder="Deine Reflexion..."></textarea>
-                                    <span class="char-count">{reflectionText.length} / 50 Zeichen</span>
+                                    <textarea name="reflection" bind:value={reflectionText} rows="6" placeholder={$t("stask.reflectionPlaceholder")}></textarea>
+                                    <span class="char-count">{reflectionText.length} {$t("stask.charsOf50")}</span>
                                 </div>
-                                <button type="submit" class="btn btn-primary" disabled={reflectionText.length < 50}>Abgeben</button>
+                                <button type="submit" class="btn btn-primary" disabled={reflectionText.length < 50}>{$t("stask.submit")}</button>
                             </form>
 
                         {:else if assignment.type === "RESEARCH"}
                             <form method="POST" action="?/submitResearch" use:enhance>
-                                <p class="info-text">Dokumentiere deine Recherche-Ergebnisse.</p>
+                                <p class="info-text">{$t("stask.researchInfo")}</p>
                                 <div class="form-group">
-                                    <textarea name="researchText" bind:value={researchText} rows="5" placeholder="Deine Ergebnisse..."></textarea>
-                                    <span class="char-count">{researchText.length} / 50 Zeichen</span>
+                                    <textarea name="researchText" bind:value={researchText} rows="5" placeholder={$t("stask.researchPlaceholder")}></textarea>
+                                    <span class="char-count">{researchText.length} {$t("stask.charsOf50")}</span>
                                 </div>
                                 <div class="form-group">
-                                    <label>Links (optional, einer pro Zeile)</label>
+                                    <label>{$t("stask.linksLabel")}</label>
                                     <textarea name="links" bind:value={researchLinks} rows="2" placeholder="https://..."></textarea>
                                 </div>
-                                <button type="submit" class="btn btn-primary" disabled={researchText.length < 50}>Abgeben</button>
+                                <button type="submit" class="btn btn-primary" disabled={researchText.length < 50}>{$t("stask.submit")}</button>
                             </form>
 
                         {:else if assignment.type === "DOCUMENT_UPLOAD"}
                             <form method="POST" action="?/submitDocument" enctype="multipart/form-data" use:enhance>
-                                <p class="info-text">Lade ein Dokument hoch (PDF, Word, Bild).</p>
+                                <p class="info-text">{$t("stask.documentInfo")}</p>
                                 <div class="form-group">
-                                    <input type="file" name="document" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
+                                    <input type="file" name="document" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required />
                                 </div>
-                                <button type="submit" class="btn btn-primary">Hochladen</button>
+                                <button type="submit" class="btn btn-primary">{$t("stask.upload")}</button>
+                            </form>
+
+                        {:else if assignment.type === "VIDEO_PITCH"}
+                            <form method="POST" action="?/submitVideo" enctype="multipart/form-data" use:enhance>
+                                <p class="info-text">{$t("stask.videoInfo")}</p>
+                                <div class="form-group">
+                                    <input type="file" name="video" accept="video/*" required />
+                                </div>
+                                <button type="submit" class="btn btn-primary">{$t("stask.upload")}</button>
                             </form>
 
                         {:else}
-                            <p class="info-text">Dieser Aufgabentyp wird noch nicht unterstützt.</p>
+                            <p class="info-text">{$t("stask.unsupported")}</p>
                         {/if}
                     </section>
                 {/if}
@@ -216,24 +245,24 @@
             <!-- Sidebar -->
             <aside class="sidebar">
                 <div class="card">
-                    <h3>💡 Tipps</h3>
+                    <h3>{$t("stask.tipsTitle")}</h3>
                     {#if assignment.type === "AI_INTERVIEW"}
                         <ul class="tips-list">
-                            <li>Antworte in ganzen Sätzen</li>
-                            <li>Nimm dir Zeit zum Nachdenken</li>
-                            <li>Sei ehrlich und authentisch</li>
+                            <li>{$t("stask.tipInterview1")}</li>
+                            <li>{$t("stask.tipInterview2")}</li>
+                            <li>{$t("stask.tipInterview3")}</li>
                         </ul>
                     {:else if assignment.type === "SELF_REFLECTION"}
                         <ul class="tips-list">
-                            <li>Sei ehrlich zu dir selbst</li>
-                            <li>Beschreibe konkrete Situationen</li>
-                            <li>Überlege, was du lernen kannst</li>
+                            <li>{$t("stask.tipReflection1")}</li>
+                            <li>{$t("stask.tipReflection2")}</li>
+                            <li>{$t("stask.tipReflection3")}</li>
                         </ul>
                     {:else}
                         <ul class="tips-list">
-                            <li>Lies die Aufgabe genau durch</li>
-                            <li>Plane genug Zeit ein</li>
-                            <li>Frag bei Unklarheiten nach</li>
+                            <li>{$t("stask.tipDefault1")}</li>
+                            <li>{$t("stask.tipDefault2")}</li>
+                            <li>{$t("stask.tipDefault3")}</li>
                         </ul>
                     {/if}
                 </div>

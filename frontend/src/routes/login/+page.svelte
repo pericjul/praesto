@@ -1,5 +1,6 @@
 <script>
     import logo from "$lib/assets/praesto-logo.png";
+    import { t } from "$lib/i18n";
     let { form } = $props();
 </script>
 
@@ -34,8 +35,8 @@
 
         <div class="login-form-section">
             <div class="login-card">
-                <h2>Willkommen zurück! 👋</h2>
-                <p class="login-subtitle">Melde dich an, um fortzufahren</p>
+                <h2>{$t('login.welcome')}</h2>
+                <p class="login-subtitle">{$t('login.subtitle')}</p>
 
                 {#if form?.error}
                     <div class="alert alert-danger">
@@ -45,7 +46,7 @@
 
                 <form method="POST" class="login-form">
                     <div class="form-group">
-                        <label for="email">E-Mail</label>
+                        <label for="email">{$t('login.email')}</label>
                         <input
                             type="email"
                             id="email"
@@ -56,7 +57,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="password">Passwort</label>
+                        <label for="password">{$t('login.password')}</label>
                         <input
                             type="password"
                             id="password"
@@ -67,14 +68,16 @@
                     </div>
 
                     <button type="submit" class="btn-login">
-                        Anmelden
+                        {$t('login.submit')}
                     </button>
                 </form>
 
                 <div class="login-footer">
-                    <span>Noch kein Konto?</span>
-                    <a href="/signup">Jetzt registrieren</a>
+                    <span>{$t('login.noAccount')}</span>
+                    <a href="/signup">{$t('login.register')}</a>
                 </div>
+
+                <a href="/demo" class="demo-link">{$t('login.demo')}</a>
             </div>
         </div>
     </div>
@@ -274,6 +277,22 @@
 
     .login-footer a:hover {
         text-decoration: underline;
+    }
+
+    .demo-link {
+        display: block;
+        text-align: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee5f2;
+        color: #6b647a;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .demo-link:hover {
+        color: #2F124D;
     }
 
     @media (max-width: 700px) {

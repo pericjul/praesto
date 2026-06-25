@@ -1,8 +1,7 @@
 package ch.zhaw.praesto.model;
 
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -12,20 +11,34 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "applications")
+@Entity
+@Table(name = "applications", indexes = {
+        @Index(name = "idx_application_student", columnList = "studentId")
+})
 public class Application {
 
     @Id
     private String id;
 
-    private String studentId;           // aus JWT
-    private String companyName;         // Firmenname
-    private String position;            // Position/Stelle
-    private ApplicationStatus status;   // Status der Bewerbung
+    @PrePersist
+    void ensureId() {
+        if (id == null) {
+            id = java.util.UUID.randomUUID().toString();
+        }
+    }
 
-    private LocalDate appliedAt;        // Datum der Bewerbung
-    private LocalDate interviewDate;    // Gesprächstermin (optional)
-    private String notes;               // Notizen zur Bewerbung
+    private String studentId;
+    private String companyName;
+    private String position;
+
+    @Enumerated(EnumType.STRING)
+    private ApplicationStatus status;
+
+    private LocalDate appliedAt;
+    private LocalDate interviewDate;
+
+    @Column(columnDefinition = "text")
+    private String notes;
 
     private Instant createdAt;
     private Instant updatedAt;

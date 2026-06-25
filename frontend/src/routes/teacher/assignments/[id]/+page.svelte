@@ -1,20 +1,64 @@
 <script>
     import { enhance } from "$app/forms";
     import { invalidateAll } from "$app/navigation";
+    import { t } from "$lib/i18n";
+    import { get } from "svelte/store";
 
     let { data, form } = $props();
 
     let showModal = $state(false);
     let selectedSub = $state(null);
     let filterStatus = $state("all");
+    let feedbackText = $state("");
+
+    let FEEDBACK_SNIPPETS = $derived([
+        $t('tgrade.snippet1'),
+        $t('tgrade.snippet2'),
+        $t('tgrade.snippet3'),
+        $t('tgrade.snippet4'),
+        $t('tgrade.snippet5'),
+        $t('tgrade.snippet6')
+    ]);
+
+    function addSnippet(text) {
+        feedbackText = feedbackText.trim() ? `${feedbackText.trim()} ${text}` : text;
+    }
+
+    function csvEscape(value) {
+        const s = value == null ? "" : String(value);
+        return `"${s.replace(/"/g, '""')}"`;
+    }
+
+    function exportCsv() {
+        const tr = get(t);
+        const rows = [[tr('tgrade.csvName'), tr('tgrade.csvEmail'), tr('tgrade.csvSubmittedAt'), tr('tgrade.csvStatus'), tr('tgrade.csvGrade'), tr('tgrade.csvFeedback')]];
+        for (const sub of submissions) {
+            rows.push([
+                studentLabel(sub),
+                sub.studentEmail ?? "",
+                sub.submittedAt ? new Date(sub.submittedAt).toLocaleString("de-CH") : "",
+                sub.teacherFeedback ? tr('tgrade.reviewed') : tr('tgrade.open'),
+                sub.grade ?? "",
+                sub.teacherFeedback ?? ""
+            ]);
+        }
+        const csv = rows.map((r) => r.map(csvEscape).join(";")).join("\n");
+        const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `abgaben_${(assignment?.title ?? "aufgabe").replace(/[^a-z0-9]+/gi, "_")}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
 
     let assignment = $derived(data?.assignment ?? null);
     let submissions = $derived(data?.submissions ?? []);
     let schoolClass = $derived(data?.schoolClass ?? null);
-    let allStudents = $derived(schoolClass?.studentEmails ?? []);
-    let submittedEmails = $derived(submissions.map((s) => s.studentEmail));
+    let allStudents = $derived(schoolClass?.students ?? []);
+    let submittedIds = $derived(submissions.map((s) => s.studentId));
     let pendingStudents = $derived(
-        allStudents.filter((email) => !submittedEmails.includes(email)),
+        allStudents.filter((student) => !submittedIds.includes(student.id)),
     );
 
     let needsFeedbackCount = $derived(
@@ -32,12 +76,12 @@
         return submissions;
     });
 
-    const typeLabels = {
-        AI_INTERVIEW: "🤖 KI-Interview",
-        DOCUMENT_UPLOAD: "📄 Dokument",
-        SELF_REFLECTION: "✍️ Reflexion",
-        RESEARCH: "🔍 Recherche",
-    };
+    let typeLabels = $derived({
+        AI_INTERVIEW: $t('tgrade.typeInterview'),
+        DOCUMENT_UPLOAD: $t('tgrade.typeDocument'),
+        SELF_REFLECTION: $t('tgrade.typeReflection'),
+        RESEARCH: $t('tgrade.typeResearch'),
+    });
 
     function formatDate(date) {
         if (!date) return "-";
@@ -63,8 +107,20 @@
         return email?.split("@")[0] ?? "";
     }
 
+    // Map studentId -> Schüler-Objekt (für echte Namen statt Email-Präfix)
+    let studentsById = $derived(
+        Object.fromEntries((schoolClass?.students ?? []).map((s) => [s.id, s])),
+    );
+
+    function studentLabel(sub) {
+        const u = studentsById[sub.studentId];
+        if (u) return `${u.firstName} ${u.lastName}`.trim();
+        return shortenEmail(sub.studentEmail);
+    }
+
     function openModal(sub) {
         selectedSub = sub;
+        feedbackText = sub.teacherFeedback ?? "";
         showModal = true;
     }
 
@@ -75,21 +131,21 @@
 </script>
 
 <svelte:head>
-    <title>{assignment?.title ?? "Aufgabe"} – Praesto</title>
+    <title>{assignment?.title ?? $t('tgrade.assignment')} – Praesto</title>
 </svelte:head>
 
 <div class="page-wrapper">
     <!-- Header -->
     <header class="page-header">
-        <a href="/teacher/assignments" class="back-link">← Zurück zu Aufgaben</a>
+        <a href="/teacher/assignments" class="back-link">← {$t('tgrade.backToAssignments')}</a>
         {#if assignment}
             <h1 class="title">{assignment.title}</h1>
             <div class="header-title-row">
                 <span class="type-badge">{typeLabels[assignment.type] ?? assignment.type}</span>
                 <span class="class-badge">{schoolClass?.name ?? ""}</span>
-                <span class="header-meta">📅 Deadline: {formatDate(assignment.dueDate)}</span>
+                <span class="header-meta">📅 {$t('tgrade.deadline')}: {formatDate(assignment.dueDate)}</span>
                 {#if assignment.durationMin}
-                    <span class="header-meta">⏱️ {assignment.durationMin} Min</span>
+                    <span class="header-meta">⏱️ {assignment.durationMin} {$t('tgrade.min')}</span>
                 {/if}
             </div>
         {/if}
@@ -107,19 +163,19 @@
         <div class="stats-bar">
             <div class="stat-card">
                 <span class="stat-value">{submissions.length}</span>
-                <span class="stat-label">Abgaben</span>
+                <span class="stat-label">{$t('tgrade.statSubmissions')}</span>
             </div>
             <div class="stat-card">
                 <span class="stat-value">{pendingStudents.length}</span>
-                <span class="stat-label">Ausstehend</span>
+                <span class="stat-label">{$t('tgrade.statPending')}</span>
             </div>
             <div class="stat-card highlight">
                 <span class="stat-value">{needsFeedbackCount}</span>
-                <span class="stat-label">Feedback offen</span>
+                <span class="stat-label">{$t('tgrade.statFeedbackOpen')}</span>
             </div>
             <div class="stat-card success">
                 <span class="stat-value">{reviewedCount}</span>
-                <span class="stat-label">Bewertet</span>
+                <span class="stat-label">{$t('tgrade.statReviewed')}</span>
             </div>
         </div>
 
@@ -131,7 +187,7 @@
                 class:active={filterStatus === "all"}
                 onclick={() => (filterStatus = "all")}
             >
-                Alle ({submissions.length})
+                {$t('tgrade.filterAll')} ({submissions.length})
             </button>
             <button
                 type="button"
@@ -139,7 +195,7 @@
                 class:active={filterStatus === "needsFeedback"}
                 onclick={() => (filterStatus = "needsFeedback")}
             >
-                🔔 Offen ({needsFeedbackCount})
+                🔔 {$t('tgrade.filterOpen')} ({needsFeedbackCount})
             </button>
             <button
                 type="button"
@@ -147,15 +203,20 @@
                 class:active={filterStatus === "reviewed"}
                 onclick={() => (filterStatus = "reviewed")}
             >
-                ✓ Bewertet ({reviewedCount})
+                ✓ {$t('tgrade.filterReviewed')} ({reviewedCount})
             </button>
+            {#if submissions.length > 0}
+                <button type="button" class="filter-btn export-btn" onclick={exportCsv}>
+                    📥 {$t('tgrade.csvExport')}
+                </button>
+            {/if}
         </div>
 
         <!-- Submissions -->
         {#if filteredSubmissions().length === 0}
             <div class="empty-state">
                 <span class="empty-icon">📭</span>
-                <p>Keine Abgaben in dieser Kategorie.</p>
+                <p>{$t('tgrade.noSubmissionsCategory')}</p>
             </div>
         {:else}
             <div class="submissions-grid">
@@ -163,9 +224,9 @@
                     <div class="submission-card" class:reviewed={sub.teacherFeedback}>
                         <div class="sub-header">
                             <div class="sub-student">
-                                <span class="student-avatar">{shortenEmail(sub.studentEmail).charAt(0).toUpperCase()}</span>
+                                <span class="student-avatar">{studentLabel(sub).charAt(0).toUpperCase()}</span>
                                 <div>
-                                    <span class="student-name">{shortenEmail(sub.studentEmail)}</span>
+                                    <span class="student-name">{studentLabel(sub)}</span>
                                     <span class="student-email">{sub.studentEmail}</span>
                                 </div>
                             </div>
@@ -175,14 +236,31 @@
                         <!-- Abgabe-Inhalt -->
                         {#if sub.textContent}
                             <div class="sub-content">
-                                <strong>Abgabe:</strong>
+                                <strong>{$t('tgrade.submission')}:</strong>
                                 <p>{sub.textContent}</p>
                             </div>
                         {/if}
 
+                        {#if sub.links && sub.links.length > 0}
+                            <div class="sub-content">
+                                <strong>{$t('tgrade.links')}:</strong>
+                                <ul class="sub-links">
+                                    {#each sub.links as link}
+                                        <li><a href={link} target="_blank" rel="noopener">{link}</a></li>
+                                    {/each}
+                                </ul>
+                            </div>
+                        {/if}
+
+                        {#if sub.fileUrl}
+                            <a href={`/files/${sub.fileUrl}`} class="chat-link" download>
+                                📎 {sub.fileName ?? $t('tgrade.file')} {$t('tgrade.download')} →
+                            </a>
+                        {/if}
+
                         {#if assignment.type === "AI_INTERVIEW" && sub.chatSessionId}
                             <a href="/teacher/sessions/{sub.chatSessionId}" class="chat-link">
-                                💬 Chat-Verlauf ansehen →
+                                💬 {$t('tgrade.viewChatHistory')} →
                             </a>
                         {/if}
 
@@ -190,10 +268,10 @@
                         <div class="sub-footer">
                             <div class="sub-status">
                                 {#if sub.teacherFeedback}
-                                    <span class="badge badge-success">✓ Bewertet</span>
-                                    {#if sub.grade}<span class="grade">Note {sub.grade}</span>{/if}
+                                    <span class="badge badge-success">✓ {$t('tgrade.reviewed')}</span>
+                                    {#if sub.grade}<span class="grade">{$t('tgrade.grade')} {sub.grade}</span>{/if}
                                 {:else}
-                                    <span class="badge badge-warning">Offen</span>
+                                    <span class="badge badge-warning">{$t('tgrade.open')}</span>
                                 {/if}
                             </div>
                             <button
@@ -203,13 +281,13 @@
                                 class:btn-secondary={sub.teacherFeedback}
                                 onclick={() => openModal(sub)}
                             >
-                                {sub.teacherFeedback ? "Bearbeiten" : "Feedback geben"}
+                                {sub.teacherFeedback ? $t('tgrade.edit') : $t('tgrade.giveFeedback')}
                             </button>
                         </div>
 
                         {#if sub.teacherFeedback}
                             <div class="feedback-preview">
-                                <strong>Dein Feedback:</strong>
+                                <strong>{$t('tgrade.yourFeedback')}:</strong>
                                 <p>{sub.teacherFeedback}</p>
                             </div>
                         {/if}
@@ -221,10 +299,10 @@
         <!-- Ausstehend -->
         {#if pendingStudents.length > 0}
             <div class="pending-section">
-                <h3>⏳ Noch nicht abgegeben ({pendingStudents.length})</h3>
+                <h3>⏳ {$t('tgrade.notSubmittedYet')} ({pendingStudents.length})</h3>
                 <div class="pending-list">
-                    {#each pendingStudents as email}
-                        <span class="pending-chip">{shortenEmail(email)}</span>
+                    {#each pendingStudents as student}
+                        <span class="pending-chip">{student.firstName} {student.lastName}</span>
                     {/each}
                 </div>
             </div>
@@ -237,7 +315,7 @@
     <button type="button" class="modal-backdrop" onclick={closeModal}></button>
     <div class="modal">
         <div class="modal-header">
-            <h2>Feedback geben</h2>
+            <h2>{$t('tgrade.giveFeedback')}</h2>
             <button type="button" class="btn-close" onclick={closeModal}>✕</button>
         </div>
         <form
@@ -256,29 +334,51 @@
                 <input type="hidden" name="submissionId" value={selectedSub.id} />
 
                 <div class="modal-info">
-                    <strong>Schüler:</strong> {selectedSub.studentEmail}
+                    <strong>{$t('tgrade.student')}:</strong> {studentLabel(selectedSub)} ({selectedSub.studentEmail})
                 </div>
 
                 {#if selectedSub.textContent}
                     <div class="modal-submission">
-                        <strong>Abgabe:</strong>
+                        <strong>{$t('tgrade.submission')}:</strong>
                         <p>{selectedSub.textContent}</p>
                     </div>
                 {/if}
 
+                {#if selectedSub.fileUrl}
+                    <div class="modal-submission">
+                        <strong>{$t('tgrade.submissionFile')}:</strong>
+                        <a href={`/files/${selectedSub.fileUrl}`} download>
+                            📎 {selectedSub.fileName ?? $t('tgrade.file')} {$t('tgrade.download')}
+                        </a>
+                    </div>
+                {/if}
+
+                {#if selectedSub.chatSessionId}
+                    <div class="modal-submission">
+                        <a href="/teacher/sessions/{selectedSub.chatSessionId}">💬 {$t('tgrade.viewChatHistory')} →</a>
+                    </div>
+                {/if}
+
                 <div class="form-group">
-                    <label for="feedback">Dein Feedback</label>
+                    <label for="feedback">{$t('tgrade.yourFeedback')}</label>
+                    <div class="snippets">
+                        {#each FEEDBACK_SNIPPETS as snippet}
+                            <button type="button" class="snippet-chip" onclick={() => addSnippet(snippet)}>
+                                + {snippet}
+                            </button>
+                        {/each}
+                    </div>
                     <textarea
                         id="feedback"
                         name="feedback"
                         rows="4"
-                        placeholder="Schreibe hier dein Feedback..."
-                        value={selectedSub.teacherFeedback ?? ""}
+                        placeholder={$t('tgrade.feedbackPlaceholder')}
+                        bind:value={feedbackText}
                     ></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="grade">Note (optional, 1-6)</label>
+                    <label for="grade">{$t('tgrade.gradeOptional')}</label>
                     <input
                         type="number"
                         id="grade"
@@ -286,14 +386,14 @@
                         min="1"
                         max="6"
                         step="0.5"
-                        placeholder="z.B. 4.5"
+                        placeholder={$t('tgrade.gradePlaceholder')}
                         value={selectedSub.grade ?? ""}
                     />
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick={closeModal}>Abbrechen</button>
-                <button type="submit" class="btn btn-primary">Speichern</button>
+                <button type="button" class="btn btn-secondary" onclick={closeModal}>{$t('tgrade.cancel')}</button>
+                <button type="submit" class="btn btn-primary">{$t('tgrade.save')}</button>
             </div>
         </form>
     </div>
@@ -842,5 +942,32 @@
             width: 100%;
             text-align: center;
         }
+    }
+
+    .export-btn {
+        margin-left: auto;
+    }
+
+    .snippets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .snippet-chip {
+        background: #f3f0f7;
+        border: 1px solid #e8e0f0;
+        color: #4c1d95;
+        border-radius: 999px;
+        padding: 0.25rem 0.6rem;
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .snippet-chip:hover {
+        background: #ede4f7;
+        border-color: #c9b6e6;
     }
 </style>

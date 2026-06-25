@@ -74,13 +74,13 @@
 
   /* ===== TYPOGRAPHY ===== */
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.85rem;
-  --font-size-base: 0.95rem;
-  --font-size-lg: 1.1rem;
-  --font-size-xl: 1.25rem;
-  --font-size-2xl: 1.5rem;
-  --font-size-3xl: 1.75rem;
+  --font-size-xs: 0.78rem;
+  --font-size-sm: 0.88rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.15rem;
+  --font-size-xl: 1.3rem;
+  --font-size-2xl: 1.6rem;
+  --font-size-3xl: 1.9rem;
 
   /* ===== TRANSITIONS ===== */
   --transition-fast: 0.1s ease;

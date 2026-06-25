@@ -1,6 +1,8 @@
 <script>
     import { enhance } from "$app/forms";
     import { invalidateAll } from "$app/navigation";
+    import { t } from "$lib/i18n";
+    import { get } from "svelte/store";
 
     let { data, form } = $props();
 
@@ -41,7 +43,7 @@
         if (!seconds) return "-";
         const min = Math.floor(seconds / 60);
         const sec = seconds % 60;
-        return `${min}:${sec.toString().padStart(2, "0")} Min`;
+        return `${min}:${sec.toString().padStart(2, "0")} ${get(t)('tsess.min')}`;
     }
 
     function openFeedbackModal() {
@@ -56,56 +58,56 @@
 </script>
 
 <svelte:head>
-    <title>Chat-Verlauf – {student?.name ?? "Schüler"} – Praesto</title>
+    <title>{$t('tsess.chatHistory')} – {student?.name ?? $t('tsess.student')} – Praesto</title>
 </svelte:head>
 
 <div class="chat-wrapper">
     <div class="chat-page">
         <!-- Header -->
         <header class="chat-header">
-            <a href="/teacher/assignments/{session?.assignmentId}" class="back-link">← Zurück zur Aufgabe</a>
+            <a href="/teacher/assignments/{session?.assignmentId}" class="back-link">← {$t('tsess.backToAssignment')}</a>
             <div class="header-content">
-                <h1>💬 Chat-Verlauf</h1>
+                <h1>💬 {$t('tsess.chatHistory')}</h1>
                 <p>
-                    <strong>{student?.name ?? student?.email ?? "Schüler"}</strong>
+                    <strong>{student?.name ?? student?.email ?? $t('tsess.student')}</strong>
                     {#if session?.assignmentTitle}
                         · {session.assignmentTitle}
                     {/if}
                 </p>
             </div>
-            
+
             {#if session?.submittedAsAssignment}
                 <button type="button" class="btn-feedback" onclick={openFeedbackModal}>
-                    {session.teacherFeedback ? "✏️ Feedback bearbeiten" : "💬 Feedback geben"}
+                    {session.teacherFeedback ? `✏️ ${$t('tsess.editFeedback')}` : `💬 ${$t('tsess.giveFeedback')}`}
                 </button>
             {:else}
-                <span class="status-badge in-progress">⏳ In Bearbeitung</span>
+                <span class="status-badge in-progress">⏳ {$t('tsess.inProgress')}</span>
             {/if}
         </header>
 
         <!-- Session Info Bar -->
         <div class="info-bar">
             <div class="info-item">
-                <span class="info-label">Gestartet</span>
+                <span class="info-label">{$t('tsess.started')}</span>
                 <span class="info-value">{formatDate(session?.startedAt)}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">Dauer</span>
+                <span class="info-label">{$t('tsess.duration')}</span>
                 <span class="info-value">{formatDuration(session?.durationSeconds)}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">Nachrichten</span>
+                <span class="info-label">{$t('tsess.messages')}</span>
                 <span class="info-value">{messages.length}</span>
             </div>
             {#if session?.submittedAsAssignment}
                 <div class="info-item">
-                    <span class="info-label">Status</span>
-                    <span class="info-value status-submitted">✓ Abgegeben</span>
+                    <span class="info-label">{$t('tsess.status')}</span>
+                    <span class="info-value status-submitted">✓ {$t('tsess.submitted')}</span>
                 </div>
             {/if}
             {#if session?.grade != null}
                 <div class="info-item">
-                    <span class="info-label">Note</span>
+                    <span class="info-label">{$t('tsess.grade')}</span>
                     <span class="info-value grade">{session.grade}</span>
                 </div>
             {/if}
@@ -116,7 +118,7 @@
             <div class="feedback-display">
                 <div class="feedback-header">
                     <span class="feedback-icon">💬</span>
-                    <span class="feedback-title">Dein Feedback</span>
+                    <span class="feedback-title">{$t('tsess.yourFeedback')}</span>
                 </div>
                 <p class="feedback-text">{session.teacherFeedback}</p>
             </div>
@@ -127,7 +129,7 @@
         {/if}
 
         {#if form?.success}
-            <div class="alert alert-success">✓ {form.message ?? "Feedback gespeichert!"}</div>
+            <div class="alert alert-success">✓ {form.message ?? $t('tsess.feedbackSaved')}</div>
         {/if}
 
         <!-- Chat Container -->
@@ -135,7 +137,7 @@
             {#if messages.length === 0}
                 <div class="empty-chat">
                     <span class="empty-icon">💬</span>
-                    <p>Noch keine Nachrichten in diesem Chat.</p>
+                    <p>{$t('tsess.noMessages')}</p>
                 </div>
             {:else}
                 {#each messages as msg}
@@ -153,8 +155,8 @@
 
         <!-- Footer -->
         <div class="chat-footer">
-            <p>Dies ist ein abgeschlossener Chat-Verlauf. Du kannst Feedback geben, aber nicht an der Konversation teilnehmen.</p>
-            <a href="/teacher/assignments/{session?.assignmentId}" class="btn-back">← Zur Aufgabenübersicht</a>
+            <p>{$t('tsess.footerNote')}</p>
+            <a href="/teacher/assignments/{session?.assignmentId}" class="btn-back">← {$t('tsess.toAssignmentOverview')}</a>
         </div>
     </div>
 </div>
@@ -164,7 +166,7 @@
     <button type="button" class="modal-backdrop" onclick={closeFeedbackModal}></button>
     <div class="modal">
         <div class="modal-header">
-            <h2>💬 Feedback geben</h2>
+            <h2>💬 {$t('tsess.giveFeedback')}</h2>
             <button type="button" class="btn-close-modal" onclick={closeFeedbackModal}>✕</button>
         </div>
 
@@ -179,23 +181,23 @@
             }}>
             <div class="modal-body">
                 <div class="student-info">
-                    <span class="student-label">Schüler:</span>
+                    <span class="student-label">{$t('tsess.student')}:</span>
                     <span class="student-name">{student?.name ?? student?.email}</span>
                 </div>
 
                 <div class="form-group">
-                    <label for="feedback">Feedback</label>
+                    <label for="feedback">{$t('tsess.feedback')}</label>
                     <textarea
                         id="feedback"
                         name="feedback"
                         rows="5"
-                        placeholder="Gib hier dein Feedback zum Interview-Training..."
+                        placeholder={$t('tsess.feedbackPlaceholder')}
                         bind:value={feedbackText}
                     ></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="grade">Note (optional)</label>
+                    <label for="grade">{$t('tsess.gradeOptional')}</label>
                     <input
                         type="number"
                         id="grade"
@@ -203,16 +205,16 @@
                         min="1"
                         max="6"
                         step="0.5"
-                        placeholder="z.B. 4.5"
+                        placeholder={$t('tsess.gradePlaceholder')}
                         bind:value={gradeValue}
                     />
-                    <span class="form-hint">Schweizer Notenskala: 1 (ungenügend) bis 6 (sehr gut)</span>
+                    <span class="form-hint">{$t('tsess.gradeScaleHint')}</span>
                 </div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick={closeFeedbackModal}>Abbrechen</button>
-                <button type="submit" class="btn btn-primary">💾 Speichern</button>
+                <button type="button" class="btn btn-secondary" onclick={closeFeedbackModal}>{$t('tsess.cancel')}</button>
+                <button type="submit" class="btn btn-primary">💾 {$t('tsess.save')}</button>
             </div>
         </form>
     </div>

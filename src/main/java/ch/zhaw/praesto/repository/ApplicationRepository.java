@@ -2,11 +2,11 @@ package ch.zhaw.praesto.repository;
 
 import ch.zhaw.praesto.model.Application;
 import ch.zhaw.praesto.model.ApplicationStatus;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface ApplicationRepository extends MongoRepository<Application, String> {
+public interface ApplicationRepository extends JpaRepository<Application, String> {
 
     List<Application> findByStudentId(String studentId);
 
@@ -19,5 +19,7 @@ public interface ApplicationRepository extends MongoRepository<Application, Stri
     long countByStudentId(String studentId);
 
     boolean existsByStudentIdAndStatus(String studentId, ApplicationStatus status);
+
+    void deleteByStudentIdIn(java.util.Collection<String> studentIds);
 
 }

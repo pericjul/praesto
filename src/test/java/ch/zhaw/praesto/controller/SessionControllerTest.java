@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.Answers;
-import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
 @TestMethodOrder(OrderAnnotation.class)
 public class SessionControllerTest {
 
@@ -35,9 +34,9 @@ public class SessionControllerTest {
     @Autowired
     private SessionRepository sessionRepository;
 
-    // Mock OpenAiChatModel wie in Übung 11 beschrieben
+    // Mock ChatModel wie in Übung 11 beschrieben
     @MockitoBean(answers = Answers.RETURNS_DEEP_STUBS)
-    private OpenAiChatModel chatModel;
+    private ChatModel chatModel;
 
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static String session_id = "";
@@ -48,7 +47,7 @@ public class SessionControllerTest {
         var result = mvc.perform(post("/api/sessions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}")
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("OPEN"))
@@ -64,7 +63,7 @@ public class SessionControllerTest {
     public void testGetSession() throws Exception {
         mvc.perform(get("/api/sessions/" + session_id)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(session_id));
@@ -75,7 +74,7 @@ public class SessionControllerTest {
     public void testGetMySessions() throws Exception {
         mvc.perform(get("/api/sessions")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -92,7 +91,7 @@ public class SessionControllerTest {
         mvc.perform(post("/api/sessions/" + session_id + "/messages")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(session_id));
@@ -103,7 +102,7 @@ public class SessionControllerTest {
         mvc.perform(post("/api/sessions/some-id/messages")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"message\": \"Test\"}")
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -122,7 +121,7 @@ public class SessionControllerTest {
         mvc.perform(post("/api/sessions/nonexistent-id/messages")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"message\": \"Test\"}")
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -132,7 +131,7 @@ public class SessionControllerTest {
     public void testCloseSession() throws Exception {
         mvc.perform(put("/api/sessions/" + session_id + "/close")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CLOSED"));
@@ -143,7 +142,7 @@ public class SessionControllerTest {
         mvc.perform(post("/api/sessions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}")
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -162,7 +161,7 @@ public class SessionControllerTest {
     public void testCloseAndSubmitSession_AsTeacher_Forbidden() throws Exception {
         mvc.perform(put("/api/sessions/some-id/submit")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -179,7 +178,7 @@ public class SessionControllerTest {
     public void testCloseAndSubmitSession_NotFound() throws Exception {
         mvc.perform(put("/api/sessions/nonexistent-session-id/submit")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -192,7 +191,7 @@ public class SessionControllerTest {
     public void testGetSession_NotFound() throws Exception {
         mvc.perform(get("/api/sessions/nonexistent-session-id")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -204,7 +203,7 @@ public class SessionControllerTest {
         var result = mvc.perform(post("/api/sessions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}")
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -214,7 +213,7 @@ public class SessionControllerTest {
 
         mvc.perform(get("/api/sessions/" + tempSessionId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk());
 
@@ -227,7 +226,7 @@ public class SessionControllerTest {
         mvc.perform(get("/api/sessions/some-id")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     // ========================================
@@ -238,7 +237,7 @@ public class SessionControllerTest {
     public void testGetMySessions_AsTeacher_Forbidden() throws Exception {
         mvc.perform(get("/api/sessions")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -248,7 +247,7 @@ public class SessionControllerTest {
         mvc.perform(get("/api/sessions")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     // ========================================
@@ -259,7 +258,7 @@ public class SessionControllerTest {
     public void testCloseSession_AsTeacher_Forbidden() throws Exception {
         mvc.perform(put("/api/sessions/some-id/close")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                        .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -276,7 +275,7 @@ public class SessionControllerTest {
     public void testCloseSession_NotFound() throws Exception {
         mvc.perform(put("/api/sessions/nonexistent-session-id/close")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -287,7 +286,7 @@ public class SessionControllerTest {
         var result = mvc.perform(post("/api/sessions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}")
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -298,13 +297,13 @@ public class SessionControllerTest {
         // Erste Schliessung - OK
         mvc.perform(put("/api/sessions/" + tempSessionId + "/close")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andExpect(status().isOk());
 
         // Zweite Schliessung - BadRequest
         mvc.perform(put("/api/sessions/" + tempSessionId + "/close")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
@@ -327,7 +326,7 @@ public class SessionControllerTest {
         mvc.perform(post("/api/sessions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -342,7 +341,7 @@ public class SessionControllerTest {
         var result = mvc.perform(post("/api/sessions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}")
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -353,7 +352,7 @@ public class SessionControllerTest {
         // Submit ohne Assignment - BadRequest
         mvc.perform(put("/api/sessions/" + tempSessionId + "/submit")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 
@@ -371,7 +370,7 @@ public class SessionControllerTest {
         var result = mvc.perform(post("/api/sessions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}")
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -382,14 +381,14 @@ public class SessionControllerTest {
         // Session schliessen
         mvc.perform(put("/api/sessions/" + tempSessionId + "/close")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andExpect(status().isOk());
 
         // Nachricht an geschlossene Session - BadRequest
         mvc.perform(post("/api/sessions/" + tempSessionId + "/messages")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"message\": \"Test\"}")
-                        .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                        .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
 

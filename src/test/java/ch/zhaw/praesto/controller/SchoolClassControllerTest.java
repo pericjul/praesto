@@ -1,16 +1,20 @@
 package ch.zhaw.praesto.controller;
 
 import ch.zhaw.praesto.model.SchoolClassDTO;
+import ch.zhaw.praesto.model.User;
+import ch.zhaw.praesto.model.UserRole;
 import ch.zhaw.praesto.repository.SchoolClassRepository;
+import ch.zhaw.praesto.repository.UserRepository;
 import ch.zhaw.praesto.security.TestSecurityConfig;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.Answers;
-import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,7 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestSecurityConfig.class)
 @TestMethodOrder(OrderAnnotation.class)
 public class SchoolClassControllerTest {
 
@@ -36,9 +39,32 @@ public class SchoolClassControllerTest {
     @Autowired
     private SchoolClassRepository schoolClassRepository;
 
-    // Mock OpenAiChatModel wie in Übung 11 beschrieben
+    @Autowired
+    private UserRepository userRepository;
+
+    // Mock ChatModel wie in Übung 11 beschrieben
     @MockitoBean(answers = Answers.RETURNS_DEEP_STUBS)
-    private OpenAiChatModel chatModel;
+    private ChatModel chatModel;
+
+    /**
+     * Stellt sicher, dass der Test-Schüler (Principal von TestSecurityConfig.student())
+     * als echter User in der Test-Schule existiert, damit er einer Klasse zugeordnet
+     * werden kann (addStudentToClass validiert den User in der DB).
+     */
+    @BeforeEach
+    void ensureTestStudentExists() {
+        if (!userRepository.existsByEmail(TestSecurityConfig.STUDENT_EMAIL)) {
+            userRepository.save(User.builder()
+                    .id(TestSecurityConfig.STUDENT_ID)
+                    .email(TestSecurityConfig.STUDENT_EMAIL)
+                    .firstName("Test")
+                    .lastName("Student")
+                    .role(UserRole.STUDENT)
+                    .schoolId(TestSecurityConfig.SCHOOL_ID)
+                    .isActive(true)
+                    .build());
+        }
+    }
 
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static String class_id = "";
@@ -55,7 +81,7 @@ public class SchoolClassControllerTest {
         var result = mvc.perform(post("/api/classes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value(TEST_CLASS_NAME))
@@ -71,7 +97,7 @@ public class SchoolClassControllerTest {
     public void testGetClass() throws Exception {
         mvc.perform(get("/api/classes/" + class_id)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value(TEST_CLASS_NAME));
@@ -82,7 +108,7 @@ public class SchoolClassControllerTest {
     public void testGetMyClasses() throws Exception {
         mvc.perform(get("/api/classes")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -92,8 +118,8 @@ public class SchoolClassControllerTest {
     public void testAddStudent() throws Exception {
         mvc.perform(post("/api/classes/" + class_id + "/students")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"email\":\"student@test.ch\"}")
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .content("{\"userId\":\"" + TestSecurityConfig.STUDENT_ID + "\"}")
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -104,7 +130,7 @@ public class SchoolClassControllerTest {
         // Student ist in irgendeiner Klasse (könnte SubmissionTestClass sein)
         mvc.perform(get("/api/classes/my")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").exists());
@@ -114,7 +140,7 @@ public class SchoolClassControllerTest {
     public void testGetMyClass_AsTeacher_Forbidden() throws Exception {
         mvc.perform(get("/api/classes/my")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
@@ -124,15 +150,15 @@ public class SchoolClassControllerTest {
         mvc.perform(get("/api/classes/my")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized()); // 401, nicht 403
+                .andExpect(status().isForbidden()); // 401, nicht 403
     }
 
     @Test
     @Order(35)
     public void testRemoveStudent() throws Exception {
-        mvc.perform(delete("/api/classes/" + class_id + "/students/student@test.ch")
+        mvc.perform(delete("/api/classes/" + class_id + "/students/" + TestSecurityConfig.STUDENT_ID)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -142,7 +168,7 @@ public class SchoolClassControllerTest {
     public void testDeleteClass() throws Exception {
         mvc.perform(delete("/api/classes/" + class_id)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.TEACHER))
+                .with(TestSecurityConfig.teacher()))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -156,7 +182,7 @@ public class SchoolClassControllerTest {
         mvc.perform(post("/api/classes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonBody)
-                .header(HttpHeaders.AUTHORIZATION, TestSecurityConfig.STUDENT))
+                .with(TestSecurityConfig.student()))
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }

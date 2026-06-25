@@ -1,35 +1,48 @@
 package ch.zhaw.praesto.repository;
 
 import ch.zhaw.praesto.model.SchoolClass;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface SchoolClassRepository extends MongoRepository<SchoolClass, String> {
-    
-    /**
-     * Alle Klassen eines Lehrers finden.
-     */
-    List<SchoolClass> findByTeacherId(String teacherId);
+public interface SchoolClassRepository extends JpaRepository<SchoolClass, String> {
 
     /**
-     * Klasse finden in der ein bestimmter Schüler ist (per Email).
+     * Alle Klassen eines Lehrers innerhalb seiner Schule.
      */
-    List<SchoolClass> findByStudentEmailsContaining(String email);
+    List<SchoolClass> findBySchoolIdAndTeacherId(String schoolId, String teacherId);
 
     /**
-     * Erste Klasse eines Schülers finden.
+     * Alle Klassen einer Schule.
      */
-    Optional<SchoolClass> findFirstByStudentEmailsContaining(String email);
+    List<SchoolClass> findBySchoolId(String schoolId);
 
     /**
-     * Klasse nach Name finden.
+     * Eine Klasse innerhalb der eigenen Schule (Mandanten-sichere Einzelabfrage).
      */
-    Optional<SchoolClass> findByName(String name);
+    Optional<SchoolClass> findByIdAndSchoolId(String id, String schoolId);
 
     /**
-     * Prüfen ob Klassenname bereits existiert.
+     * Klasse(n) in der ein bestimmter Schüler ist (per User-Id).
      */
-    boolean existsByName(String name);
+    @Query("select c from SchoolClass c join c.studentIds s where s = :userId")
+    List<SchoolClass> findByStudentIdsContaining(@Param("userId") String userId);
+
+    /**
+     * Klassen eines Schülers innerhalb seiner Schule.
+     */
+    @Query("select c from SchoolClass c join c.studentIds s where c.schoolId = :schoolId and s = :userId")
+    List<SchoolClass> findClassesOfStudentInSchool(@Param("schoolId") String schoolId, @Param("userId") String userId);
+
+    /**
+     * Prüfen ob Klassenname innerhalb der Schule bereits existiert.
+     */
+    boolean existsBySchoolIdAndName(String schoolId, String name);
+
+    long countBySchoolId(String schoolId);
+
+    void deleteBySchoolId(String schoolId);
 }

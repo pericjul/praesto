@@ -1,4 +1,6 @@
 <script>
+    import { t } from "$lib/i18n";
+
     let { data, form } = $props();
 
     // Derived
@@ -32,16 +34,16 @@
         return [...open, ...done];
     });
 
-    const assignmentTypes = {
-        AI_INTERVIEW: { label: "🤖 KI-Bewerbungsgespräch", action: "Training starten", color: "var(--color-primary)" },
-        DOCUMENT_UPLOAD: { label: "📄 Dokument einreichen", action: "Hochladen", color: "var(--color-info)" },
-        SELF_REFLECTION: { label: "✍️ Selbstreflexion", action: "Schreiben", color: "var(--color-success)" },
-        VIDEO_PITCH: { label: "🎥 Video-Bewerbung", action: "Aufnehmen", color: "var(--color-warning)" },
-        RESEARCH: { label: "🔍 Recherche", action: "Bearbeiten", color: "#6366f1" }
-    };
+    let assignmentTypes = $derived({
+        AI_INTERVIEW: { label: $t("stasks.typeInterview"), action: $t("stasks.actionInterview"), color: "var(--color-primary)" },
+        DOCUMENT_UPLOAD: { label: $t("stasks.typeDocument"), action: $t("stasks.actionDocument"), color: "var(--color-info)" },
+        SELF_REFLECTION: { label: $t("stasks.typeReflection"), action: $t("stasks.actionReflection"), color: "var(--color-success)" },
+        VIDEO_PITCH: { label: $t("stasks.typeVideo"), action: $t("stasks.actionVideo"), color: "var(--color-warning)" },
+        RESEARCH: { label: $t("stasks.typeResearch"), action: $t("stasks.actionResearch"), color: "#6366f1" }
+    });
 
     function getTypeInfo(type) {
-        return assignmentTypes[type] ?? { label: type, action: "Öffnen", color: "var(--color-text-muted)" };
+        return assignmentTypes[type] ?? { label: type, action: $t("stasks.actionDefault"), color: "var(--color-text-muted)" };
     }
 
     function getSubmissionForAssignment(assignmentId) {
@@ -79,45 +81,45 @@
 
     function formatStatus(status) {
         switch (status) {
-            case "ASSIGNED": return "Offen";
-            case "IN_PROGRESS": return "In Bearbeitung";
-            case "COMPLETED": return "Abgeschlossen";
+            case "ASSIGNED": return $t("stasks.statusAssigned");
+            case "IN_PROGRESS": return $t("stasks.statusInProgress");
+            case "COMPLETED": return $t("stasks.statusCompleted");
             default: return status;
         }
     }
 
     function formatSubmissionStatus(status) {
         switch (status) {
-            case "SUBMITTED": return "Eingereicht";
-            case "IN_REVIEW": return "In Prüfung";
-            case "REVIEWED": return "Bewertet";
-            case "RETURNED": return "Zurückgegeben";
+            case "SUBMITTED": return $t("stasks.subSubmitted");
+            case "IN_REVIEW": return $t("stasks.subInReview");
+            case "REVIEWED": return $t("stasks.subReviewed");
+            case "RETURNED": return $t("stasks.subReturned");
             default: return status;
         }
     }
 </script>
 
 <svelte:head>
-    <title>Meine Aufgaben – Praesto</title>
+    <title>{$t("stasks.headTitle")}</title>
 </svelte:head>
 
 <div class="page-wrapper">
     <header class="page-header">
         <div>
-            <h1 class="title">📚 Meine Aufgaben</h1>
+            <h1 class="title">{$t("stasks.title")}</h1>
             {#if myClass}
                 <p class="subtitle">
-                    Klasse: <strong>{myClass.name}</strong> · 
-                    Hier findest du alle Aufgaben deiner Lehrperson.
+                    {$t("stasks.classPrefix")} <strong>{myClass.name}</strong> ·
+                    {$t("stasks.classIntro")}
                 </p>
             {:else}
-                <p class="subtitle">Übersicht deiner Aufgaben</p>
+                <p class="subtitle">{$t("stasks.subtitle")}</p>
             {/if}
         </div>
     </header>
 
     {#if form?.success}
-        <div class="alert alert-success">✓ {form.message || "Erfolgreich gespeichert!"}</div>
+        <div class="alert alert-success">✓ {form.message || $t("stasks.saved")}</div>
     {/if}
 
     {#if form?.error}
@@ -128,29 +130,29 @@
         <div class="alert alert-warning">
             <span class="alert-icon">⚠️</span>
             <div>
-                <strong>Hinweis</strong>
+                <strong>{$t("stasks.hint")}</strong>
                 <p>{error}</p>
             </div>
         </div>
     {:else if assignments.length === 0}
         <div class="empty-state">
             <div class="empty-icon">🎉</div>
-            <h2>Keine Aufgaben</h2>
-            <p>Du hast aktuell keine offenen Aufgaben. Geniesse die freie Zeit!</p>
+            <h2>{$t("stasks.emptyTitle")}</h2>
+            <p>{$t("stasks.emptyText")}</p>
         </div>
     {:else}
         <div class="stats-bar">
             <div class="stat-card">
                 <span class="stat-value">{assignments.length}</span>
-                <span class="stat-label">Aufgaben total</span>
+                <span class="stat-label">{$t("stasks.statTotal")}</span>
             </div>
             <div class="stat-card">
                 <span class="stat-value">{assignments.filter(a => !submissions.some(s => s.assignmentId === a.id)).length}</span>
-                <span class="stat-label">Offen</span>
+                <span class="stat-label">{$t("stasks.statOpen")}</span>
             </div>
             <div class="stat-card stat-success">
                 <span class="stat-value">{assignments.filter(a => submissions.some(s => s.assignmentId === a.id)).length}</span>
-                <span class="stat-label">Abgegeben</span>
+                <span class="stat-label">{$t("stasks.statSubmitted")}</span>
             </div>
         </div>
 
@@ -182,31 +184,31 @@
                         
                         <div class="assignment-meta">
                             {#if submitted}
-                                <span class="meta-item text-success">📤 Abgegeben am {formatDateTime(submission.submittedAt)}</span>
+                                <span class="meta-item text-success">{$t("stasks.submittedAt")} {formatDateTime(submission.submittedAt)}</span>
                                 {#if submission.teacherFeedback}
-                                    <span class="meta-item has-feedback">💬 Feedback erhalten</span>
+                                    <span class="meta-item has-feedback">{$t("stasks.feedbackReceived")}</span>
                                 {/if}
                             {:else}
                                 <span class="meta-item" class:text-warning={deadlineStatus === "soon"} class:text-danger={deadlineStatus === "overdue"}>
-                                    📅 Deadline: {formatDate(assignment.dueDate)}
+                                    {$t("stasks.deadline")} {formatDate(assignment.dueDate)}
                                     {#if deadlineStatus === "overdue"}
-                                        <span class="deadline-label danger">Überfällig!</span>
+                                        <span class="deadline-label danger">{$t("stasks.overdue")}</span>
                                     {:else if deadlineStatus === "soon"}
-                                        <span class="deadline-label warning">Bald fällig</span>
+                                        <span class="deadline-label warning">{$t("stasks.dueSoon")}</span>
                                     {/if}
                                 </span>
                             {/if}
                             {#if assignment.durationMin}
-                                <span class="meta-item">⏱️ ca. {assignment.durationMin} Min</span>
+                                <span class="meta-item">⏱️ ca. {assignment.durationMin} {$t("stasks.approxMin")}</span>
                             {/if}
                         </div>
 
                         {#if submission?.teacherFeedback}
                             <div class="feedback-box">
-                                <strong>Feedback:</strong>
+                                <strong>{$t("stasks.feedbackLabel")}</strong>
                                 <p>{submission.teacherFeedback}</p>
                                 {#if submission.grade != null}
-                                    <span class="grade-badge">Note: {submission.grade}</span>
+                                    <span class="grade-badge">{$t("stasks.grade")} {submission.grade}</span>
                                 {/if}
                             </div>
                         {/if}
@@ -214,7 +216,7 @@
                     
                     <div class="assignment-action">
                         {#if submitted}
-                            <span class="view-hint">Details ansehen →</span>
+                            <span class="view-hint">{$t("stasks.viewDetails")}</span>
                         {:else}
                             <span class="btn btn-primary">{typeInfo.action}</span>
                         {/if}
