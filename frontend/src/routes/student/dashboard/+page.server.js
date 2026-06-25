@@ -37,9 +37,21 @@ export async function load({ locals, fetch }) {
       challenge = null;
     }
 
+    // Kalender-Termine (optional)
+    let calendar = [];
+    try {
+      const calRes = await fetch(`${API_BASE}/student/calendar`, { headers });
+      if (calRes.ok) {
+        calendar = await calRes.json().catch(() => []);
+      }
+    } catch {
+      calendar = [];
+    }
+
     return {
       dashboard,
       challenge,
+      calendar,
       user: locals.user
     };
 

@@ -92,11 +92,23 @@ export async function load({ locals, fetch }) {
     recentSubmissions.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
     recentSubmissions = recentSubmissions.slice(0, 10);
 
+    // Kalender-Termine (Aufgaben-Deadlines aller Klassen)
+    let calendar = [];
+    try {
+        const calRes = await fetch(`${API_BASE}/teacher/calendar`, { headers });
+        if (calRes.ok) {
+            calendar = await calRes.json().catch(() => []);
+        }
+    } catch (err) {
+        console.error("Fehler beim Laden des Kalenders:", err);
+    }
+
     return {
         classes,
         assignments,
         recentSubmissions,
         stats,
+        calendar,
         user
     };
 }

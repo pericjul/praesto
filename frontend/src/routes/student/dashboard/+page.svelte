@@ -1,5 +1,6 @@
 <script>
     import { t } from "$lib/i18n";
+    import Calendar from "$lib/components/Calendar.svelte";
 
     let { data } = $props();
 
@@ -17,6 +18,7 @@
     let upcomingEvents = $derived(dashboard.upcomingEvents ?? []);
     let classFacts = $derived(dashboard.classFacts ?? null);
     let challenge = $derived(data.challenge ?? null);
+    let calendar = $derived(data.calendar ?? []);
 
     let factOfDay = $derived(buildFactOfDay(classFacts));
 
@@ -102,6 +104,10 @@
             <p class="cc-sub">{challenge.percent >= 100 ? $t('challenge.done') : $t('challenge.studentHint')}</p>
         </section>
     {/if}
+
+    <section class="dash-calendar">
+        <Calendar events={calendar} />
+    </section>
 
     <!-- ORIGINAL HERO -->
     <section class="hero">
@@ -319,6 +325,8 @@
         white-space: nowrap;
     }
     .fact-text { margin: 0; font-size: 1.05rem; font-weight: 600; line-height: 1.4; }
+
+    .dash-calendar { margin-bottom: 1.25rem; }
 
     /* ===== Klassen-Challenge ===== */
     .challenge-card {

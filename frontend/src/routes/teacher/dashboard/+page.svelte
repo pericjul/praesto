@@ -1,9 +1,11 @@
 <script>
     import { t, locale } from "$lib/i18n";
     import { get } from "svelte/store";
+    import Calendar from "$lib/components/Calendar.svelte";
 
     let { data } = $props();
 
+    let calendar = $derived(data?.calendar ?? []);
     let classes = $derived(data?.classes ?? []);
     let assignments = $derived(data?.assignments ?? []);
     let recentSubmissions = $derived(data?.recentSubmissions ?? []);
@@ -87,6 +89,11 @@
         <h1>{$t('tdash.greeting')}, {user.firstName ?? $t('tdash.fallbackName')} 👋</h1>
         <p class="subtitle">{$t('tdash.subtitle')}</p>
     </header>
+
+    <!-- Kalender -->
+    <section style="margin-bottom: 1.25rem;">
+        <Calendar events={calendar} />
+    </section>
 
     <!-- Wichtigste Info: Feedback nötig -->
     {#if stats.pendingSubmissions > 0}
