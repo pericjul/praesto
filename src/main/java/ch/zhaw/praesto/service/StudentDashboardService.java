@@ -148,7 +148,59 @@ public class StudentDashboardService {
                                 .earnedBadgeIcons(earnedBadgeIcons)
                                 .notifications(notifications)
                                 .upcomingEvents(upcomingEvents)
+                                .classFacts(computeClassFacts(studentId, classId))
                                 .build();
+        }
+
+        /**
+         * Anonyme Aggregat-Zahlen über die Klasse (ohne sich selbst) für den „Fakt des Tages".
+         */
+        private StudentClassFacts computeClassFacts(String selfId, String classId) {
+                if (classId == null || classId.isBlank()) {
+                        return null;
+                }
+                SchoolClass schoolClass;
+                try {
+                        schoolClass = schoolClassService.getMyClass();
+                } catch (Exception e) {
+                        return null;   // Schüler:in ohne Klasse o.ä. – dann keine Facts
+                }
+                if (schoolClass == null) {
+                        return null;
+                }
+                ZoneId zone = ZoneId.of("Europe/Zurich");
+                LocalDate today = LocalDate.now(zone);
+
+                int classmates = 0;
+                int practiced = 0;
+                int practicedToday = 0;
+                int threePlus = 0;
+                int withApplication = 0;
+
+                for (String sid : schoolClass.getStudentIds()) {
+                        if (sid.equals(selfId)) {
+                                continue;
+                        }
+                        classmates++;
+                        List<Session> sessions = sessionRepository.findByStudentId(sid);
+                        if (!sessions.isEmpty()) {
+                                practiced++;
+                        }
+                        if (sessions.size() >= 3) {
+                                threePlus++;
+                        }
+                        boolean practicedTodayByThis = sessions.stream()
+                                        .map(Session::getStartedAt)
+                                        .filter(Objects::nonNull)
+                                        .anyMatch(i -> i.atZone(zone).toLocalDate().isEqual(today));
+                        if (practicedTodayByThis) {
+                                practicedToday++;
+                        }
+                        if (!applicationRepository.findByStudentId(sid).isEmpty()) {
+                                withApplication++;
+                        }
+                }
+                return new StudentClassFacts(classmates, practiced, practicedToday, threePlus, withApplication);
         }
 
         /**

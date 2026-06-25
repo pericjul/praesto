@@ -15,6 +15,34 @@
     let notifications = $derived(dashboard.notifications ?? []);
     let openSessionId = $derived(dashboard.openSessionId ?? null);
     let upcomingEvents = $derived(dashboard.upcomingEvents ?? []);
+    let classFacts = $derived(dashboard.classFacts ?? null);
+
+    let factOfDay = $derived(buildFactOfDay(classFacts));
+
+    function buildFactOfDay(f) {
+        if (!f || f.classmateCount < 1) {
+            return $t("fact.first");
+        }
+        const candidates = [];
+        if (f.classmateCount >= 3 && f.practicedCount > 0) {
+            const pct = Math.round((f.practicedCount / f.classmateCount) * 100);
+            candidates.push($t("fact.PRACTICED_PCT").replace("%PCT%", pct));
+        }
+        if (f.practicedTodayCount > 0) {
+            candidates.push($t("fact.PRACTICED_TODAY").replace("%N%", f.practicedTodayCount));
+        }
+        if (f.threePlusCount > 0) {
+            candidates.push($t("fact.THREE_PLUS").replace("%N%", f.threePlusCount));
+        }
+        if (f.withApplicationCount > 0) {
+            candidates.push($t("fact.WITH_APPLICATION").replace("%N%", f.withApplicationCount));
+        }
+        if (candidates.length === 0) {
+            return $t("fact.first");
+        }
+        const dayIndex = Math.floor(Date.now() / 86400000);
+        return candidates[dayIndex % candidates.length];
+    }
 
     let assignmentTypes = $derived({
         AI_INTERVIEW: { label: $t("sdash.typeInterview"), color: "#8b5cf6" },
@@ -56,6 +84,13 @@
 </svelte:head>
 
 <div class="dashboard">
+    {#if factOfDay}
+        <section class="fact-card">
+            <span class="fact-badge">💡 {$t('fact.title')}</span>
+            <p class="fact-text">{factOfDay}</p>
+        </section>
+    {/if}
+
     <!-- ORIGINAL HERO -->
     <section class="hero">
         <div class="hero-left">
@@ -248,6 +283,30 @@
         margin: 0 auto;
         padding: 1.5rem 1rem 3rem;
     }
+
+    /* ===== Fakt des Tages ===== */
+    .fact-card {
+        background: linear-gradient(135deg, #2F124D 0%, #5a2d6e 60%, #c97d3c 100%);
+        color: #fff;
+        border-radius: 1rem;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        flex-wrap: wrap;
+    }
+    .fact-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.3rem 0.7rem;
+        border-radius: 999px;
+        white-space: nowrap;
+    }
+    .fact-text { margin: 0; font-size: 1.05rem; font-weight: 600; line-height: 1.4; }
 
     /* ===== ORIGINAL HERO ===== */
     .hero {

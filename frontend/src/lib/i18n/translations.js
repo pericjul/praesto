@@ -19,6 +19,7 @@ import { privacyFr } from "./messages/privacyFr.js";
 import { privacyIt } from "./messages/privacyIt.js";
 import { demoBooking } from "./messages/demoBooking.js";
 import { teacherInsights } from "./messages/teacherInsights.js";
+import { studentFacts } from "./messages/studentFacts.js";
 
 export const LANGUAGES = [
 	{ code: "de", label: "Deutsch", flag: "🇩🇪" },
@@ -744,5 +745,6 @@ export const translations = deepMerge([
 	privacyFr,
 	privacyIt,
 	demoBooking,
-	teacherInsights
+	teacherInsights,
+	studentFacts
 ]);

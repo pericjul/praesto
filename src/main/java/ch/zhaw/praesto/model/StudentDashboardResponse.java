@@ -37,4 +37,7 @@ public class StudentDashboardResponse {
 
     // Anstehende Termine (Deadlines + Bewerbungsgespräche)
     private List<UpcomingEvent> upcomingEvents;
+
+    // Anonyme Klassen-Facts (für den „Fakt des Tages")
+    private StudentClassFacts classFacts;
 }
