@@ -43,6 +43,7 @@
     ];
     if (isTeacher) return [
       { href: "/teacher/dashboard", label: $t("nav.dashboard") },
+      { href: "/teacher/cockpit", label: "📊 " + $t("nav.cockpit") },
       { href: "/teacher/classes", label: $t("nav.classes") },
       { href: "/teacher/assignments", label: $t("nav.tasks") }
     ];
