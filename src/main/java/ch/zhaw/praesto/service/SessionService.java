@@ -200,10 +200,38 @@ public class SessionService {
             Starte mit: "Willkommen zum Bewerbungsgespräch! Für welchen Beruf möchtest du heute üben?"
             """;
 
+    // ============================================================
+    // ROAST-MODUS: ehrlich-frech, aber immer mit echtem Mehrwert
+    // ============================================================
+
+    private static final String ROAST_ADDENDUM = """
+
+            ══════════════════════════════════════════
+            🔥 ROAST-MODUS AKTIV
+            ══════════════════════════════════════════
+            Der Schüler hat den Roast-Modus gewählt. Sei jetzt frech, direkt und witzig –
+            wie ein cooler grosser Bruder, der einem die Wahrheit sagt. Nimm schwache
+            Antworten humorvoll auseinander (mit einem Augenzwinkern, Emojis ok).
+            ABER:
+            - Nie verletzend, nie beleidigend, nie über Aussehen/Herkunft/Familie.
+            - Nach JEDEM Spruch kommt IMMER ein konkreter, ernst gemeinter Tipp, wie es besser geht.
+            - Ziel bleibt: Der Schüler wird besser und hat Spass dabei.
+            Beispiel: "Mit 'ich bin pünktlich' beeindruckst du niemanden – das schafft sogar mein Wecker 😄.
+            Tipp: Nenn eine Stärke mit Beispiel, z.B. 'Ich helfe in Mathe oft Mitschülern.'"
+            """;
+
     /**
-     * Neue Session fuer einen Schueler starten.
+     * Neue Session fuer einen Schueler starten (ohne Roast, Abwärtskompatibilität).
      */
     public Session startSession(String assignmentId) {
+        return startSession(assignmentId, false);
+    }
+
+    /**
+     * Neue Session fuer einen Schueler starten. Roast-Modus wirkt nur beim freien Üben
+     * (bei Aufgaben immer der seriöse Modus).
+     */
+    public Session startSession(String assignmentId, boolean roast) {
         if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Sessions starten");
         }
@@ -211,15 +239,20 @@ public class SessionService {
         String studentId = userService.getUserId();
         String studentEmail = userService.getEmail().toLowerCase();
 
+        boolean isAssignment = assignmentId != null && !assignmentId.isBlank();
+        // Roast nur beim freien Üben – bei Aufgaben immer der seriöse Modus.
+        boolean roastEffective = roast && !isAssignment;
+
         Session.SessionBuilder sessionBuilder = Session.builder()
                 .schoolId(userService.getCurrentSchoolId())
                 .studentId(studentId)
                 .studentEmail(studentEmail)
                 .status(SessionStatus.OPEN)
                 .startedAt(Instant.now())
+                .roast(roastEffective)
                 .submittedAsAssignment(false);
 
-        String systemPrompt = SYSTEM_PROMPT;
+        String systemPrompt = roastEffective ? SYSTEM_PROMPT + ROAST_ADDENDUM : SYSTEM_PROMPT;
 
         // Wenn für eine Aufgabe: Lade Aufgaben-Details
         if (assignmentId != null && !assignmentId.isBlank()) {
@@ -318,7 +351,7 @@ public class SessionService {
                     description,
                     duration);
         }
-        return SYSTEM_PROMPT;
+        return session.isRoast() ? SYSTEM_PROMPT + ROAST_ADDENDUM : SYSTEM_PROMPT;
     }
 
     /**
@@ -394,6 +427,7 @@ public class SessionService {
 
         session.setStatus(SessionStatus.CLOSED);
         session.setClosedAt(Instant.now());
+        evaluateAndScore(session);
 
         Session saved = sessionRepository.save(session);
 
@@ -438,6 +472,7 @@ public class SessionService {
         session.setStatus(SessionStatus.CLOSED);
         session.setClosedAt(Instant.now());
         session.setSubmittedAsAssignment(true);
+        evaluateAndScore(session);
 
         // Submission erstellen
         Submission submission = Submission.builder()
@@ -512,5 +547,71 @@ public class SessionService {
         }
 
         sessionRepository.delete(session);
+    }
+
+    // ============================================================
+    // BEWERTUNG: Einstellungs-Chance in % beim Schliessen
+    // ============================================================
+
+    private static final String SCORE_PROMPT = """
+            Bewerte dieses geübte Bewerbungsgespräch eines Schülers (15-18 Jahre).
+            Schätze die Einstellungs-Chance in Prozent (0-100) NUR anhand der Antworten des Schülers (die "Schüler:"-Zeilen).
+            Antworte in GENAU EINER Zeile im Format: ZAHL|GRUND
+            - ZAHL = ganze Zahl 0 bis 100
+            - GRUND = ein kurzer, ehrlicher, motivierender Satz in Du-Form (max. 15 Wörter)
+            Beispiel: 62|Solide Antworten – gib aber mehr konkrete Beispiele aus deinem Leben.
+            """;
+
+    /**
+     * Lässt die KI das Gespräch bewerten und setzt score (0-100) + scoreReason.
+     * Schlägt es fehl (z.B. kein KI-Key), bleibt der Score leer – kein harter Fehler.
+     */
+    private void evaluateAndScore(Session session) {
+        long userMessages = session.getMessages().stream()
+                .filter(m -> "USER".equals(m.getRole()))
+                .count();
+        if (userMessages < 1) {
+            return;   // ohne Antworten des Schülers gibt es nichts zu bewerten
+        }
+        try {
+            String result = chatClient
+                    .prompt(SCORE_PROMPT + "\n\nGespräch:\n" + buildTranscript(session.getMessages()))
+                    .call()
+                    .content();
+            parseScore(session, result);
+        } catch (Exception e) {
+            log.warn("Bewertung fehlgeschlagen: {}", e.getMessage());
+        }
+    }
+
+    private String buildTranscript(List<SessionMessage> messages) {
+        StringBuilder sb = new StringBuilder();
+        for (SessionMessage m : messages) {
+            String who = "USER".equals(m.getRole()) ? "Schüler" : "Coach";
+            sb.append(who).append(": ").append(m.getContent()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    private void parseScore(Session session, String result) {
+        if (result == null || result.isBlank()) {
+            return;
+        }
+        String line = result.strip().lines()
+                .filter(l -> l.contains("|"))
+                .findFirst()
+                .orElse(result.strip());
+        int sep = line.indexOf('|');
+        String numberPart = sep >= 0 ? line.substring(0, sep) : line;
+        String reason = sep >= 0 ? line.substring(sep + 1).trim() : null;
+
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\\d{1,3}").matcher(numberPart);
+        if (matcher.find()) {
+            int score = Math.max(0, Math.min(100, Integer.parseInt(matcher.group())));
+            session.setScore(score);
+            if (reason != null && !reason.isBlank()) {
+                session.setScoreReason(reason.length() > 200 ? reason.substring(0, 200) : reason);
+            }
+        }
     }
 }

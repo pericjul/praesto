@@ -44,7 +44,12 @@ public class Session {
     @Builder.Default
     private List<SessionMessage> messages = new ArrayList<>();
 
-    private Integer score;
+    private Integer score;        // Einstellungs-Chance 0-100 (von der KI beim Schliessen)
+
+    @Column(columnDefinition = "text")
+    private String scoreReason;   // kurzer Grund zur Bewertung
+
+    private boolean roast;        // Roast-Modus (nur freies Üben, bei Aufgaben immer false)
 
     @Enumerated(EnumType.STRING)
     private SessionStatus status;

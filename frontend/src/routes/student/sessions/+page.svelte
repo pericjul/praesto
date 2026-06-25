@@ -74,7 +74,11 @@
             <h1 class="title">{$t('ssess.title')}</h1>
             <p class="subtitle">{$t('ssess.subtitle')}</p>
         </div>
-        <form method="POST" action="?/start" use:enhance>
+        <form method="POST" action="?/start" use:enhance class="start-form">
+            <label class="roast-toggle" title={$t('ssess.roastHint')}>
+                <input type="checkbox" name="roast" />
+                <span>🔥 {$t('ssess.roastMode')}</span>
+            </label>
             <button type="submit" class="btn btn-primary">{$t('ssess.newSession')}</button>
         </form>
     </header>
@@ -127,6 +131,22 @@
                             <span class="info-label">{$t('ssess.messages')}</span>
                             <span class="info-value">{session.messages?.length ?? 0}</span>
                         </div>
+                        {#if session.roast}
+                            <div class="session-info">
+                                <span class="info-label">{$t('ssess.mode')}</span>
+                                <span class="info-value">🔥 {$t('ssess.roastMode')}</span>
+                            </div>
+                        {/if}
+                        {#if session.status === 'CLOSED' && session.score != null}
+                            <div class="score-box">
+                                <div class="score-head">
+                                    <span class="score-label">{$t('ssess.chance')}</span>
+                                    <span class="score-pct">{session.score}%</span>
+                                </div>
+                                <div class="score-bar"><div class="score-fill" style="width:{session.score}%"></div></div>
+                                {#if session.scoreReason}<p class="score-reason">{session.scoreReason}</p>{/if}
+                            </div>
+                        {/if}
                         {#if session.assignmentId}
                             <div class="session-info">
                                 <span class="info-label">{$t('ssess.toAssignment')}</span>
@@ -274,4 +294,36 @@
         color: var(--color-error);
         align-self: center;
     }
+
+    /* Roast-Toggle im Start-Formular */
+    .start-form {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+    }
+    .roast-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .roast-toggle input { accent-color: #e8590c; cursor: pointer; }
+
+    /* Einstellungs-Chance (Score) */
+    .score-box {
+        margin-top: var(--space-xs);
+        padding: var(--space-sm);
+        background: var(--color-bg-subtle, #faf8fc);
+        border: 1px solid var(--color-border-light, #eee);
+        border-radius: var(--radius-md);
+    }
+    .score-head { display: flex; justify-content: space-between; align-items: baseline; }
+    .score-label { font-size: var(--font-size-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+    .score-pct { font-size: 1.25rem; font-weight: 800; color: var(--color-primary, #2F124D); }
+    .score-bar { height: 8px; background: #eee; border-radius: 999px; overflow: hidden; margin: 0.4rem 0; }
+    .score-fill { height: 100%; background: linear-gradient(90deg, #e8590c, #ffd43b); border-radius: 999px; }
+    .score-reason { margin: 0.2rem 0 0; font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.4; }
 </style>
