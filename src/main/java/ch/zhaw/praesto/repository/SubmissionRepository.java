@@ -15,6 +15,11 @@ public interface SubmissionRepository extends JpaRepository<Submission, String> 
     List<Submission> findByStudentEmail(String studentEmail);
 
     /**
+     * Abgabe, zu der eine hochgeladene Datei gehört (für die Download-Autorisierung).
+     */
+    Optional<Submission> findFirstByFileUrl(String fileUrl);
+
+    /**
      * Alle Abgaben für eine Aufgabe
      */
     List<Submission> findByAssignmentId(String assignmentId);
