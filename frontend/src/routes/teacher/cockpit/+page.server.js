@@ -10,7 +10,7 @@ export async function load({ locals, fetch, url }) {
 	}
 	const headers = apiHeaders(locals.jwt_token);
 
-	const classesRes = await fetch(`${API_BASE}/classes/my`, { headers });
+	const classesRes = await fetch(`${API_BASE}/classes`, { headers });
 	const classes = classesRes.ok ? await classesRes.json() : [];
 
 	const selectedId = url.searchParams.get("class") || (classes[0]?.id ?? null);
