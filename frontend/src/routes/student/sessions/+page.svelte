@@ -7,6 +7,10 @@
     // Reaktive sessions Liste (kann lokal geändert werden)
     let sessions = $state(data.sessions ?? []);
 
+    // KI-Kontingent freies Üben (Lehrer-Aufgaben zählen nicht dazu)
+    let practiceQuota = $derived(data.quota?.PRACTICE_INTERVIEW ?? null);
+    let practiceLeft = $derived(practiceQuota ? practiceQuota.remaining : null);
+
     // Loading States
     let closingSessionId = $state(null);
     let deleteConfirmId = $state(null);
@@ -79,9 +83,19 @@
                 <input type="checkbox" name="roast" />
                 <span>🔥 {$t('ssess.roastMode')}</span>
             </label>
-            <button type="submit" class="btn btn-primary">{$t('ssess.newSession')}</button>
+            <button type="submit" class="btn btn-primary" disabled={practiceLeft === 0}>{$t('ssess.newSession')}</button>
         </form>
     </header>
+
+    {#if practiceQuota}
+        <p class="quota-note" class:quota-empty={practiceLeft === 0}>
+            {#if practiceLeft === 0}
+                🔒 {$t('ssess.quotaEmpty')}
+            {:else}
+                🎯 {$t('ssess.quotaLeft').replace('%N%', practiceLeft).replace('%T%', practiceQuota.limit)}
+            {/if}
+        </p>
+    {/if}
 
     {#if form?.error}
         <div class="alert alert-danger">{form.error}</div>
@@ -311,6 +325,9 @@
         white-space: nowrap;
     }
     .roast-toggle input { accent-color: #e8590c; cursor: pointer; }
+
+    .quota-note { margin: 0 0 1rem; font-size: var(--font-size-sm); color: var(--color-text-muted); }
+    .quota-note.quota-empty { color: #b45309; font-weight: 600; }
 
     /* Einstellungs-Chance (Score) */
     .score-box {

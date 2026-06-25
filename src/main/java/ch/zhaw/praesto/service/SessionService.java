@@ -36,6 +36,10 @@ public class SessionService {
     private final UserService userService;
     private final ChatClient chatClient;
     private final BadgeService badgeService;
+    private final AiQuotaService aiQuotaService;
+
+    // Freies Üben: max. 15 Minuten pro Gespräch (Aufgaben haben ihre eigene Dauer)
+    private static final int FREE_PRACTICE_MINUTES = 15;
 
     // ============================================================
     // SYSTEM-PROMPT: Realistischer HR-Coach für Schüler
@@ -243,6 +247,11 @@ public class SessionService {
         // Roast nur beim freien Üben – bei Aufgaben immer der seriöse Modus.
         boolean roastEffective = roast && !isAssignment;
 
+        // Kontingent: nur freies Üben zählt (max. 3). Aufgaben sind zusätzlich/unbegrenzt.
+        if (!isAssignment) {
+            aiQuotaService.consume(studentId, userService.getCurrentSchoolId(), AiFeature.PRACTICE_INTERVIEW);
+        }
+
         Session.SessionBuilder sessionBuilder = Session.builder()
                 .schoolId(userService.getCurrentSchoolId())
                 .studentId(studentId)
@@ -250,6 +259,7 @@ public class SessionService {
                 .status(SessionStatus.OPEN)
                 .startedAt(Instant.now())
                 .roast(roastEffective)
+                .targetDurationMin(FREE_PRACTICE_MINUTES)
                 .submittedAsAssignment(false);
 
         String systemPrompt = roastEffective ? SYSTEM_PROMPT + ROAST_ADDENDUM : SYSTEM_PROMPT;
@@ -310,6 +320,13 @@ public class SessionService {
 
         if (session.getStatus() == SessionStatus.CLOSED) {
             throw new BadRequestException("Session ist bereits geschlossen");
+        }
+
+        // Freies Üben: nach 15 Minuten ist Schluss (Aufgaben haben ihre eigene Dauer)
+        if (session.getAssignmentId() == null && session.getStartedAt() != null
+                && Instant.now().isAfter(session.getStartedAt().plus(FREE_PRACTICE_MINUTES, java.time.temporal.ChronoUnit.MINUTES))) {
+            throw new BadRequestException(
+                    "Die 15 Minuten für dieses Übungsgespräch sind um. Schliesse es ab, um deine Bewertung zu sehen.");
         }
 
         // User-Nachricht hinzufuegen

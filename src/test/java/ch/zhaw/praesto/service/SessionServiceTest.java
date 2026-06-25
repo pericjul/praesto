@@ -52,6 +52,9 @@ class SessionServiceTest {
     @Mock
     private BadgeService badgeService;
 
+    @Mock
+    private AiQuotaService aiQuotaService;
+
     @InjectMocks
     private SessionService sessionService;
 

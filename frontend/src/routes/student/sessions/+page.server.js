@@ -26,8 +26,20 @@ export async function load({ locals, fetch }) {
 
         const sessions = await res.json();
 
+        // KI-Kontingent (für „Noch X/3")
+        let quota = null;
+        try {
+            const qRes = await fetch(`${API_BASE}/student/ai-quota`, { headers });
+            if (qRes.ok) {
+                quota = await qRes.json().catch(() => null);
+            }
+        } catch {
+            quota = null;
+        }
+
         return {
-            sessions
+            sessions,
+            quota
         };
     } catch (err) {
         console.error("Netzwerkfehler", err);
