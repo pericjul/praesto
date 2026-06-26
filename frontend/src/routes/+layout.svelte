@@ -65,6 +65,42 @@
   function closeMenu() {
     mobileMenuOpen = false;
   }
+
+  // ===== Demo-Lesemodus: schreibende Aktionen abfangen =====
+  // Sicherheitshalber erzwingt das Backend read-only (Demo-Token). Hier zeigen
+  // wir zusätzlich eine freundliche Meldung, statt einen Request stumm scheitern
+  // zu lassen. Erlaubt bleiben Navigation, Sprachwahl, Logout, Rollen-Wechsel
+  // und die Termin-Anfrage (alle posten an /demo oder /logout bzw. tragen
+  // data-demo-allow).
+  let demoToast = $state(false);
+  let toastTimer;
+
+  function showDemoToast() {
+    demoToast = true;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => (demoToast = false), 5000);
+  }
+
+  function isAllowedDemoSubmit(form) {
+    if (!form) return true;
+    if (form.hasAttribute("data-demo-allow")) return true;
+    const action = (form.getAttribute("action") || "") + form.action;
+    return /\/(demo|logout)(\?|$|\/)/.test(action);
+  }
+
+  $effect(() => {
+    if (!isDemo) return;
+    const onSubmit = (e) => {
+      const form = e.target;
+      if (form?.method?.toLowerCase() === "get") return; // Lesende Formulare ok
+      if (isAllowedDemoSubmit(form)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      showDemoToast();
+    };
+    document.addEventListener("submit", onSubmit, true); // capture: vor use:enhance
+    return () => document.removeEventListener("submit", onSubmit, true);
+  });
 </script>
 
 <div class="app-root">
@@ -122,24 +158,33 @@
     {#if isAuthenticated && isDemo}
       <div class="demo-bar">
         <span class="demo-tag">🎭 {$t('demo.mode')}</span>
+        <span class="demo-readonly-tag">{$t('demo.readonly')}</span>
         <span class="demo-switch-label">{$t('demo.switchTo')}</span>
         <div class="demo-roles">
-          <form method="POST" action="/demo">
+          <form method="POST" action="/demo?/role" data-demo-allow>
             <input type="hidden" name="as" value="student" />
             <button type="submit" class:active={isStudent}>{$t('demo.rStudent')}</button>
           </form>
-          <form method="POST" action="/demo">
+          <form method="POST" action="/demo?/role" data-demo-allow>
             <input type="hidden" name="as" value="teacher" />
             <button type="submit" class:active={isTeacher}>{$t('demo.rTeacher')}</button>
           </form>
-          <form method="POST" action="/demo">
+          <form method="POST" action="/demo?/role" data-demo-allow>
             <input type="hidden" name="as" value="admin" />
             <button type="submit" class:active={isSchoolAdmin}>{$t('demo.rAdmin')}</button>
           </form>
         </div>
+        <a href="/demo#cta" class="demo-book">📅 {$t('demo.book')}</a>
       </div>
     {/if}
     {@render children()}
+
+    {#if demoToast}
+      <div class="demo-toast" role="status">
+        <span>🔒 {$t('demo.locked')}</span>
+        <a href="/demo#cta" onclick={() => (demoToast = false)}>{$t('demo.book')} →</a>
+      </div>
+    {/if}
   </main>
 
   <footer class="app-footer">
@@ -207,6 +252,53 @@
   .demo-tag {
     font-weight: 700;
     font-size: 0.85rem;
+  }
+
+  .demo-readonly-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .demo-book {
+    margin-left: auto;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-primary, #2F124D);
+    background: var(--color-accent-light, #fbe4b2);
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .demo-book:hover { background: #ffe7b0; }
+
+  /* Toast bei gesperrter Schreib-Aktion */
+  .demo-toast {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    background: var(--color-primary, #2F124D);
+    color: #fff;
+    padding: 0.75rem 1.1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    font-size: 0.9rem;
+    max-width: min(90vw, 460px);
+  }
+  .demo-toast a {
+    color: var(--color-accent-light, #fbe4b2);
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
   }
 
   .demo-switch-label {

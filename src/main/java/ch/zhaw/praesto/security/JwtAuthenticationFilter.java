@@ -62,10 +62,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         return;
                     }
 
-                    // Read-only Demo-Account: schreibende Zugriffe blockieren
-                    if (user.getRole() == UserRole.DEMO_USER && isMutating(request)) {
+                    // Read-only Demo: öffentliche Anschau-Demo (demo-Token) ODER der
+                    // reine DEMO_USER-Account dürfen nicht schreiben. Ein gebuchter
+                    // Demo-Zugang (echtes Login/Registrierung) hat ein normales Token
+                    // und darf am gebuchten Tag voll arbeiten.
+                    boolean readOnly = user.getRole() == UserRole.DEMO_USER
+                            || jwtService.isDemoToken(token);
+                    if (readOnly && isMutating(request)) {
                         response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                                "Demo-Account ist nur lesend");
+                                "Diese Funktion ist im Demo-Modus nicht verfügbar");
                         return;
                     }
 
