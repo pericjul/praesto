@@ -1,28 +1,27 @@
-// Temporärer Diagnose-Endpunkt: zeigt, ob der Frontend-Server das Backend
-// erreicht und das Token korrekt weiterreicht. Wird nach dem Debuggen entfernt.
+// Temporärer Diagnose-Endpunkt. Wird nach dem Debuggen entfernt.
 import { API_BASE } from "$lib/server/api.js";
 
 export async function GET({ locals, fetch }) {
     const token = locals.jwt_token;
-    let badgeStatus = null;
-    let err = null;
+    const auth = token ? { Authorization: `Bearer ${token}` } : {};
+    let viaEvent = null;
+    let viaGlobal = null;
     try {
-        const r = await fetch(`${API_BASE}/badges/my`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
-        badgeStatus = r.status;
+        viaEvent = (await fetch(`${API_BASE}/badges/my`, { headers: auth })).status;
     } catch (e) {
-        err = String(e);
+        viaEvent = "err:" + e;
+    }
+    try {
+        viaGlobal = (await globalThis.fetch("http://localhost:8080/api/badges/my", { headers: auth })).status;
+    } catch (e) {
+        viaGlobal = "err:" + e;
     }
     return new Response(
         JSON.stringify({
-            build: "diag-v1",
-            apiBase: API_BASE,
-            internalApi: process.env.INTERNAL_API_BASE ?? "http://localhost:8080",
+            build: "diag-v2",
             hasToken: Boolean(token),
-            tokenLen: token ? token.length : 0,
-            badgeStatus,
-            err
+            viaEvent,   // durch handleFetch (mit Token-Fix)
+            viaGlobal   // direkt ans Backend
         }),
         { headers: { "content-type": "application/json" } }
     );

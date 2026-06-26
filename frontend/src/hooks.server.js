@@ -14,7 +14,12 @@ export async function handleFetch({ event, request, fetch }) {
         // origin-fremden Requests ab -> Backend sieht "nicht eingeloggt" (403).
         // Darum den Token direkt aus dem Cookie setzen, falls er fehlt.
         if (!headers.has("authorization")) {
-            const token = event?.cookies?.get("jwt_token");
+            let token = event?.cookies?.get("jwt_token");
+            if (!token) {
+                const ck = headers.get("cookie") || event?.request?.headers?.get("cookie") || "";
+                const m = ck.match(/(?:^|;\s*)jwt_token=([^;]+)/);
+                if (m) token = decodeURIComponent(m[1]);
+            }
             if (token) headers.set("authorization", `Bearer ${token}`);
         }
         const init = { method: request.method, headers, redirect: "manual" };
