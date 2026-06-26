@@ -3,9 +3,11 @@ name: Build and deploy a container to an Azure Web App
 env:
   AZURE_WEBAPP_NAME: praesto-app
 
-# Manuell auslösbar (Actions → Run workflow). Baut das aktuelle Image und
-# deployt es auf die Azure Web App (Switzerland North).
+# Deployt auf die Azure Web App (Switzerland North). Läuft automatisch bei
+# jedem Push auf main und ist zusätzlich manuell auslösbar (Actions → Run workflow).
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
