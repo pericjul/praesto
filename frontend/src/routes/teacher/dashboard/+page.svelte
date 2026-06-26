@@ -90,11 +90,6 @@
         <p class="subtitle">{$t('tdash.subtitle')}</p>
     </header>
 
-    <!-- Kalender -->
-    <section style="margin-bottom: 1.25rem;">
-        <Calendar events={calendar} />
-    </section>
-
     <!-- Wichtigste Info: Feedback nötig -->
     {#if stats.pendingSubmissions > 0}
         <div class="alert-banner">
@@ -131,7 +126,8 @@
 
     <!-- Main Grid -->
     <div class="main-grid">
-        <!-- Left: Pending Submissions -->
+      <div class="main-col">
+        <!-- Feedback nötig (wichtigste Lehrer-Aufgabe) -->
         <section class="section">
             <div class="section-header">
                 <h2>{$t('tdash.submissionsTitle')}</h2>
@@ -166,6 +162,12 @@
                 </div>
             {/if}
         </section>
+
+        <!-- Kalender (integriert, zeigt Aufgaben-Deadlines) -->
+        <section class="cal-section">
+            <Calendar events={calendar} />
+        </section>
+      </div>
 
         <!-- Right: Quick Actions & Classes -->
         <aside class="sidebar">
@@ -350,6 +352,13 @@
         grid-template-columns: 1fr 320px;
         gap: 1.5rem;
         align-items: start;
+    }
+
+    .main-col {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        min-width: 0;
     }
 
     /* Sections */
