@@ -8,9 +8,16 @@ const INTERNAL_API = process.env.INTERNAL_API_BASE ?? "http://localhost:8080";
 
 export async function handleFetch({ request, fetch }) {
     const url = new URL(request.url);
-    if (url.pathname.startsWith("/api/") || url.pathname === "/api") {
-        const target = `${INTERNAL_API}${url.pathname}${url.search}`;
-        return fetch(new Request(target, request));
+    if (url.pathname.startsWith("/api")) {
+        // Header (v.a. Authorization!) explizit übernehmen – new Request(url, req)
+        // überträgt sie nicht zuverlässig, was sonst zu 403 am Backend führt.
+        const headers = new Headers(request.headers);
+        const init = { method: request.method, headers, redirect: "manual" };
+        if (request.method !== "GET" && request.method !== "HEAD") {
+            init.body = await request.arrayBuffer();
+            init.duplex = "half";
+        }
+        return fetch(`${INTERNAL_API}${url.pathname}${url.search}`, init);
     }
     return fetch(request);
 }
