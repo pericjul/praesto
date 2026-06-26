@@ -78,3 +78,16 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           images: 'ghcr.io/${{ env.REPO }}:latest'
+
+      # Zwingt die Web App, das frische :latest sofort zu ziehen. Azure pullt ein
+      # gleichnamiges :latest sonst nicht automatisch. Der Webhook stammt aus dem
+      # Bereitstellungscenter (Continuous Deployment) und liegt als Secret vor.
+      - name: Azure zum Neu-Ziehen anstossen (CI-Webhook)
+        run: |
+          if [ -n "${{ secrets.AZURE_WEBHOOK_URL }}" ]; then
+            curl -fsSL -X POST "${{ secrets.AZURE_WEBHOOK_URL }}" \
+              && echo "Webhook getriggert – Azure zieht :latest" \
+              || echo "Webhook-Ping fehlgeschlagen"
+          else
+            echo "Kein AZURE_WEBHOOK_URL-Secret gesetzt – Schritt übersprungen"
+          fi
