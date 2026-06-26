@@ -6,12 +6,17 @@
 // Rolle mehr spielt. Lokale Entwicklung (5173→8080) funktioniert unverändert.
 const INTERNAL_API = process.env.INTERNAL_API_BASE ?? "http://localhost:8080";
 
-export async function handleFetch({ request, fetch }) {
+export async function handleFetch({ event, request, fetch }) {
     const url = new URL(request.url);
     if (url.pathname.startsWith("/api")) {
-        // Header (v.a. Authorization!) explizit übernehmen – new Request(url, req)
-        // überträgt sie nicht zuverlässig, was sonst zu 403 am Backend führt.
         const headers = new Headers(request.headers);
+        // SvelteKits event.fetch streift den Authorization-Header bei
+        // origin-fremden Requests ab -> Backend sieht "nicht eingeloggt" (403).
+        // Darum den Token direkt aus dem Cookie setzen, falls er fehlt.
+        if (!headers.has("authorization")) {
+            const token = event?.cookies?.get("jwt_token");
+            if (token) headers.set("authorization", `Bearer ${token}`);
+        }
         const init = { method: request.method, headers, redirect: "manual" };
         if (request.method !== "GET" && request.method !== "HEAD") {
             init.body = await request.arrayBuffer();
