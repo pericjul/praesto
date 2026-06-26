@@ -35,7 +35,7 @@
             <h1>{$t('join.invalidTitle')}</h1>
             <p class="error-text">
                 {$t('join.invalidPrefix')}
-                <a href="mailto:support@praesto.ch">support@praesto.ch</a>.
+                <a href="mailto:julia-peric@hotmail.com">julia-peric@hotmail.com</a>.
             </p>
             <a href="/login" class="btn-secondary">{$t('join.toLogin')}</a>
         {:else}

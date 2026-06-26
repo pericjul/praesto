@@ -276,23 +276,30 @@
   }
   .demo-book:hover { background: #ffe7b0; }
 
-  /* Toast bei gesperrter Schreib-Aktion */
+  /* Toast bei gesperrter Schreib-Aktion – oben mittig, über allen Modals */
   .demo-toast {
     position: fixed;
-    bottom: 1.25rem;
+    top: 4.5rem;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 200;
+    z-index: 99999;
     display: flex;
     align-items: center;
     gap: 0.9rem;
     background: var(--color-primary, #2F124D);
     color: #fff;
-    padding: 0.75rem 1.1rem;
+    padding: 0.9rem 1.25rem;
     border-radius: 0.75rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-    font-size: 0.9rem;
-    max-width: min(90vw, 460px);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    font-size: 0.95rem;
+    font-weight: 500;
+    max-width: min(92vw, 520px);
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    animation: demo-toast-in 0.2s ease;
+  }
+  @keyframes demo-toast-in {
+    from { opacity: 0; transform: translate(-50%, -8px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
   }
   .demo-toast a {
     color: var(--color-accent-light, #fbe4b2);
