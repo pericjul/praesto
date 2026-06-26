@@ -105,10 +105,6 @@
         </section>
     {/if}
 
-    <section class="dash-calendar">
-        <Calendar events={calendar} />
-    </section>
-
     <!-- ORIGINAL HERO -->
     <section class="hero">
         <div class="hero-left">
@@ -149,91 +145,13 @@
     <!-- NEUER HAUPTBEREICH: 2 klare Spalten -->
     <div class="main-grid">
         
-        <!-- LINKE SPALTE: Aufgaben-Fokus -->
-        <section class="tasks-section">
-            <div class="section-header">
-                <h2>{$t('sdash.nextTasks')}</h2>
-                <a href="/student/assignments" class="link-all">{$t('sdash.viewAll')}</a>
-            </div>
-
-            {#if openAssignments.length === 0}
-                <div class="empty-state">
-                    <span class="empty-icon">🎉</span>
-                    <p>{$t('sdash.emptyTitle')}</p>
-                    <span class="empty-hint">{$t('sdash.emptyHint')}</span>
-                    <a href="/student/sessions" class="btn btn-accent">{$t('sdash.startTraining')}</a>
-                </div>
-            {:else}
-                <div class="task-list">
-                    {#each openAssignments.slice(0, 4) as assignment, i}
-                        <a href="/student/assignments/{assignment.id}" 
-                           class="task-card" 
-                           class:urgent={isUrgent(assignment.dueDate)} 
-                           class:overdue={isOverdue(assignment.dueDate)}>
-                            
-                            <div class="task-rank">{i + 1}</div>
-                            
-                            <div class="task-info">
-                                <span class="task-title">{assignment.title}</span>
-                                <div class="task-meta">
-                                    <span class="task-type" style="--type-color: {getTypeInfo(assignment.type).color}">
-                                        {getTypeInfo(assignment.type).label}
-                                    </span>
-                                    {#if assignment.durationMin}
-                                        <span class="task-duration">⏱️ {assignment.durationMin} {$t('sdash.min')}</span>
-                                    {/if}
-                                </div>
-                            </div>
-
-                            <div class="task-deadline">
-                                {#if isOverdue(assignment.dueDate)}
-                                    <span class="deadline overdue">{$t('sdash.overdue')}</span>
-                                {:else if isUrgent(assignment.dueDate)}
-                                    <span class="deadline urgent">🔥 {getDaysUntil(assignment.dueDate) === 0 ? $t('sdash.today') : $t('sdash.tomorrow')}</span>
-                                {:else if assignment.dueDate}
-                                    <span class="deadline">{formatDate(assignment.dueDate)}</span>
-                                {:else}
-                                    <span class="deadline muted">{$t('sdash.noDate')}</span>
-                                {/if}
-                            </div>
-                        </a>
-                    {/each}
-                </div>
-
-                {#if openAssignments.length > 4}
-                    <a href="/student/assignments" class="btn btn-outline show-more">
-                        +{openAssignments.length - 4} {$t('sdash.moreTasksSuffix')}
-                    </a>
-                {/if}
-            {/if}
+        <!-- LINKE SPALTE: Kalender (zeigt Aufgaben-Deadlines & Termine) -->
+        <section class="cal-section">
+            <Calendar events={calendar} />
         </section>
 
         <!-- RECHTE SPALTE: Feedback + Schnellzugriff -->
         <aside class="sidebar">
-
-            <!-- Anstehende Termine -->
-            {#if upcomingEvents.length > 0}
-                <section class="card events-card">
-                    <h3>{$t('sdash.upcomingTitle')}</h3>
-                    <div class="events-list">
-                        {#each upcomingEvents as ev}
-                            <div class="event-item">
-                                <span class="event-icon">{ev.type === 'INTERVIEW' ? '💼' : '📋'}</span>
-                                <div class="event-content">
-                                    <span class="event-title">
-                                        {ev.type === 'INTERVIEW' ? $t('sdash.evInterview') : $t('sdash.evDeadline')}: {ev.title}
-                                    </span>
-                                    <span class="event-when">
-                                        {#if getDaysUntil(ev.date) <= 0}{$t('sdash.today')}
-                                        {:else if getDaysUntil(ev.date) === 1}{$t('sdash.tomorrow')}
-                                        {:else}{$t('sdash.inDaysPre')} {getDaysUntil(ev.date)} {$t('sdash.inDaysPost')}{/if}
-                                    </span>
-                                </div>
-                            </div>
-                        {/each}
-                    </div>
-                </section>
-            {/if}
 
             <!-- Feedback (nur wenn vorhanden) -->
             {#if notifications.length > 0}
@@ -325,8 +243,6 @@
         white-space: nowrap;
     }
     .fact-text { margin: 0; font-size: 1.05rem; font-weight: 600; line-height: 1.4; }
-
-    .dash-calendar { margin-bottom: 1.25rem; }
 
     /* ===== Klassen-Challenge ===== */
     .challenge-card {

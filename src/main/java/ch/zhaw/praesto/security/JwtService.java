@@ -43,10 +43,22 @@ public class JwtService {
      * Erstellt ein signiertes JWT mit allen relevanten User-Claims.
      */
     public String generateToken(User user) {
+        return generateToken(user, false);
+    }
+
+    /**
+     * Wie {@link #generateToken(User)}, markiert das Token aber zusätzlich als
+     * read-only Demo-Token ({@code demo=true}). Solche Tokens werden vom
+     * {@code JwtAuthenticationFilter} bei schreibenden Requests abgelehnt –
+     * unabhängig von der Rolle. So ist die öffentliche Anschau-Demo wirklich nur
+     * lesend, während ein gebuchter Demo-Zugang (echtes Login/Registrierung) ein
+     * normales, beschreibbares Token erhält.
+     */
+    public String generateToken(User user, boolean demo) {
         Instant now = Instant.now();
         Instant exp = now.plus(expirationHours, ChronoUnit.HOURS);
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(user.getId())
                 .claim("email", user.getEmail())
                 .claim("role", user.getRole() != null ? user.getRole().name() : null)
@@ -54,9 +66,17 @@ public class JwtService {
                 .claim("firstName", user.getFirstName())
                 .claim("lastName", user.getLastName())
                 .issuedAt(Date.from(now))
-                .expiration(Date.from(exp))
-                .signWith(key)
-                .compact();
+                .expiration(Date.from(exp));
+        if (demo) {
+            builder.claim("demo", true);
+        }
+        return builder.signWith(key).compact();
+    }
+
+    /** {@code true}, wenn das Token als read-only Demo-Token markiert ist. */
+    public boolean isDemoToken(String token) {
+        Boolean demo = parseClaims(token).get("demo", Boolean.class);
+        return Boolean.TRUE.equals(demo);
     }
 
     /**

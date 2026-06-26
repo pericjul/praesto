@@ -39,7 +39,9 @@ public class AuthController {
 
     @GetMapping("/demo/login")
     public AuthResponse demoLogin(@RequestParam(name = "as", required = false) String as) {
-        return toAuthResponse(authService.demoLogin(as));
+        // Öffentliche Anschau-Demo: read-only Token (kein Schreibzugriff).
+        User user = authService.demoLogin(as);
+        return new AuthResponse(jwtService.generateToken(user, true), UserDTO.from(user));
     }
 
     private AuthResponse toAuthResponse(User user) {
