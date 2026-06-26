@@ -46,7 +46,9 @@ jobs:
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25
         with:
           push: true
-          tags: ghcr.io/${{ env.REPO }}:${{ github.sha }}
+          tags: |
+            ghcr.io/${{ env.REPO }}:${{ github.sha }}
+            ghcr.io/${{ env.REPO }}:latest
           file: ./Dockerfile
           platforms: linux/amd64
           cache-from: type=local,src=/tmp/.buildx-cache
@@ -75,4 +77,4 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: 'ghcr.io/${{ env.REPO }}:${{ github.sha }}'
+          images: 'ghcr.io/${{ env.REPO }}:latest'
