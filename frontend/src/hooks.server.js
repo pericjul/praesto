@@ -10,24 +10,18 @@ export async function handleFetch({ event, request, fetch }) {
     const url = new URL(request.url);
     if (url.pathname.startsWith("/api")) {
         const headers = new Headers(request.headers);
-        // SvelteKits event.fetch streift den Authorization-Header bei
-        // origin-fremden Requests ab -> Backend sieht "nicht eingeloggt" (403).
-        // Darum den Token direkt aus dem Cookie setzen, falls er fehlt.
-        if (!headers.has("authorization")) {
-            let token = event?.cookies?.get("jwt_token");
-            if (!token) {
-                const ck = headers.get("cookie") || event?.request?.headers?.get("cookie") || "";
-                const m = ck.match(/(?:^|;\s*)jwt_token=([^;]+)/);
-                if (m) token = decodeURIComponent(m[1]);
-            }
-            if (token) headers.set("authorization", `Bearer ${token}`);
-        }
+        // Token aus event.locals (von handle() aus dem Cookie gesetzt) – diese
+        // Quelle ist nachweislich vorhanden. SvelteKits event.fetch streift den
+        // Authorization-Header bei origin-fremden Requests sonst ab -> 403.
+        // globalThis.fetch ans interne Backend liefert nachweislich 200.
+        const token = event?.locals?.jwt_token;
+        if (token) headers.set("authorization", `Bearer ${token}`);
         const init = { method: request.method, headers, redirect: "manual" };
         if (request.method !== "GET" && request.method !== "HEAD") {
             init.body = await request.arrayBuffer();
             init.duplex = "half";
         }
-        return fetch(`${INTERNAL_API}${url.pathname}${url.search}`, init);
+        return globalThis.fetch(`${INTERNAL_API}${url.pathname}${url.search}`, init);
     }
     return fetch(request);
 }
