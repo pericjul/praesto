@@ -123,6 +123,12 @@ export const teacherB = {
 		"tgrade.csvStatus": "Status",
 		"tgrade.csvGrade": "Note",
 		"tgrade.csvFeedback": "Feedback",
+		"tgrade.csvClass": "Klasse",
+		"tgrade.csvAssignment": "Aufgabe",
+		"tgrade.csvType": "Typ",
+		"tgrade.csvReviewedAt": "Bewertet am",
+		"tgrade.csvComment": "Kommentar Schüler:in",
+		"tgrade.csvFile": "Datei",
 
 		// --- tsess. (Chat-Verlauf) ---
 		"tsess.chatHistory": "Chat-Verlauf",
@@ -274,6 +280,12 @@ export const teacherB = {
 		"tgrade.csvStatus": "Status",
 		"tgrade.csvGrade": "Grade",
 		"tgrade.csvFeedback": "Feedback",
+		"tgrade.csvClass": "Class",
+		"tgrade.csvAssignment": "Assignment",
+		"tgrade.csvType": "Type",
+		"tgrade.csvReviewedAt": "Reviewed on",
+		"tgrade.csvComment": "Student comment",
+		"tgrade.csvFile": "File",
 
 		// --- tsess. ---
 		"tsess.chatHistory": "Chat history",
@@ -425,6 +437,12 @@ export const teacherB = {
 		"tgrade.csvStatus": "Statut",
 		"tgrade.csvGrade": "Note",
 		"tgrade.csvFeedback": "Retour",
+		"tgrade.csvClass": "Classe",
+		"tgrade.csvAssignment": "Devoir",
+		"tgrade.csvType": "Type",
+		"tgrade.csvReviewedAt": "Évalué le",
+		"tgrade.csvComment": "Commentaire élève",
+		"tgrade.csvFile": "Fichier",
 
 		// --- tsess. ---
 		"tsess.chatHistory": "Historique du chat",
@@ -576,6 +594,12 @@ export const teacherB = {
 		"tgrade.csvStatus": "Stato",
 		"tgrade.csvGrade": "Voto",
 		"tgrade.csvFeedback": "Feedback",
+		"tgrade.csvClass": "Classe",
+		"tgrade.csvAssignment": "Compito",
+		"tgrade.csvType": "Tipo",
+		"tgrade.csvReviewedAt": "Valutato il",
+		"tgrade.csvComment": "Commento studente",
+		"tgrade.csvFile": "File",
 
 		// --- tsess. ---
 		"tsess.chatHistory": "Cronologia chat",

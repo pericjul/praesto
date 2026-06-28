@@ -29,16 +29,40 @@
         return `"${s.replace(/"/g, '""')}"`;
     }
 
+    function typeLabel(type) {
+        const tr = get(t);
+        const map = {
+            AI_INTERVIEW: tr('sdash.typeInterview'),
+            DOCUMENT_UPLOAD: tr('sdash.typeDocument'),
+            SELF_REFLECTION: tr('sdash.typeReflection'),
+            VIDEO_PITCH: tr('sdash.typeVideo'),
+            RESEARCH: tr('sdash.typeResearch')
+        };
+        return map[type] ?? type ?? "";
+    }
+
     function exportCsv() {
         const tr = get(t);
-        const rows = [[tr('tgrade.csvName'), tr('tgrade.csvEmail'), tr('tgrade.csvSubmittedAt'), tr('tgrade.csvStatus'), tr('tgrade.csvGrade'), tr('tgrade.csvFeedback')]];
+        const fmt = (d) => (d ? new Date(d).toLocaleString("de-CH") : "");
+        const rows = [[
+            tr('tgrade.csvName'), tr('tgrade.csvEmail'), tr('tgrade.csvClass'),
+            tr('tgrade.csvAssignment'), tr('tgrade.csvType'), tr('tgrade.csvStatus'),
+            tr('tgrade.csvGrade'), tr('tgrade.csvSubmittedAt'), tr('tgrade.csvReviewedAt'),
+            tr('tgrade.csvComment'), tr('tgrade.csvFile'), tr('tgrade.csvFeedback')
+        ]];
         for (const sub of submissions) {
             rows.push([
                 studentLabel(sub),
                 sub.studentEmail ?? "",
-                sub.submittedAt ? new Date(sub.submittedAt).toLocaleString("de-CH") : "",
+                schoolClass?.name ?? "",
+                assignment?.title ?? "",
+                typeLabel(assignment?.type),
                 sub.teacherFeedback ? tr('tgrade.reviewed') : tr('tgrade.open'),
                 sub.grade ?? "",
+                fmt(sub.submittedAt),
+                fmt(sub.reviewedAt),
+                sub.comment ?? sub.textContent ?? "",
+                sub.fileName ?? "",
                 sub.teacherFeedback ?? ""
             ]);
         }

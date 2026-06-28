@@ -6,6 +6,8 @@ export const studentMedia = {
 		"ssess.subtitle":
 			"Hier siehst du alle deine Trainings-Sessions. Setze offene Sessions fort oder starte eine neue.",
 		"ssess.newSession": "➕ Neue Session starten",
+		"ssess.starting": "KI wird vorbereitet …",
+		"ssess.startingHint": "Dein Gesprächspartner wird gerade geladen – einen Moment.",
 		"ssess.roastMode": "Roast-Modus",
 		"ssess.roastHint": "Frech & ehrlich – die KI nimmt deine Antworten humorvoll auseinander, mit echtem Tipp. Nur beim freien Üben.",
 		"ssess.mode": "Modus",
@@ -77,6 +79,8 @@ export const studentMedia = {
 		"ssess.subtitle":
 			"Here you can see all your training sessions. Continue open sessions or start a new one.",
 		"ssess.newSession": "➕ Start new session",
+		"ssess.starting": "Preparing the AI …",
+		"ssess.startingHint": "Your interview partner is loading – one moment.",
 		"ssess.roastMode": "Roast mode",
 		"ssess.roastHint": "Cheeky & honest – the AI playfully tears your answers apart, with a real tip. Free practice only.",
 		"ssess.mode": "Mode",
@@ -148,6 +152,8 @@ export const studentMedia = {
 		"ssess.subtitle":
 			"Tu vois ici toutes tes sessions d'entraînement. Reprends les sessions ouvertes ou démarres-en une nouvelle.",
 		"ssess.newSession": "➕ Démarrer une nouvelle session",
+		"ssess.starting": "Préparation de l'IA …",
+		"ssess.startingHint": "Votre interlocuteur se charge – un instant.",
 		"ssess.roastMode": "Mode roast",
 		"ssess.roastHint": "Cash & honnête – l'IA démonte tes réponses avec humour, plus un vrai conseil. Uniquement en entraînement libre.",
 		"ssess.mode": "Mode",
@@ -220,6 +226,8 @@ export const studentMedia = {
 		"ssess.subtitle":
 			"Qui vedi tutte le tue sessioni di allenamento. Riprendi le sessioni aperte o avviane una nuova.",
 		"ssess.newSession": "➕ Avvia nuova sessione",
+		"ssess.starting": "Preparazione dell'IA …",
+		"ssess.startingHint": "Il tuo interlocutore si sta caricando – un attimo.",
 		"ssess.roastMode": "Modalità roast",
 		"ssess.roastHint": "Diretta e sincera – l'IA smonta le tue risposte con ironia, più un consiglio vero. Solo nell'allenamento libero.",
 		"ssess.mode": "Modalità",

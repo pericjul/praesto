@@ -14,6 +14,19 @@
     // Loading States
     let closingSessionId = $state(null);
     let deleteConfirmId = $state(null);
+    let starting = $state(false);
+
+    // KI-Session starten: Overlay zeigen, bis die Weiterleitung greift
+    function handleStartEnhance() {
+        starting = true;
+        return async ({ result, update }) => {
+            // Erfolg = redirect zur Chat-Seite -> Overlay bleibt bis Navigation.
+            if (result.type === "failure" || result.type === "error") {
+                starting = false;
+            }
+            await update();
+        };
+    }
 
     function handleDeleteEnhance(sessionId) {
         return () => {
@@ -78,14 +91,26 @@
             <h1 class="title">{$t('ssess.title')}</h1>
             <p class="subtitle">{$t('ssess.subtitle')}</p>
         </div>
-        <form method="POST" action="?/start" use:enhance class="start-form">
+        <form method="POST" action="?/start" use:enhance={handleStartEnhance} class="start-form">
             <label class="roast-toggle" title={$t('ssess.roastHint')}>
                 <input type="checkbox" name="roast" />
                 <span>🔥 {$t('ssess.roastMode')}</span>
             </label>
-            <button type="submit" class="btn btn-primary" disabled={practiceLeft === 0}>{$t('ssess.newSession')}</button>
+            <button type="submit" class="btn btn-primary" disabled={practiceLeft === 0 || starting}>
+                {#if starting}<span class="btn-spinner" aria-hidden="true"></span> {$t('ssess.starting')}{:else}{$t('ssess.newSession')}{/if}
+            </button>
         </form>
     </header>
+
+    {#if starting}
+        <div class="start-overlay" role="status" aria-live="polite">
+            <div class="start-overlay-card">
+                <div class="big-spinner" aria-hidden="true"></div>
+                <p class="start-overlay-title">{$t('ssess.starting')}</p>
+                <p class="start-overlay-sub">{$t('ssess.startingHint')}</p>
+            </div>
+        </div>
+    {/if}
 
     {#if practiceQuota}
         <p class="quota-note" class:quota-empty={practiceLeft === 0}>
@@ -343,4 +368,44 @@
     .score-bar { height: 8px; background: #eee; border-radius: 999px; overflow: hidden; margin: 0.4rem 0; }
     .score-fill { height: 100%; background: linear-gradient(90deg, #e8590c, #ffd43b); border-radius: 999px; }
     .score-reason { margin: 0.2rem 0 0; font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.4; }
+
+    /* ===== KI-Session Start: Lade-Animation ===== */
+    .btn-spinner {
+        display: inline-block;
+        width: 0.9em; height: 0.9em;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        border-top-color: #fff;
+        border-radius: 50%;
+        vertical-align: -0.1em;
+        animation: praesto-spin 0.7s linear infinite;
+    }
+    .start-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(47, 18, 77, 0.55);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .start-overlay-card {
+        background: #fff;
+        border-radius: 1.25rem;
+        padding: 2.25rem 2.5rem;
+        text-align: center;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+        max-width: 90vw;
+    }
+    .big-spinner {
+        width: 3rem; height: 3rem;
+        margin: 0 auto 1rem;
+        border: 4px solid #ece3f5;
+        border-top-color: var(--color-primary, #2F124D);
+        border-radius: 50%;
+        animation: praesto-spin 0.8s linear infinite;
+    }
+    .start-overlay-title { margin: 0 0 0.35rem; font-weight: 700; color: var(--color-primary, #2F124D); font-size: 1.1rem; }
+    .start-overlay-sub { margin: 0; color: var(--color-text-muted, #5E4C6F); font-size: 0.9rem; }
+    @keyframes praesto-spin { to { transform: rotate(360deg); } }
 </style>
