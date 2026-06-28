@@ -458,19 +458,21 @@
     }
 
     .type-badge {
-        background: #f3e8ff;
-        color: #7c3aed;
-        padding: 0.25rem 0.6rem;
-        border-radius: 0.25rem;
-        font-size: 0.8rem;
+        background: #f0e7fa;
+        color: var(--color-primary, #2F124D);
+        padding: 0.3rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
     }
 
     .class-badge {
         background: #e0f2fe;
         color: #0369a1;
-        padding: 0.25rem 0.6rem;
-        border-radius: 0.25rem;
-        font-size: 0.8rem;
+        padding: 0.3rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
     }
 
     .header-meta {
@@ -479,10 +481,11 @@
     }
 
     .title {
-        margin: 0 0 0.5rem;
-        font-size: 1.5rem;
-        color: #2f124d;
-        font-weight: 600;
+        margin: 0 0 0.6rem;
+        font-size: clamp(1.6rem, 3vw, 2rem);
+        color: var(--color-primary, #2F124D);
+        font-weight: 800;
+        letter-spacing: -0.01em;
     }
 
     /* Alerts */
@@ -515,21 +518,35 @@
 
     .stat-card {
         background: #fff;
-        border: 1px solid #e8e0f0;
-        border-radius: 0.75rem;
-        padding: 1rem;
+        border: 1px solid #ece3f5;
+        border-radius: 1rem;
+        padding: 1.1rem 1rem;
         text-align: center;
+        box-shadow: 0 2px 10px rgba(47, 18, 77, 0.05);
+        position: relative;
+        overflow: hidden;
     }
+    .stat-card::before {
+        content: "";
+        position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        background: var(--color-primary, #2F124D);
+        opacity: 0.6;
+    }
+    .stat-card.highlight { background: #fff8f1; border-color: #fcd9b6; }
+    .stat-card.highlight::before { background: #e8590c; opacity: 1; }
+    .stat-card.success { background: #f1fbf4; border-color: #bbf0cb; }
+    .stat-card.success::before { background: #16a34a; opacity: 1; }
 
     .stat-value {
         display: block;
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #2f124d;
+        font-size: 1.9rem;
+        font-weight: 800;
+        color: var(--color-primary, #2F124D);
+        line-height: 1.1;
     }
 
     .stat-card.highlight .stat-value {
-        color: #dc2626;
+        color: #c2410c;
     }
 
     .stat-card.success .stat-value {
@@ -537,8 +554,10 @@
     }
 
     .stat-label {
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         color: #6b647a;
+        margin-top: 0.2rem;
+        display: block;
     }
 
     /* Filter */
@@ -601,9 +620,17 @@
 
     .submission-card {
         background: #fff;
-        border: 1px solid #e8e0f0;
+        border: 1px solid #ece3f5;
+        border-left: 4px solid #f59e0b;
         border-radius: 1rem;
         padding: 1.25rem;
+        box-shadow: 0 2px 10px rgba(47, 18, 77, 0.05);
+        transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .submission-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(47, 18, 77, 0.10);
     }
 
     .submission-card.reviewed {

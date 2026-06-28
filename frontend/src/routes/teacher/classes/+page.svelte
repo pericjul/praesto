@@ -63,7 +63,7 @@
         debounceTimer = setTimeout(async () => {
             searching = true;
             try {
-                const res = await fetch(`/api/students/search?q=${encodeURIComponent(q)}`);
+                const res = await fetch(`/teacher/student-search?q=${encodeURIComponent(q)}`);
                 searchResults = res.ok ? await res.json() : [];
             } catch {
                 searchResults = [];

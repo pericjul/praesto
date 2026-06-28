@@ -361,9 +361,9 @@
                         placeholder={$t('tasks.titlePlaceholder')} value={editingAssignment?.title ?? ""} />
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        {#if editingAssignment}
+                {#if editingAssignment}
+                    <div class="form-row">
+                        <div class="form-group">
                             <label for="classId">{$t('tasks.fieldClass')} *</label>
                             <select id="classId" name="classId" required>
                                 <option value="">{$t('tasks.choose')}</option>
@@ -371,28 +371,39 @@
                                     <option value={c.id} selected={editingAssignment?.classId === c.id}>{c.name}</option>
                                 {/each}
                             </select>
-                        {:else}
-                            <label>{$t('tasks.fieldClasses')} * <span class="hint-inline">{$t('tasks.multiSelectHint')}</span></label>
-                            <div class="class-checkboxes">
-                                {#each classes as c}
-                                    <label class="class-checkbox">
-                                        <input type="checkbox" name="classIds" value={c.id} />
-                                        <span>{c.name}</span>
-                                    </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="type">{$t('tasks.fieldType')} *</label>
+                            <select id="type" name="type" required bind:value={selectedType}>
+                                <option value="">{$t('tasks.choose')}</option>
+                                {#each assignmentTypes as item}
+                                    <option value={item.value} selected={editingAssignment?.type === item.value}>{item.label}</option>
                                 {/each}
-                            </div>
-                        {/if}
+                            </select>
+                        </div>
+                    </div>
+                {:else}
+                    <div class="form-group">
+                        <label>{$t('tasks.fieldClasses')} * <span class="hint-inline">{$t('tasks.multiSelectHint')}</span></label>
+                        <div class="class-checkboxes">
+                            {#each classes as c}
+                                <label class="class-checkbox">
+                                    <input type="checkbox" name="classIds" value={c.id} />
+                                    <span>{c.name}</span>
+                                </label>
+                            {/each}
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="type">{$t('tasks.fieldType')} *</label>
                         <select id="type" name="type" required bind:value={selectedType}>
                             <option value="">{$t('tasks.choose')}</option>
                             {#each assignmentTypes as item}
-                                <option value={item.value} selected={editingAssignment?.type === item.value}>{item.label}</option>
+                                <option value={item.value}>{item.label}</option>
                             {/each}
                         </select>
                     </div>
-                </div>
+                {/if}
 
                 <div class="form-row">
                     <div class="form-group">
@@ -664,23 +675,40 @@
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
-        max-height: 140px;
+        max-height: 160px;
         overflow-y: auto;
+        padding: 0.15rem;
     }
 
     .class-checkbox {
         display: inline-flex;
         align-items: center;
-        gap: 0.35rem;
-        padding: 0.35rem 0.6rem;
-        border: 1px solid #e8e0f0;
-        border-radius: 0.5rem;
+        gap: 0.4rem;
+        padding: 0.45rem 0.8rem;
+        border: 1.5px solid #e8e0f0;
+        border-radius: 999px;
         background: #faf8fc;
-        font-size: 0.85rem;
+        font-size: 0.88rem;
         cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.15s;
+        user-select: none;
+    }
+
+    .class-checkbox:hover {
+        border-color: #c9b8e0;
+        background: #f3eefb;
+    }
+
+    .class-checkbox:has(input:checked) {
+        border-color: var(--color-primary, #2F124D);
+        background: #f0e7fa;
+        color: var(--color-primary, #2F124D);
+        font-weight: 600;
     }
 
     .class-checkbox input {
         margin: 0;
+        accent-color: var(--color-primary, #2F124D);
     }
 </style>
