@@ -221,5 +221,40 @@ export const actions = {
         }
 
         return { success: true, action: "studentRemoved" };
+    },
+
+    // Klassen-Einladungslink erzeugen (Schüler registrieren sich selbst darüber)
+    createInvite: async ({ locals, fetch, request }) => {
+        if (!locals.isAuthenticated) {
+            throw redirect(302, "/login");
+        }
+
+        const token = locals.jwt_token;
+        const headers = {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+        };
+
+        const formData = await request.formData();
+        const classId = formData.get("classId")?.toString();
+
+        const res = await fetch(`${API_BASE}/teacher/invites/class/${classId}`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({})
+        });
+
+        if (!res.ok) {
+            return { error: "Einladungslink konnte nicht erstellt werden" };
+        }
+
+        const invite = await res.json();
+        // Die volle URL bauen wir im Frontend aus der aktuellen Adresse + Token,
+        // damit sie immer auf die laufende Domain zeigt (nicht auf den Backend-Default).
+        return {
+            success: true,
+            action: "inviteCreated",
+            invite: { classId, token: invite.token, expiresAt: invite.expiresAt }
+        };
     }
 };

@@ -3,8 +3,40 @@
     import { invalidateAll } from "$app/navigation";
     import { t, locale } from "$lib/i18n";
     import { get } from "svelte/store";
+    import QRCode from "qrcode";
 
     let { data, form } = $props();
+
+    // Einladungslinks pro Klasse: { [classId]: { url, expiresAt, qr, copied } }
+    let inviteByClass = $state({});
+
+    function handleInviteEnhance() {
+        return async ({ result }) => {
+            if (result.type === "success" && result.data?.invite) {
+                const inv = result.data.invite;
+                const url = `${location.origin}/join/${inv.token}`;
+                let qr = "";
+                try {
+                    qr = await QRCode.toDataURL(url, { width: 220, margin: 1 });
+                } catch (e) {
+                    qr = "";
+                }
+                inviteByClass[inv.classId] = { url, expiresAt: inv.expiresAt, qr, copied: false };
+            }
+        };
+    }
+
+    async function copyInvite(classId) {
+        const inv = inviteByClass[classId];
+        if (!inv) return;
+        try {
+            await navigator.clipboard.writeText(inv.url);
+            inviteByClass[classId] = { ...inv, copied: true };
+            setTimeout(() => {
+                if (inviteByClass[classId]) inviteByClass[classId] = { ...inviteByClass[classId], copied: false };
+            }, 2000);
+        } catch (e) { /* ignore */ }
+    }
 
     // State
     let showModal = $state(false);
@@ -185,6 +217,36 @@
                     {#if expandedClassId === cls.id}
                         <div class="students-section">
                             <h4>{$t('tclass.studentsInClass')}</h4>
+
+                            <!-- Schüler einladen: Selbst-Registrierung per Link / QR -->
+                            <div class="invite-box">
+                                {#if inviteByClass[cls.id]}
+                                    <p class="invite-label">📨 {$t('tclass.inviteLabel')}</p>
+                                    <div class="invite-link-row">
+                                        <input class="invite-link" type="text" readonly
+                                            value={inviteByClass[cls.id].url}
+                                            onclick={(e) => e.currentTarget.select()} />
+                                        <button type="button" class="btn btn-secondary"
+                                            onclick={() => copyInvite(cls.id)}>
+                                            {inviteByClass[cls.id].copied ? '✓ ' + $t('tclass.copied') : $t('tclass.copyLink')}
+                                        </button>
+                                    </div>
+                                    {#if inviteByClass[cls.id].qr}
+                                        <img class="invite-qr" src={inviteByClass[cls.id].qr} alt="QR-Code" />
+                                    {/if}
+                                    <p class="invite-hint">{$t('tclass.inviteHint')}</p>
+                                    <form method="POST" action="?/createInvite" use:enhance={handleInviteEnhance}>
+                                        <input type="hidden" name="classId" value={cls.id} />
+                                        <button type="submit" class="btn-link-small">🔄 {$t('tclass.newInviteLink')}</button>
+                                    </form>
+                                {:else}
+                                    <form method="POST" action="?/createInvite" use:enhance={handleInviteEnhance}>
+                                        <input type="hidden" name="classId" value={cls.id} />
+                                        <button type="submit" class="btn btn-primary invite-btn">🔗 {$t('tclass.inviteStudents')}</button>
+                                    </form>
+                                    <p class="invite-hint">{$t('tclass.inviteIntro')}</p>
+                                {/if}
+                            </div>
 
                             <div class="student-search">
                                 <input type="search" class="filter-input"
@@ -493,5 +555,33 @@
         .add-student-form {
             flex-direction: column;
         }
+    }
+
+    /* ===== Schüler einladen (Link + QR) ===== */
+    .invite-box {
+        background: #f5f0fb;
+        border: 1px solid #e0d3f2;
+        border-radius: 0.75rem;
+        padding: 0.9rem 1rem;
+        margin-bottom: 1rem;
+    }
+    .invite-btn { width: 100%; }
+    .invite-label { margin: 0 0 0.5rem; font-weight: 600; color: var(--color-primary, #2F124D); font-size: 0.9rem; }
+    .invite-link-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .invite-link {
+        flex: 1; min-width: 12rem;
+        padding: 0.5rem 0.6rem;
+        border: 1px solid #d9c8ee; border-radius: 0.5rem;
+        background: #fff; font-size: 0.82rem; color: #2d2141;
+    }
+    .invite-qr {
+        display: block; margin: 0.75rem auto 0.25rem;
+        width: 180px; height: 180px;
+        border: 1px solid #e0d3f2; border-radius: 0.5rem; background: #fff; padding: 6px;
+    }
+    .invite-hint { margin: 0.5rem 0 0; font-size: 0.8rem; color: var(--color-text-muted, #5E4C6F); line-height: 1.4; }
+    .btn-link-small {
+        margin-top: 0.5rem; background: none; border: none; padding: 0;
+        color: var(--color-primary, #2F124D); font-size: 0.8rem; cursor: pointer; text-decoration: underline;
     }
 </style>
