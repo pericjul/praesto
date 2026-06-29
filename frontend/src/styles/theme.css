@@ -155,9 +155,15 @@ p, h1, h2, h3, h4, h5, li, td, .student-email, .result-email, .feedback-title {
   overflow-wrap: break-word;
   word-break: break-word;
 }
-/* breite Tabellen horizontal scrollen statt Layout sprengen */
+/* breite Tabellen horizontal scrollen statt Layout sprengen (sonst schneidet
+   das globale overflow-x:hidden sie auf kleinen Handys ab). Gilt für alle
+   gängigen Tabellen-Wrapper-Klassen im Projekt. */
 table { max-width: 100%; }
-.table-responsive, .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-responsive, .table-scroll, .table-wrapper, .table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
 
 /* Safe-Area (Notch / Dynamic Island) links/rechts berücksichtigen */
 .app-main {
