@@ -11,7 +11,9 @@ spring:
         chat:
           options:
             deployment-name: ${AZURE_OPENAI_DEPLOYMENT:gpt-4o-mini}
-            temperature: 0.7
+            # KEINE temperature setzen: GPT-5-/Reasoning-Modelle akzeptieren nur den
+            # Default und lehnen abweichende Werte (z.B. 0.7) mit 400 ab. Ohne den
+            # Parameter funktioniert es mit allen Modellen.
 
   datasource:
     # Default = lokale PostgreSQL. In Prod via DB_URL/DB_USERNAME/DB_PASSWORD überschrieben
