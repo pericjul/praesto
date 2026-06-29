@@ -147,7 +147,12 @@
       "Bash(echo \"CLEAN SubmissionControllerTest EXIT: $?\")",
       "Bash(./mvnw -q clean package -DskipTests)",
       "Bash(echo \"CLEAN PACKAGE EXIT: $?\")",
-      "Bash(echo \"FULL TEST EXIT: $?\")"
+      "Bash(echo \"FULL TEST EXIT: $?\")",
+      "Bash(curl -s -o /dev/null -w 'HTTP %{http_code}\\\\n' __TRACKED_VAR__/health)",
+      "Bash(curl -s -o /dev/null -w '/api/health HTTP %{http_code}\\\\n' __TRACKED_VAR__/api/health)",
+      "Bash(curl -s -w '\\\\nHTTP %{http_code}\\\\n' -X POST __TRACKED_VAR__/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"diagnose@example.com\",\"password\":\"falsch1234\"}')",
+      "Bash(curl -s -w ' => HTTP %{http_code}\\\\n' __TRACKED_VAR__/api/auth/invite/badtoken-xyz)",
+      "Bash(./mvnw -q clean test -Dtest=SessionServiceTest,SubmissionControllerTest)"
     ]
   }
 }

@@ -55,9 +55,6 @@ class SessionServiceTest {
     @Mock
     private AiQuotaService aiQuotaService;
 
-    @Mock
-    private ch.zhaw.praesto.repository.UserRepository userRepository;
-
     @InjectMocks
     private SessionService sessionService;
 
