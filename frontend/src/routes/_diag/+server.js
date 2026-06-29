@@ -18,7 +18,7 @@ export async function GET({ locals, fetch }) {
     }
     return new Response(
         JSON.stringify({
-            build: "diag-v6",
+            build: "diag-v7",
             hasToken: Boolean(token),
             viaEvent,   // durch handleFetch (mit Token-Fix)
             viaGlobal   // direkt ans Backend

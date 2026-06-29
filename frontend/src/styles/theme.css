@@ -132,4 +132,48 @@ body {
   flex: 1;
   padding: var(--space-xl) clamp(1rem, 3vw, 3rem);
   padding-top: calc(var(--header-height) + var(--space-xl));
+  min-width: 0;
+}
+
+/* ==========================================================================
+   RESPONSIVE BASE — gut & angepasst auf jedem Handy
+   ========================================================================== */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+html, body {
+  overflow-x: hidden;          /* kein horizontales Scrollen / abgeschnittene Layouts */
+  max-width: 100%;
+}
+img, svg, video, canvas, iframe {
+  max-width: 100%;
+  height: auto;
+}
+/* lange Wörter/Links/E-Mails nicht über den Rand schieben */
+p, h1, h2, h3, h4, h5, li, td, .student-email, .result-email, .feedback-title {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+/* breite Tabellen horizontal scrollen statt Layout sprengen */
+table { max-width: 100%; }
+.table-responsive, .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Safe-Area (Notch / Dynamic Island) links/rechts berücksichtigen */
+.app-main {
+  padding-left: max(clamp(1rem, 3vw, 3rem), env(safe-area-inset-left));
+  padding-right: max(clamp(1rem, 3vw, 3rem), env(safe-area-inset-right));
+}
+
+@media (max-width: 640px) {
+  .app-main {
+    padding-left: max(0.85rem, env(safe-area-inset-left));
+    padding-right: max(0.85rem, env(safe-area-inset-right));
+    padding-top: calc(var(--header-height) + var(--space-md));
+    padding-bottom: max(var(--space-lg), env(safe-area-inset-bottom));
+  }
+  /* iOS: Felder >= 16px verhindern automatisches Hinein-Zoomen beim Tippen */
+  input, select, textarea { font-size: 16px; }
+  /* gut tippbare Schaltflächen */
+  button, .btn, a.btn { min-height: 40px; }
 }
