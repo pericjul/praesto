@@ -181,7 +181,8 @@ public class SubmissionController {
 
         // Feedback setzen
         String feedback = (String) body.get("feedback");
-        Integer grade = body.get("grade") != null ? Integer.parseInt(body.get("grade").toString()) : null;
+        // Note robust einlesen: akzeptiert "5", "5.5", "5,5" – rundet auf ganze Zahl (Spaltentyp Integer).
+        Integer grade = parseGrade(body.get("grade"));
 
         submission.setTeacherFeedback(feedback);
         submission.setGrade(grade);
@@ -197,6 +198,22 @@ public class SubmissionController {
         }
 
         return ResponseEntity.ok(updated);
+    }
+
+    /** Liest eine Note tolerant ein ("5", "5.5", "5,5", leer/null) und rundet auf eine ganze Zahl. */
+    private Integer parseGrade(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        String s = raw.toString().trim().replace(',', '.');
+        if (s.isEmpty()) {
+            return null;
+        }
+        try {
+            return (int) Math.round(Double.parseDouble(s));
+        } catch (NumberFormatException ex) {
+            return null; // ungültige Note ignorieren statt 500 zu werfen
+        }
     }
 
     /**

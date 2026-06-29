@@ -24,6 +24,10 @@ RUN cat > /etc/nginx/sites-available/default <<'EOF'
 server {
     listen 80;
 
+    # Datei-Uploads bis 20 MB erlauben (Default wäre 1 MB). Muss zum Spring-
+    # Multipart-Limit (20 MB) und zum BODY_SIZE_LIMIT des Node-Servers passen.
+    client_max_body_size 25m;
+
     # Security-Header (Clickjacking, MIME-Sniffing, Referrer, HSTS)
     add_header X-Frame-Options "DENY" always;
     add_header X-Content-Type-Options "nosniff" always;
@@ -93,7 +97,9 @@ stderr_logfile_maxbytes=0
 
 [program:frontend]
 directory=/usr/src/app/frontend
-command=sh -c "PORT=3000 node build"
+# BODY_SIZE_LIMIT default des adapter-node ist 512 KB -> Uploads >512 KB scheitern.
+# Auf 25 MB anheben, passend zu nginx (25m) und Spring (20 MB).
+command=sh -c "PORT=3000 BODY_SIZE_LIMIT=26214400 node build"
 autostart=true
 autorestart=true
 stdout_logfile=/dev/stdout

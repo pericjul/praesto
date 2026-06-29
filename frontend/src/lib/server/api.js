@@ -23,7 +23,9 @@ export async function uploadFile(file, token) {
     body: fd
   });
   if (!res.ok) {
-    throw new Error("Datei-Upload fehlgeschlagen");
+    // Backend-Meldung (z.B. "Dateityp nicht erlaubt …") durchreichen, statt sie zu schlucken.
+    const msg = await res.text().catch(() => "");
+    throw new Error(msg && msg.length < 300 ? msg : "Datei-Upload fehlgeschlagen");
   }
   return res.json();
 }

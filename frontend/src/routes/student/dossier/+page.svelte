@@ -11,6 +11,9 @@
 
     let deleteConfirmId = $state(null);
     let uploading = $state(false);
+    let uploadError = $state("");
+
+    const MAX_UPLOAD_MB = 20;
 
     const CATEGORIES = ["LEBENSLAUF", "BEWERBUNGSSCHREIBEN", "ZEUGNIS", "ZERTIFIKAT", "ARBEITSPROBE", "FOTO", "SONSTIGES"];
 
@@ -31,10 +34,21 @@
         return new Date(d).toLocaleDateString("de-CH", { day: "2-digit", month: "2-digit", year: "numeric" });
     }
 
-    function handleUpload() {
+    function handleUpload({ formData, cancel }) {
+        uploadError = "";
+        const f = formData.get("file");
+        if (f && typeof f !== "string" && f.size > MAX_UPLOAD_MB * 1024 * 1024) {
+            uploadError = $t('dossier.fileTooLarge').replace('%N', MAX_UPLOAD_MB);
+            cancel();
+            return;
+        }
         uploading = true;
         return async ({ result, update }) => {
-            if (result.type === "success") await invalidateAll();
+            if (result.type === "success") {
+                await invalidateAll();
+            } else if (result.type === "failure" && result.data?.error) {
+                uploadError = result.data.error;
+            }
             uploading = false;
             await update({ reset: true });
         };
@@ -67,14 +81,16 @@
         <a href="/student/dossier/brief" class="create-btn">
             <span class="ci">✍️</span>
             <span class="ct">{$t('dossier.createLetter')}</span>
-            <span class="cq">{clLeft != null ? $t('dossier.leftN').replace('%N%', clLeft) : ''}</span>
+            <span class="cq">{clLeft != null ? $t('dossier.leftN').replace('%N', clLeft) : ''}</span>
         </a>
     </section>
 
     <!-- Upload -->
     <section class="upload">
         <h2>⬆️ {$t('dossier.uploadTitle')}</h2>
-        {#if form?.error}<div class="err">{$t('dossier.uploadError')}</div>{/if}
+        <p class="upload-hint">{$t('dossier.uploadHint').replace('%N', MAX_UPLOAD_MB)}</p>
+        {#if uploadError}<div class="err">{uploadError}</div>{/if}
+        {#if form?.error}<div class="err">{typeof form.error === 'string' ? form.error : $t('dossier.uploadError')}</div>{/if}
         <form method="POST" action="?/upload" enctype="multipart/form-data" use:enhance={handleUpload} class="upload-form">
             <input type="file" name="file" required />
             <select name="category">
@@ -140,7 +156,8 @@
     .create-btn .cq { font-size: 0.8rem; opacity: 0.9; }
 
     .upload { background: #fff; border: 1px solid #e8e0f0; border-radius: 1rem; padding: 1.1rem 1.25rem; margin-bottom: 1.5rem; }
-    .upload h2 { margin: 0 0 0.75rem; font-size: 1.1rem; color: #2F124D; }
+    .upload h2 { margin: 0 0 0.35rem; font-size: 1.1rem; color: #2F124D; }
+    .upload-hint { margin: 0 0 0.75rem; font-size: 0.8rem; color: #8a7f9a; }
     .upload-form { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
     .upload-form input[type=text], .upload-form select { border: 1px solid #e8e0f0; border-radius: 0.5rem; padding: 0.5rem 0.6rem; font: inherit; }
     .btn-upload { background: #2F124D; color: #fff; border: none; border-radius: 0.5rem; padding: 0.55rem 1.1rem; font-weight: 600; cursor: pointer; }

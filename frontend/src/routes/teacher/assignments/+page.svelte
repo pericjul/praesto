@@ -414,8 +414,12 @@
                     {#if typeHasDuration(selectedType)}
                         <div class="form-group">
                             <label for="durationMin">{$t('tasks.fieldDuration')}</label>
-                            <input type="number" id="durationMin" name="durationMin" min="1" max="120"
-                                value={editingAssignment?.durationMin ?? 15} />
+                            <input type="number" id="durationMin" name="durationMin" min="1"
+                                max={selectedType === 'AI_INTERVIEW' ? 20 : 120}
+                                value={Math.min(editingAssignment?.durationMin ?? 15, selectedType === 'AI_INTERVIEW' ? 20 : 120)} />
+                            {#if selectedType === 'AI_INTERVIEW'}
+                                <span class="hint-inline">{$t('tasks.durationMaxHint')}</span>
+                            {/if}
                         </div>
                     {/if}
                 </div>
@@ -673,26 +677,31 @@
 
     .class-checkboxes {
         display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        max-height: 160px;
+        flex-direction: column;
+        gap: 0.4rem;
+        max-height: 220px;
         overflow-y: auto;
         padding: 0.15rem;
     }
 
     .class-checkbox {
-        display: inline-flex;
+        display: flex;
         align-items: center;
-        gap: 0.4rem;
-        padding: 0.45rem 0.8rem;
+        gap: 0.6rem;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.6rem 0.85rem;
         border: 1.5px solid #e8e0f0;
-        border-radius: 999px;
+        border-radius: 0.7rem;
         background: #faf8fc;
-        font-size: 0.88rem;
+        font-size: 0.9rem;
         cursor: pointer;
-        white-space: nowrap;
         transition: all 0.15s;
         user-select: none;
+    }
+
+    .class-checkbox span {
+        flex: 1;
     }
 
     .class-checkbox:hover {

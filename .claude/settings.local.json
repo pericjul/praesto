@@ -135,7 +135,8 @@
       "Bash(./mvnw -q -DskipTests compile)",
       "Bash(echo \"=== BACKEND COMPILE EXIT: $? ===\")",
       "Bash(echo \"=== FRONTEND BUILD EXIT: $? ===\")",
-      "Bash(grep -viE \"getPassword|setPassword|PasswordEncoder|JWT_SECRET|DB_PASSWORD|SUPER_ADMIN_PASSWORD|MAIL_PASSWORD|password=\\\\\\\\\\\\$\\\\{|Demo1234|password.*placeholder|\\\\.password\\\\\\(\")"
+      "Bash(grep -viE \"getPassword|setPassword|PasswordEncoder|JWT_SECRET|DB_PASSWORD|SUPER_ADMIN_PASSWORD|MAIL_PASSWORD|password=\\\\\\\\\\\\$\\\\{|Demo1234|password.*placeholder|\\\\.password\\\\\\(\")",
+      "Bash(echo \"=== PUSH EXIT: $? ===\")"
     ]
   }
 }

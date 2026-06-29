@@ -62,7 +62,10 @@
                 const newSession = await response.json();
                 goto(`/student/sessions/${newSession.id}`);
             } else {
-                alert(get(t)("stask.errorStarting"));
+                // Echte Backend-Erklärung zeigen (z.B. "Du hast diese Aufgabe bereits
+                // abgegeben") statt einer nichtssagenden Standardmeldung.
+                const msg = await response.text().catch(() => "");
+                alert(msg && msg.length < 300 ? msg : get(t)("stask.errorStarting"));
             }
         } catch {
             alert(get(t)("stask.errorConnection"));

@@ -83,7 +83,7 @@ public class AssignmentController {
                     .schoolId(schoolId)
                     .title(dto.getTitle())
                     .description(dto.getDescription())
-                    .durationMin(dto.getDurationMin())
+                    .durationMin(clampDuration(dto.getType(), dto.getDurationMin()))
                     .dueDate(dueDate)
                     .classId(classId)
                     .type(dto.getType())
@@ -194,12 +194,27 @@ public class AssignmentController {
         assignment.setDescription(dto.getDescription());
         assignment.setType(dto.getType());
         assignment.setClassId(dto.getClassId());
-        assignment.setDurationMin(dto.getDurationMin());
+        assignment.setDurationMin(clampDuration(dto.getType(), dto.getDurationMin()));
         if (dto.getDueDate() != null) {
             assignment.setDueDate(Instant.parse(dto.getDueDate()));
         }
 
         return ResponseEntity.ok(assignmentRepository.save(assignment));
+    }
+
+    /**
+     * Begrenzt die Gesprächsdauer. KI-Bewerbungsgespräche sind als Übung gedacht und
+     * kosten KI-Zeit -> hartes Maximum von 20 Min. (Kostenbremse). Andere Typen
+     * unverändert. Leere/zu kleine Werte werden sinnvoll gesetzt.
+     */
+    private static final int MAX_AI_INTERVIEW_MIN = 20;
+
+    private Integer clampDuration(AssignmentType type, Integer durationMin) {
+        if (type != AssignmentType.AI_INTERVIEW) {
+            return durationMin;
+        }
+        int v = (durationMin == null || durationMin < 1) ? 15 : durationMin;
+        return Math.min(v, MAX_AI_INTERVIEW_MIN);
     }
 
     // ============================================================

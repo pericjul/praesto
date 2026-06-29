@@ -71,7 +71,10 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `abgaben_${(assignment?.title ?? "aufgabe").replace(/[^a-z0-9]+/gi, "_")}.csv`;
+        const slug = (s) => (s ?? "").replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "");
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const parts = ["Praesto-Abgaben", slug(schoolClass?.name), slug(assignment?.title), today].filter(Boolean);
+        a.download = `${parts.join("_")}.csv`;
         a.click();
         URL.revokeObjectURL(url);
     }
@@ -344,7 +347,7 @@
         </div>
         <form
             method="POST"
-            action="?/giveFeedback"
+            action="?/feedback"
             use:enhance={() => {
                 return async ({ result }) => {
                     if (result.type === "success") {

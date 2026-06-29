@@ -1,4 +1,4 @@
-import { redirect } from "@sveltejs/kit";
+import { redirect, fail } from "@sveltejs/kit";
 import { API_BASE, apiHeaders, uploadFile } from "$lib/server/api.js";
 
 export async function load({ locals, fetch }) {
@@ -34,14 +34,14 @@ export const actions = {
 		const title = data.get("title") || "";
 
 		if (!file || typeof file === "string" || file.size === 0) {
-			return { error: true };
+			return fail(400, { error: "Bitte wähle zuerst eine Datei aus." });
 		}
 
 		let uploaded;
 		try {
 			uploaded = await uploadFile(file, locals.jwt_token);
-		} catch {
-			return { error: true };
+		} catch (e) {
+			return fail(400, { error: e?.message || "Upload fehlgeschlagen. Bitte erneut versuchen." });
 		}
 
 		const res = await fetch(`${API_BASE}/student/documents`, {
