@@ -155,7 +155,11 @@
       "Bash(./mvnw -q clean test -Dtest=SessionServiceTest,SubmissionControllerTest)",
       "Bash(./mvnw -q clean test)",
       "Bash(echo \"FULL CLEAN TEST EXIT: $?\")",
-      "Bash(echo \"BACKEND CLEAN TEST EXIT: $?\")"
+      "Bash(echo \"BACKEND CLEAN TEST EXIT: $?\")",
+      "Bash(grep -nA8 \"^\\\\s*\\\\.modal {\" +page.svelte)",
+      "Bash(grep -nA4 \"\\\\.modal-body {\" +page.svelte)",
+      "Bash(grep -nA5 \"\\\\.modal-footer {\" +page.svelte)",
+      "Bash(grep -nA10 \"\\\\.modal\\\\b\" styles/components.css)"
     ]
   }
 }

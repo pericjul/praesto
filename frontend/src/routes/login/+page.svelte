@@ -108,6 +108,7 @@
         box-shadow: 0 20px 60px rgba(47, 18, 77, 0.15);
         overflow: hidden;
         max-height: 90vh;
+        max-height: 90dvh;
     }
 
     .login-branding {

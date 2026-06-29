@@ -527,6 +527,7 @@
         width: 90%;
         max-width: 500px;
         max-height: 90vh;
+        max-height: 90dvh;
         overflow: hidden;
         z-index: 999;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);

@@ -193,7 +193,7 @@
 
     /* Reset-Modal */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(47,18,77,0.4); backdrop-filter: blur(3px); border: none; z-index: 998; cursor: pointer; }
-    .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #fff; border-radius: 1rem; padding: 1.5rem; width: 92%; max-width: 440px; z-index: 999; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+    .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #fff; border-radius: 1rem; padding: 1.5rem; width: 92%; max-width: 440px; max-height: 90vh; max-height: 90dvh; overflow-y: auto; z-index: 999; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
     .modal h2 { margin: 0 0 0.3rem; font-size: 1.2rem; color: #2F124D; }
     .modal-sub { margin: 0 0 1rem; color: #6b647a; font-size: 0.9rem; }
     .pw-label { display: block; font-size: 0.85rem; font-weight: 600; color: #2d2141; margin-bottom: 0.35rem; }

@@ -236,9 +236,12 @@
   border-radius: 1.25rem;
   width: 90%;
   max-width: 500px;
-  /* Höhe = Inhalt, aber nie höher als 90vh (dann scrollt der Body) */
+  /* Höhe = Inhalt, aber nie höher als der sichtbare Screen (dann scrollt der Body).
+     dvh = dynamische Viewport-Höhe: zählt die Browser-Leiste auf Handys NICHT mit,
+     sonst rutscht der Footer (Buttons) hinter die untere Leiste -> unsichtbar. */
   height: auto;
   max-height: 90vh;
+  max-height: 90dvh;
   overflow: hidden;
   z-index: 999;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
@@ -274,6 +277,8 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
+  /* Safe-Area: Buttons nicht hinter dem Home-Indikator (iPhone) verstecken */
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
   border-top: 1px solid #f0e8f8;
   background: #ffffff;
   flex-shrink: 0;
