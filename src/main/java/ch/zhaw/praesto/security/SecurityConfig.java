@@ -39,6 +39,12 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
+                // Kein Form-Login / kein HTTP-Basic: Auth läuft ausschliesslich über JWT.
+                // Verhindert, dass der von Spring generierte Default-User ("user" + Zufallspasswort)
+                // irgendwo einloggen könnte.
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health").permitAll()

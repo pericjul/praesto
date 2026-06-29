@@ -809,4 +809,41 @@
     .btn-secondary:hover {
         background: #e5e7eb;
     }
+
+    /* ===== Handy: randlos & kompakt, damit der Chat sauber in den Screen passt ===== */
+    @media (max-width: 640px) {
+        /* Keine seitlichen Ränder verschwenden – Chat füllt die volle Breite */
+        .chat-page {
+            padding: 0;
+            max-width: 100%;
+        }
+
+        /* Ecken weg → randlos statt "schwebende Karte" */
+        .chat-header {
+            border-radius: 0;
+            padding: 0.55rem 0.75rem;
+            gap: 0.5rem;
+        }
+        .header-content h1 { font-size: 1rem; }
+        .header-content p { font-size: 0.7rem; }
+        .back-link { font-size: 0.8rem; }
+
+        /* Buttons schmaler: das grosse horizontale Padding sprengt sonst den Screen */
+        .btn-close { padding: 0.4rem 0.9rem; font-size: 0.8rem; }
+        .btn-submit { padding: 0.45rem 0.9rem; font-size: 0.8rem; }
+        .status-badge { padding: 0.4rem 0.8rem; font-size: 0.75rem; }
+
+        /* Timer kompakter */
+        .timer-bar { padding: 0.5rem 0.8rem; }
+        .timer-label { font-size: 0.85rem; }
+        .timer-info { font-size: 0.72rem; }
+
+        /* Mehr Platz für die Sprechblasen */
+        .chat-container { padding: 0.75rem; gap: 0.6rem; }
+        .message-bubble { max-width: 88%; }
+
+        /* Eingabe & Hinweise randlos */
+        .chat-input-area { border-radius: 0; padding: 0.6rem 0.75rem; }
+        .closed-notice { border-radius: 0; padding: 1.25rem 1rem; }
+    }
 </style>
