@@ -154,7 +154,8 @@
       "Bash(curl -s -w ' => HTTP %{http_code}\\\\n' __TRACKED_VAR__/api/auth/invite/badtoken-xyz)",
       "Bash(./mvnw -q clean test -Dtest=SessionServiceTest,SubmissionControllerTest)",
       "Bash(./mvnw -q clean test)",
-      "Bash(echo \"FULL CLEAN TEST EXIT: $?\")"
+      "Bash(echo \"FULL CLEAN TEST EXIT: $?\")",
+      "Bash(echo \"BACKEND CLEAN TEST EXIT: $?\")"
     ]
   }
 }

@@ -552,6 +552,88 @@ public class SessionService {
         return saved;
     }
 
+    // ============================================================
+    // Auto-Close: abgelaufene Sessions server-seitig schliessen
+    // ============================================================
+
+    /**
+     * Schliesst regelmässig OPEN-Sessions, deren Zeit abgelaufen ist – auch wenn der
+     * Schüler den Tab einfach zugemacht hat, ohne auf "Beenden" zu drücken. So bleibt
+     * keine Session ewig offen. Läuft standardmässig alle 2 Minuten.
+     */
+    @org.springframework.scheduling.annotation.Scheduled(
+            fixedDelayString = "${praesto.ai.session.autoclose-interval-ms:120000}")
+    public void autoCloseExpiredSessions() {
+        List<Session> open;
+        try {
+            open = sessionRepository.findByStatus(SessionStatus.OPEN);
+        } catch (Exception e) {
+            log.error("Auto-Close: offene Sessions konnten nicht geladen werden: {}", e.getMessage());
+            return;
+        }
+        Instant now = Instant.now();
+        for (Session s : open) {
+            try {
+                if (s.getStartedAt() == null) {
+                    continue;
+                }
+                int limitMin = s.getTargetDurationMin() != null ? s.getTargetDurationMin() : FREE_PRACTICE_MINUTES;
+                // 1 Min. Kulanz nach Ablauf; Senden ist ab dem Limit ohnehin gesperrt.
+                Instant deadline = s.getStartedAt().plus(limitMin + 1L, java.time.temporal.ChronoUnit.MINUTES);
+                if (now.isAfter(deadline)) {
+                    finalizeExpiredSession(s);
+                }
+            } catch (Exception e) {
+                log.error("Auto-Close fehlgeschlagen für Session {}: {}", s.getId(), e.getMessage());
+            }
+        }
+    }
+
+    /** Schliesst eine abgelaufene Session, bewertet sie und gibt Aufgaben-Gespräche ggf. ab. */
+    private void finalizeExpiredSession(Session session) {
+        if (session.getStatus() == SessionStatus.CLOSED) {
+            return;
+        }
+        session.setStatus(SessionStatus.CLOSED);
+        session.setClosedAt(Instant.now());
+        evaluateAndScore(session);
+
+        long userMessages = session.getMessages().stream()
+                .filter(m -> "USER".equals(m.getRole()))
+                .count();
+
+        // Aufgaben-Gespräch mit echter Teilnahme automatisch abgeben (Zeit ist um = fertig),
+        // sofern noch keine Abgabe existiert – so sieht die Lehrperson das Ergebnis.
+        if (session.getAssignmentId() != null
+                && !session.isSubmittedAsAssignment()
+                && userMessages >= 1
+                && session.getStudentEmail() != null
+                && !submissionRepository.existsByAssignmentIdAndStudentEmail(
+                        session.getAssignmentId(), session.getStudentEmail())) {
+            session.setSubmittedAsAssignment(true);
+            submissionRepository.save(Submission.builder()
+                    .schoolId(session.getSchoolId())
+                    .assignmentId(session.getAssignmentId())
+                    .studentId(session.getStudentId())
+                    .studentEmail(session.getStudentEmail())
+                    .type(AssignmentType.AI_INTERVIEW)
+                    .chatSessionId(session.getId())
+                    .status(SubmissionStatus.SUBMITTED)
+                    .submittedAt(Instant.now())
+                    .build());
+        }
+
+        sessionRepository.save(session);
+
+        try {
+            badgeService.checkAndAwardBadges(session.getStudentId(), session.getStudentEmail());
+        } catch (Exception e) {
+            log.warn("Badge-Check beim Auto-Close übersprungen: {}", e.getMessage());
+        }
+
+        log.info("Session {} automatisch geschlossen (Zeit abgelaufen)", session.getId());
+    }
+
     /**
      * Eine einzelne Session holen.
      */

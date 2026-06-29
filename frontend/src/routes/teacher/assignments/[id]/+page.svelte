@@ -80,7 +80,12 @@
     }
 
     let assignment = $derived(data?.assignment ?? null);
-    let submissions = $derived(data?.submissions ?? []);
+    // Lokaler State, der bei jedem (Re-)Load mit den Server-Daten synchronisiert wird –
+    // erlaubt ein sofortiges optimistisches Update nach dem Feedback-Speichern, ohne Reload.
+    let submissions = $state(data?.submissions ?? []);
+    $effect(() => {
+        submissions = data?.submissions ?? [];
+    });
     let schoolClass = $derived(data?.schoolClass ?? null);
     let allStudents = $derived(schoolClass?.students ?? []);
     let submittedIds = $derived(submissions.map((s) => s.studentId));
@@ -349,8 +354,17 @@
             method="POST"
             action="?/feedback"
             use:enhance={() => {
+                const subId = selectedSub?.id;
+                const fb = feedbackText;
+                const gr = selectedSub?.grade;
                 return async ({ result }) => {
                     if (result.type === "success") {
+                        // Sofort optimistisch als "bewertet" markieren (ohne Reload sichtbar).
+                        if (subId) {
+                            submissions = submissions.map((s) =>
+                                s.id === subId ? { ...s, teacherFeedback: fb, grade: gr } : s
+                            );
+                        }
                         closeModal();
                         await invalidateAll();
                     }

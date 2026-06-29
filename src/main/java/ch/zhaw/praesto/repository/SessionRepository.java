@@ -23,6 +23,9 @@ public interface SessionRepository extends JpaRepository<Session, String> {
 
     long countByStudentIdAndStatus(String studentId, SessionStatus status);
 
+    /** Alle Sessions mit einem bestimmten Status (für den Auto-Close-Job genutzt). */
+    List<Session> findByStatus(SessionStatus status);
+
     // ===== Mandanten-sichere (schoolId-gefilterte) Varianten =====
 
     java.util.Optional<Session> findByIdAndSchoolId(String id, String schoolId);

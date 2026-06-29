@@ -1,5 +1,5 @@
 <script>
-    import { enhance } from "$app/forms";
+    import { enhance, applyAction } from "$app/forms";
     import { invalidateAll } from "$app/navigation";
     import { onMount, onDestroy } from "svelte";
     import { goto } from "$app/navigation";
@@ -18,6 +18,7 @@
     let timerInterval = $state(null);
     let showTimeUpModal = $state(false);
     let isSubmittingAssignment = $state(false);
+    let isClosing = $state(false);
 
     // Derived state
     let session = $derived(data?.session ?? null);
@@ -173,9 +174,24 @@
                         {isSubmittingAssignment ? "..." : $t('schat.submit')}
                     </button>
                 {:else}
-                    <form method="POST" action="?/close" use:enhance class="close-form">
-                        <button type="submit" class="btn-close">
-                            {$t('schat.end')}
+                    <form
+                        method="POST"
+                        action="?/close"
+                        class="close-form"
+                        use:enhance={() => {
+                            isClosing = true;
+                            return async ({ result }) => {
+                                if (result.type === "redirect") {
+                                    await goto(result.location);
+                                } else {
+                                    isClosing = false;
+                                    await applyAction(result);
+                                }
+                            };
+                        }}
+                    >
+                        <button type="submit" class="btn-close" disabled={isClosing}>
+                            {isClosing ? $t('schat.ending') : $t('schat.end')}
                         </button>
                     </form>
                 {/if}
