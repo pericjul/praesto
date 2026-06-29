@@ -122,7 +122,7 @@
     .page-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     h1 { margin: 0; color: #2F124D; font-size: 1.6rem; }
 
-    .totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
     .total { background: #fff; border: 1px solid #e8e0f0; border-radius: 1rem; padding: 1.1rem; text-align: center; }
     .t-num { display: block; font-size: 1.8rem; font-weight: 700; color: #2F124D; }
     .t-lbl { font-size: 0.82rem; color: #6b647a; }
