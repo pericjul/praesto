@@ -152,7 +152,9 @@
       "Bash(curl -s -o /dev/null -w '/api/health HTTP %{http_code}\\\\n' __TRACKED_VAR__/api/health)",
       "Bash(curl -s -w '\\\\nHTTP %{http_code}\\\\n' -X POST __TRACKED_VAR__/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"diagnose@example.com\",\"password\":\"falsch1234\"}')",
       "Bash(curl -s -w ' => HTTP %{http_code}\\\\n' __TRACKED_VAR__/api/auth/invite/badtoken-xyz)",
-      "Bash(./mvnw -q clean test -Dtest=SessionServiceTest,SubmissionControllerTest)"
+      "Bash(./mvnw -q clean test -Dtest=SessionServiceTest,SubmissionControllerTest)",
+      "Bash(./mvnw -q clean test)",
+      "Bash(echo \"FULL CLEAN TEST EXIT: $?\")"
     ]
   }
 }

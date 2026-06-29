@@ -3,6 +3,7 @@ package ch.zhaw.praesto.service;
 import ch.zhaw.praesto.exception.ForbiddenException;
 import ch.zhaw.praesto.exception.NotFoundException;
 import ch.zhaw.praesto.model.*;
+import ch.zhaw.praesto.repository.AiUsageRepository;
 import ch.zhaw.praesto.repository.SchoolClassRepository;
 import ch.zhaw.praesto.repository.SessionRepository;
 import ch.zhaw.praesto.repository.SubmissionRepository;
@@ -31,6 +32,7 @@ public class TeacherInsightsService {
     private final SessionRepository sessionRepository;
     private final SubmissionRepository submissionRepository;
     private final UserRepository userRepository;
+    private final AiUsageRepository aiUsageRepository;
     private final UserService userService;
 
     public ClassCockpitDTO getClassCockpit(String classId) {
@@ -78,7 +80,16 @@ public class TeacherInsightsService {
                     .orElse(null);
             long submissionCount = submissionRepository.countByStudentEmail(student.getEmail());
 
-            if (sessionCount > 0) {
+            // Persistentes "hat geübt"-Signal: das KI-Kontingent (AiUsage) zählt jedes freie
+            // Übungsgespräch kumulativ und sinkt NICHT, wenn der Schüler seine Chats löscht.
+            // So gilt jemand, der geübt und danach gelöscht hat, weiterhin als "geübt".
+            int practiceUsed = aiUsageRepository
+                    .findByUserIdAndFeature(studentId, AiFeature.PRACTICE_INTERVIEW)
+                    .map(AiUsage::getUsedTotal)
+                    .orElse(0);
+            boolean everPracticed = sessionCount > 0 || practiceUsed > 0;
+
+            if (everPracticed) {
                 practicedCount++;
             }
             if (avgScore != null) {
@@ -87,7 +98,7 @@ public class TeacherInsightsService {
             }
 
             List<String> reasons = new ArrayList<>();
-            if (sessionCount == 0) {
+            if (!everPracticed) {
                 reasons.add("NEVER_PRACTICED");
             } else {
                 if (bestScore != null && bestScore < LOW_SCORE_THRESHOLD) {
