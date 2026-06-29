@@ -1,12 +1,11 @@
 <script>
     import { enhance } from "$app/forms";
-    import { t } from "$lib/i18n";
 
     let { data, form } = $props();
 
-    let cvLeft = $derived(data.quota?.CV?.remaining ?? 1);
-    let prefillName = $derived(`${data.user?.firstName ?? ""} ${data.user?.lastName ?? ""}`.trim());
     let generating = $state(false);
+    let prefillFirst = $derived(data.user?.firstName ?? "");
+    let prefillLast = $derived(data.user?.lastName ?? "");
 
     function handle() {
         generating = true;
@@ -18,55 +17,60 @@
 </script>
 
 <svelte:head>
-    <title>{$t('cvform.title')} – Praesto</title>
+    <title>Lebenslauf erstellen – Praesto</title>
 </svelte:head>
 
 <div class="page">
-    <a href="/student/dossier" class="back">← {$t('cvform.toDossier')}</a>
-    <h1>📄 {$t('cvform.title')}</h1>
+    <a href="/student/dossier" class="back">← Zurück zum Dossier</a>
+    <h1>📄 Lebenslauf erstellen</h1>
+    <p class="intro">Fülle die Felder aus – dein Lebenslauf wird automatisch sauber formatiert (ohne KI). Leere Felder werden weggelassen. Bei mehrzeiligen Feldern: <strong>eine Zeile pro Eintrag</strong>.</p>
 
-    {#if cvLeft === 0}
-        <div class="used-up">
-            <p>{$t('cvform.usedUp')}</p>
-            <a href="/student/dossier" class="btn-primary">{$t('cvform.toDossier')}</a>
+    {#if form?.error}<div class="err">Konnte den Lebenslauf nicht erstellen. Bitte nochmals versuchen.</div>{/if}
+    {#if generating}<div class="generating">Lebenslauf wird erstellt …</div>{/if}
+
+    <form method="POST" use:enhance={handle} class="survey" class:busy={generating}>
+        <h2>Personalien</h2>
+        <div class="grid">
+            <label><span>Vorname *</span><input name="firstName" value={prefillFirst} required /></label>
+            <label><span>Name *</span><input name="lastName" value={prefillLast} required /></label>
+            <label><span>Strasse / Nr. *</span><input name="address" required /></label>
+            <label><span>PLZ / Ort *</span><input name="zipCity" placeholder="8000 Zürich" required /></label>
+            <label><span>Telefon *</span><input name="phone" placeholder="079 123 45 67" required /></label>
+            <label><span>E-Mail *</span><input name="email" type="email" value={data.user?.email ?? ""} required /></label>
+            <label><span>Geburtsdatum <em>(freiwillig)</em></span><input name="birthDate" placeholder="01.05.2009" /></label>
+            <label><span>Heimat-/Geburtsort <em>(freiwillig)</em></span><input name="hometown" /></label>
+            <label><span>Nationalität <em>(freiwillig)</em></span><input name="nationality" /></label>
         </div>
-    {:else}
-        <p class="intro">{$t('cvform.intro')}</p>
-        {#if form?.error}<div class="err">{$t('cvform.error')}</div>{/if}
 
-        {#if generating}
-            <div class="generating">{$t('cvform.generating')}</div>
-        {/if}
+        <h2>Angestrebte Lehrstelle</h2>
+        <label><span>Beruf / Lehrstelle *</span><input name="targetJob" placeholder="Kauffrau/Kaufmann EFZ" required /></label>
+        <label><span>Über mich <em>(kurzer Satz, optional)</em></span><textarea name="aboutMe" rows="2" placeholder="z.B. Ich arbeite gerne organisiert und mit Menschen."></textarea></label>
 
-        <form method="POST" use:enhance={handle} class="survey" class:busy={generating}>
-            <div class="grid">
-                <label><span>{$t('cvform.fullName')}</span><input name="fullName" value={prefillName} required /></label>
-                <label><span>{$t('cvform.birthDate')}</span><input name="birthDate" placeholder="01.05.2009" /></label>
-                <label><span>{$t('cvform.address')}</span><input name="address" /></label>
-                <label><span>{$t('cvform.phone')}</span><input name="phone" /></label>
-                <label><span>{$t('cvform.email')}</span><input name="email" type="email" value={data.user?.email ?? ""} /></label>
-                <label><span>{$t('cvform.targetJob')}</span><input name="targetJob" required /></label>
-            </div>
-            <label><span>{$t('cvform.school')}</span><input name="school" /></label>
-            <label><span>{$t('cvform.experience')}</span><textarea name="experience" rows="2"></textarea></label>
-            <label><span>{$t('cvform.skills')}</span><textarea name="skills" rows="2"></textarea></label>
-            <div class="grid">
-                <label><span>{$t('cvform.languages')}</span><input name="languages" placeholder="Deutsch, Englisch …" /></label>
-                <label><span>{$t('cvform.hobbies')}</span><input name="hobbies" /></label>
-            </div>
-            <label><span>{$t('cvform.extra')}</span><textarea name="extra" rows="2"></textarea></label>
+        <h2>Schulbildung</h2>
+        <label><span>Schulen <em>(eine Zeile pro Schule)</em></span><textarea name="education" rows="3" placeholder="2021–2025 · Sekundarschule B, Zürich&#10;2018–2021 · Primarschule, Zürich"></textarea></label>
 
-            <button type="submit" class="btn-primary" disabled={generating}>
-                {generating ? $t('cvform.generating') : $t('cvform.submit')}
-            </button>
-        </form>
-    {/if}
+        <h2>Praktische Erfahrung / Schnupperlehren</h2>
+        <label><span>Erfahrungen <em>(eine Zeile pro Eintrag)</em></span><textarea name="experience" rows="3" placeholder="Mai 2024 · Schnupperlehre Kauffrau, Muster AG — Büroarbeit, Kundenkontakt&#10;2023 · Babysitting"></textarea></label>
+
+        <h2>Sprachen</h2>
+        <label><span>Sprachen mit Niveau <em>(eine Zeile pro Sprache)</em></span><textarea name="languages" rows="3" placeholder="Deutsch · Muttersprache&#10;Englisch · gut&#10;Französisch · Grundkenntnisse"></textarea></label>
+
+        <h2>Weiteres</h2>
+        <label><span>Kenntnisse & Fähigkeiten <em>(Komma- oder zeilenweise)</em></span><textarea name="skills" rows="2" placeholder="Word, Excel, Teamarbeit, Zuverlässigkeit"></textarea></label>
+        <label><span>Hobbys & Interessen</span><textarea name="hobbies" rows="2" placeholder="Fussball, Klavier, Pfadi"></textarea></label>
+        <label><span>Referenzen <em>(eine Zeile pro Person – nicht aus der Familie, vorher fragen)</em></span><textarea name="references" rows="2" placeholder="Frau Muster · Klassenlehrerin · 079 123 45 67"></textarea></label>
+
+        <button type="submit" class="btn-primary" disabled={generating}>
+            {generating ? "Wird erstellt …" : "Lebenslauf erstellen"}
+        </button>
+    </form>
 </div>
 
 <style>
     .page { max-width: 760px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
     .back { color: #6b647a; text-decoration: none; font-size: 0.9rem; }
     h1 { margin: 0.5rem 0 0.4rem; color: #2F124D; font-size: 1.5rem; }
+    h2 { margin: 1.1rem 0 0.1rem; color: #2F124D; font-size: 1rem; border-bottom: 2px solid #ece3f5; padding-bottom: 0.3rem; }
     .intro { margin: 0 0 1.25rem; color: #6b647a; }
 
     .survey { display: grid; gap: 0.85rem; }
@@ -74,15 +78,13 @@
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
     label { display: grid; gap: 0.3rem; }
     label span { font-size: 0.85rem; font-weight: 600; color: #2d2141; }
-    input, textarea { border: 1px solid #e8e0f0; border-radius: 0.6rem; padding: 0.6rem 0.75rem; font: inherit; }
+    label em { color: #9a8baf; font-weight: 400; font-style: normal; }
+    input, textarea { border: 1px solid #e8e0f0; border-radius: 0.6rem; padding: 0.6rem 0.75rem; font: inherit; width: 100%; box-sizing: border-box; }
     input:focus, textarea:focus { outline: 2px solid #2F124D; outline-offset: 1px; }
 
-    .btn-primary { justify-self: start; background: #2F124D; color: #fff; border: none; border-radius: 999px; padding: 0.8rem 1.8rem; font-weight: 700; font-size: 1rem; cursor: pointer; text-decoration: none; }
+    .btn-primary { justify-self: start; margin-top: 0.5rem; background: #2F124D; color: #fff; border: none; border-radius: 999px; padding: 0.8rem 1.8rem; font-weight: 700; font-size: 1rem; cursor: pointer; text-decoration: none; }
     .btn-primary:hover { background: #41205f; }
     .btn-primary:disabled { opacity: 0.6; cursor: default; }
-
-    .used-up { background: #fff; border: 1px solid #e8e0f0; border-radius: 1rem; padding: 1.5rem; text-align: center; }
-    .used-up p { margin: 0 0 1rem; color: #2d2141; }
 
     .generating { background: #f5f8ff; border: 1px solid #dbe4ff; color: #1e40af; border-radius: 0.6rem; padding: 0.85rem 1rem; margin-bottom: 0.9rem; font-weight: 600; }
     .err { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 0.6rem; padding: 0.7rem 1rem; margin-bottom: 0.9rem; }

@@ -36,17 +36,28 @@
         {#if generating}<div class="generating">{$t('clform.generating')}</div>{/if}
 
         <form method="POST" use:enhance={handle} class="survey" class:busy={generating}>
+            <h2>Du</h2>
             <div class="grid">
-                <label><span>{$t('cvform.fullName')}</span><input name="fullName" value={prefillName} required /></label>
-                <label><span>{$t('clform.senderAddress')}</span><input name="senderAddress" /></label>
-                <label><span>{$t('clform.companyName')}</span><input name="companyName" required /></label>
-                <label><span>{$t('clform.companyAddress')}</span><input name="companyAddress" /></label>
-                <label><span>{$t('clform.targetJob')}</span><input name="targetJob" required /></label>
-                <label><span>{$t('clform.startDate')}</span><input name="startDate" placeholder="August 2026" /></label>
+                <label><span>Vor- und Name *</span><input name="fullName" value={prefillName} required /></label>
+                <label><span>Deine Adresse</span><input name="senderAddress" placeholder="Strasse, PLZ Ort" /></label>
+                <label><span>Ort (für Datum)</span><input name="city" placeholder="Zürich" /></label>
+                <label><span>Beruf / Lehrstelle *</span><input name="targetJob" placeholder="Kauffrau/Kaufmann EFZ" required /></label>
             </div>
-            <label><span>{$t('clform.whyCompany')}</span><textarea name="whyCompany" rows="2"></textarea></label>
-            <label><span>{$t('clform.strengths')}</span><textarea name="strengths" rows="2"></textarea></label>
-            <label><span>{$t('cvform.extra')}</span><textarea name="extra" rows="2"></textarea></label>
+
+            <h2>Firma</h2>
+            <div class="grid">
+                <label><span>Firma *</span><input name="companyName" required /></label>
+                <label><span>Ansprechperson <em>(falls bekannt)</em></span><input name="contactPerson" placeholder="Frau Muster" /></label>
+                <label><span>Firmen-Adresse</span><input name="companyAddress" /></label>
+                <label><span>Wo gefunden <em>(Quelle)</em></span><input name="applicationSource" placeholder="yousty.ch / Inserat / Website" /></label>
+                <label><span>Möglicher Lehrbeginn</span><input name="startDate" placeholder="August 2026" /></label>
+            </div>
+
+            <h2>Inhalt (Stichworte – die KI macht schöne Sätze daraus)</h2>
+            <label><span>Warum diese Firma?</span><textarea name="whyCompany" rows="2"></textarea></label>
+            <label><span>Deine Stärken <em>(mit kurzem Beispiel)</em></span><textarea name="strengths" rows="2" placeholder="z.B. zuverlässig – ich erledige Aufgaben in der Schule immer pünktlich"></textarea></label>
+            <label><span>Schnuppererfahrung <em>(was hat dir gefallen?)</em></span><textarea name="schnupperExperience" rows="2"></textarea></label>
+            <label><span>Sonstiges</span><textarea name="extra" rows="2"></textarea></label>
 
             <button type="submit" class="btn-primary" disabled={generating}>
                 {generating ? $t('clform.generating') : $t('clform.submit')}
@@ -59,7 +70,10 @@
     .page { max-width: 760px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
     .back { color: #6b647a; text-decoration: none; font-size: 0.9rem; }
     h1 { margin: 0.5rem 0 0.4rem; color: #2F124D; font-size: 1.5rem; }
+    h2 { margin: 1.1rem 0 0.1rem; color: #2F124D; font-size: 1rem; border-bottom: 2px solid #ece3f5; padding-bottom: 0.3rem; }
     .intro { margin: 0 0 1.25rem; color: #6b647a; }
+    label em { color: #9a8baf; font-weight: 400; font-style: normal; }
+    input, textarea { width: 100%; box-sizing: border-box; }
 
     .survey { display: grid; gap: 0.85rem; }
     .survey.busy { opacity: 0.6; pointer-events: none; }

@@ -24,18 +24,23 @@ export const actions = {
 	default: async ({ request, locals, fetch }) => {
 		const d = await request.formData();
 		const payload = {
-			fullName: d.get("fullName"),
-			birthDate: d.get("birthDate"),
+			firstName: d.get("firstName"),
+			lastName: d.get("lastName"),
 			address: d.get("address"),
+			zipCity: d.get("zipCity"),
 			phone: d.get("phone"),
 			email: d.get("email"),
+			birthDate: d.get("birthDate"),
+			hometown: d.get("hometown"),
+			nationality: d.get("nationality"),
+			aboutMe: d.get("aboutMe"),
 			targetJob: d.get("targetJob"),
-			school: d.get("school"),
+			education: d.get("education"),
 			experience: d.get("experience"),
 			skills: d.get("skills"),
 			languages: d.get("languages"),
 			hobbies: d.get("hobbies"),
-			extra: d.get("extra")
+			references: d.get("references")
 		};
 		const res = await fetch(`${API_BASE}/student/cv`, {
 			method: "POST",

@@ -7,28 +7,39 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
 /**
- * Generiert Lebenslauf und Bewerbungsschreiben: aus den Umfrage-Antworten EIN
- * KI-Aufruf (token-sparend) → .docx → ablegen im Dossier. Kontingent-geschützt.
+ * Generiert Lebenslauf und Bewerbungsschreiben → .docx → Ablage im Dossier.
+ *
+ * Lebenslauf: KEINE KI – die Formularangaben werden direkt strukturiert ins
+ * Dokument geschrieben (yousty/lehrstell-Logik: Personalien, Schulbildung,
+ * Erfahrung, Sprachen, Kenntnisse, Hobbys, Referenzen).
+ *
+ * Bewerbungsschreiben: MIT KI – die Angaben werden in einen sauberen,
+ * CH-marktgerechten Brief umgewandelt (kontingent-geschützt).
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class GeneratorService {
 
-    private static final String CV_PROMPT = """
-            Erstelle aus den Angaben einer Schüler:in (15–18) einen professionellen, ehrlichen und KNAPPEN
-            Lebenslauf für eine Lehrstellenbewerbung in der Schweiz. Gib NUR den Inhalt zurück, gegliedert mit:
-            - "## " vor jedem Abschnittstitel
-            - "- " vor Aufzählungspunkten
-            Abschnitte in dieser Reihenfolge: "Über mich" (2–3 Sätze), "Ausbildung", "Praktische Erfahrung",
-            "Fähigkeiten", "Sprachen", "Hobbys". Erfinde NICHTS dazu – nutze nur die Angaben.
-            """;
-
     private static final String LETTER_PROMPT = """
-            Schreibe ein überzeugendes, ehrliches und knappes Bewerbungsschreiben (Motivationsbrief) auf Deutsch
-            für eine Lehrstelle in der Schweiz, aus Sicht einer Schüler:in (15–18). Gib NUR den Brieftext zurück
-            (Empfänger, Betreff "Bewerbung als ...", Anrede, 3 kurze Absätze, Grussformel "Freundliche Grüsse" + Name).
-            Klinge natürlich und altersgerecht, nicht übertrieben. Erfinde NICHTS dazu – nutze nur die Angaben.
+            Du bist Bewerbungscoach für Schweizer Lehrstellen. Schreibe ein einseitiges, überzeugendes
+            Bewerbungsschreiben (Motivationsbrief) auf Deutsch für eine:n 14–18-Jährige:n.
+
+            REGELN:
+            - Schweizer Rechtschreibung: "ss" statt "ß".
+            - Seriös, aber jugendlich-authentisch; keine Floskeln, keine Übertreibungen.
+            - Erfinde NICHTS dazu. Nutze NUR die gelieferten Angaben. Fehlt ein Feld, lass es weg.
+            - Stärken NICHT aneinanderreihen, sondern mit dem gelieferten Beispiel belegen.
+
+            STRUKTUR (genau diese Reihenfolge, gib NUR den Brieftext zurück):
+            1. Empfänger: Firmenname + (falls vorhanden) Ansprechperson + Firmen-Adresse.
+            2. Ort und Datum (falls Ort fehlt, weglassen).
+            3. Betreff (eigene Zeile): "Bewerbung als <Beruf>".
+            4. Anrede: mit Ansprechperson ("Sehr geehrte Frau …/Sehr geehrter Herr …"), sonst "Sehr geehrte Damen und Herren".
+            5. Einleitung: Bezug zur Lehrstelle + wo gefunden + warum Interesse.
+            6. Hauptteil: warum dieser Beruf, Bezug zur Firma, eine Stärke MIT konkretem Beispiel, Schnuppererfahrung (was gefiel).
+            7. Schluss: Wunsch nach einem Vorstellungsgespräch.
+            8. "Freundliche Grüsse" + Name.
             """;
 
     private final ChatClient chatClient;
@@ -38,26 +49,48 @@ public class GeneratorService {
     private final UserService userService;
 
     // ============================================================
-    // Lebenslauf
+    // Lebenslauf – OHNE KI
     // ============================================================
 
     public DocumentDTO generateCv(CvRequest req) {
         String userId = userService.getUserId();
         String schoolId = userService.getCurrentSchoolId();
-        String name = notBlank(req.fullName()) ? req.fullName().trim() : userService.getUserName();
 
-        String body = callAi(CV_PROMPT + "\n\nAngaben:\n" + cvFacts(req), () -> cvFallback(req));
+        String name = joinNonBlank(" ", req.firstName(), req.lastName());
+        if (name.isBlank()) name = userService.getUserName();
+        String contact = joinNonBlank(" · ", req.address(), req.zipCity(), req.phone(), req.email());
 
-        String contact = joinNonBlank(" · ", req.address(), req.phone(), req.email());
+        String body = buildCvBody(req);
         String stored = docxService.writeStructured("Lebenslauf_" + name, name, contact, body);
 
-        aiQuotaService.consume(userId, schoolId, AiFeature.CV);
+        // KEIN aiQuotaService.consume – der Lebenslauf nutzt keine KI mehr.
         return DocumentDTO.from(documentService.saveGenerated(
                 userId, schoolId, DocumentCategory.LEBENSLAUF, "Lebenslauf", stored, "Lebenslauf.docx"));
     }
 
+    private String buildCvBody(CvRequest r) {
+        StringBuilder sb = new StringBuilder();
+
+        // Über mich (+ optionale Personalien-Details)
+        section(sb, "Über mich");
+        if (notBlank(r.aboutMe())) sb.append(r.aboutMe().trim()).append("\n");
+        if (notBlank(r.targetJob())) bullet(sb, "Angestrebte Lehrstelle: " + r.targetJob().trim());
+        if (notBlank(r.birthDate())) bullet(sb, "Geburtsdatum: " + r.birthDate().trim());
+        if (notBlank(r.hometown())) bullet(sb, "Heimat-/Geburtsort: " + r.hometown().trim());
+        if (notBlank(r.nationality())) bullet(sb, "Nationalität: " + r.nationality().trim());
+
+        bulletsFromLines(sb, "Schulbildung", r.education());
+        bulletsFromLines(sb, "Praktische Erfahrung / Schnupperlehren", r.experience());
+        bulletsFromLines(sb, "Sprachen", r.languages());
+        bulletsFromCommaOrLines(sb, "Kenntnisse & Fähigkeiten", r.skills());
+        bulletsFromCommaOrLines(sb, "Hobbys & Interessen", r.hobbies());
+        bulletsFromLines(sb, "Referenzen", r.references());
+
+        return sb.toString();
+    }
+
     // ============================================================
-    // Bewerbungsschreiben
+    // Bewerbungsschreiben – MIT KI
     // ============================================================
 
     public DocumentDTO generateCoverLetter(CoverLetterRequest req) {
@@ -75,6 +108,45 @@ public class GeneratorService {
                 "Bewerbung " + company, stored, "Bewerbungsschreiben.docx"));
     }
 
+    private String letterFacts(CoverLetterRequest r) {
+        StringBuilder sb = new StringBuilder();
+        add(sb, "Name", r.fullName());
+        add(sb, "Eigene Adresse", r.senderAddress());
+        add(sb, "Ort (für Datum)", r.city());
+        add(sb, "Firma", r.companyName());
+        add(sb, "Firmen-Adresse", r.companyAddress());
+        add(sb, "Ansprechperson", r.contactPerson());
+        add(sb, "Beruf/Lehrstelle", r.targetJob());
+        add(sb, "Wo gefunden (Quelle)", r.applicationSource());
+        add(sb, "Möglicher Lehrbeginn", r.startDate());
+        add(sb, "Warum diese Firma", r.whyCompany());
+        add(sb, "Stärken (mit Beispiel)", r.strengths());
+        add(sb, "Schnuppererfahrung (was gefiel)", r.schnupperExperience());
+        add(sb, "Sonstiges", r.extra());
+        return sb.toString();
+    }
+
+    /** Einfaches Bewerbungsschreiben direkt aus den Angaben (falls keine KI verfügbar). */
+    private String letterFallback(CoverLetterRequest r) {
+        String name = notBlank(r.fullName()) ? r.fullName().trim() : "";
+        String job = notBlank(r.targetJob()) ? r.targetJob().trim() : "eine Lehrstelle";
+        StringBuilder sb = new StringBuilder();
+        if (notBlank(r.companyName())) sb.append(r.companyName().trim()).append("\n");
+        if (notBlank(r.contactPerson())) sb.append(r.contactPerson().trim()).append("\n");
+        if (notBlank(r.companyAddress())) sb.append(r.companyAddress().trim()).append("\n");
+        sb.append("\nBetreff: Bewerbung als ").append(job).append("\n\n");
+        sb.append(notBlank(r.contactPerson()) ? "Sehr geehrte:r " + r.contactPerson().trim() + "\n\n"
+                : "Sehr geehrte Damen und Herren\n\n");
+        sb.append("Mit grossem Interesse bewerbe ich mich um eine Lehrstelle als ").append(job).append(".");
+        if (notBlank(r.whyCompany())) sb.append(" ").append(r.whyCompany().trim());
+        sb.append("\n\n");
+        if (notBlank(r.strengths())) sb.append("Zu meinen Stärken zählen: ").append(r.strengths().trim()).append(".\n\n");
+        if (notBlank(r.schnupperExperience())) sb.append(r.schnupperExperience().trim()).append("\n\n");
+        sb.append("Über eine Einladung zu einem Vorstellungsgespräch freue ich mich sehr.\n\n");
+        sb.append("Freundliche Grüsse\n").append(name).append("\n");
+        return sb.toString();
+    }
+
     // ============================================================
     // Intern
     // ============================================================
@@ -89,68 +161,31 @@ public class GeneratorService {
         }
     }
 
-    private String cvFacts(CvRequest r) {
-        StringBuilder sb = new StringBuilder();
-        add(sb, "Name", r.fullName());
-        add(sb, "Geburtsdatum", r.birthDate());
-        add(sb, "Wunschberuf", r.targetJob());
-        add(sb, "Aktuelle Schule/Klasse", r.school());
-        add(sb, "Praktische Erfahrung / Schnupperlehren", r.experience());
-        add(sb, "Stärken/Fähigkeiten", r.skills());
-        add(sb, "Sprachen", r.languages());
-        add(sb, "Hobbys", r.hobbies());
-        add(sb, "Sonstiges", r.extra());
-        return sb.toString();
+    private void section(StringBuilder sb, String title) {
+        sb.append("## ").append(title).append("\n");
     }
 
-    private String letterFacts(CoverLetterRequest r) {
-        StringBuilder sb = new StringBuilder();
-        add(sb, "Name", r.fullName());
-        add(sb, "Eigene Adresse", r.senderAddress());
-        add(sb, "Firma", r.companyName());
-        add(sb, "Firmen-Adresse", r.companyAddress());
-        add(sb, "Wunschberuf/Lehrstelle", r.targetJob());
-        add(sb, "Warum diese Firma", r.whyCompany());
-        add(sb, "Stärken", r.strengths());
-        add(sb, "Möglicher Lehrbeginn", r.startDate());
-        add(sb, "Sonstiges", r.extra());
-        return sb.toString();
+    private void bullet(StringBuilder sb, String text) {
+        sb.append("- ").append(text).append("\n");
     }
 
-    /** Einfacher Lebenslauf direkt aus den Angaben (falls keine KI verfügbar). */
-    private String cvFallback(CvRequest r) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("## Über mich\n");
-        sb.append(notBlank(r.targetJob()) ? "Ich suche eine Lehrstelle als " + r.targetJob().trim() + ".\n" : "\n");
-        sb.append("\n## Ausbildung\n");
-        if (notBlank(r.school())) sb.append("- ").append(r.school().trim()).append("\n");
-        sb.append("\n## Praktische Erfahrung\n");
-        if (notBlank(r.experience())) sb.append("- ").append(r.experience().trim()).append("\n");
-        sb.append("\n## Fähigkeiten\n");
-        if (notBlank(r.skills())) sb.append("- ").append(r.skills().trim()).append("\n");
-        sb.append("\n## Sprachen\n");
-        if (notBlank(r.languages())) sb.append("- ").append(r.languages().trim()).append("\n");
-        sb.append("\n## Hobbys\n");
-        if (notBlank(r.hobbies())) sb.append("- ").append(r.hobbies().trim()).append("\n");
-        return sb.toString();
+    /** Abschnitt nur anlegen, wenn Inhalt da ist; jede nicht-leere Zeile = ein Punkt. */
+    private void bulletsFromLines(StringBuilder sb, String title, String multiline) {
+        if (!notBlank(multiline)) return;
+        section(sb, title);
+        for (String line : multiline.split("\\r?\\n")) {
+            if (notBlank(line)) bullet(sb, line.trim());
+        }
     }
 
-    /** Einfaches Bewerbungsschreiben direkt aus den Angaben (falls keine KI verfügbar). */
-    private String letterFallback(CoverLetterRequest r) {
-        String name = notBlank(r.fullName()) ? r.fullName().trim() : "";
-        String job = notBlank(r.targetJob()) ? r.targetJob().trim() : "eine Lehrstelle";
-        StringBuilder sb = new StringBuilder();
-        if (notBlank(r.companyName())) sb.append(r.companyName().trim()).append("\n");
-        if (notBlank(r.companyAddress())) sb.append(r.companyAddress().trim()).append("\n");
-        sb.append("\nBetreff: Bewerbung als ").append(job).append("\n\n");
-        sb.append("Sehr geehrte Damen und Herren\n\n");
-        sb.append("Mit grossem Interesse bewerbe ich mich um eine Lehrstelle als ").append(job).append(".");
-        if (notBlank(r.whyCompany())) sb.append(" ").append(r.whyCompany().trim());
-        sb.append("\n\n");
-        if (notBlank(r.strengths())) sb.append("Zu meinen Stärken zählen: ").append(r.strengths().trim()).append(".\n\n");
-        sb.append("Über die Einladung zu einem Gespräch freue ich mich sehr.\n\n");
-        sb.append("Freundliche Grüsse\n").append(name).append("\n");
-        return sb.toString();
+    /** Wie oben, akzeptiert auch eine kommagetrennte Liste in EINER Zeile. */
+    private void bulletsFromCommaOrLines(StringBuilder sb, String title, String value) {
+        if (!notBlank(value)) return;
+        String[] parts = value.contains("\n") ? value.split("\\r?\\n") : value.split(",");
+        section(sb, title);
+        for (String p : parts) {
+            if (notBlank(p)) bullet(sb, p.trim());
+        }
     }
 
     private void add(StringBuilder sb, String label, String value) {

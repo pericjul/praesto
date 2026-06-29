@@ -26,12 +26,16 @@ export const actions = {
 		const payload = {
 			fullName: d.get("fullName"),
 			senderAddress: d.get("senderAddress"),
+			city: d.get("city"),
 			companyName: d.get("companyName"),
 			companyAddress: d.get("companyAddress"),
+			contactPerson: d.get("contactPerson"),
 			targetJob: d.get("targetJob"),
+			applicationSource: d.get("applicationSource"),
+			startDate: d.get("startDate"),
 			whyCompany: d.get("whyCompany"),
 			strengths: d.get("strengths"),
-			startDate: d.get("startDate"),
+			schnupperExperience: d.get("schnupperExperience"),
 			extra: d.get("extra")
 		};
 		const res = await fetch(`${API_BASE}/student/cover-letter`, {
