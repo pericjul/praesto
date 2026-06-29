@@ -369,6 +369,17 @@
     .score-fill { height: 100%; background: linear-gradient(90deg, #e8590c, #ffd43b); border-radius: 999px; }
     .score-reason { margin: 0.2rem 0 0; font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.4; }
 
+    /* Deaktivierter Button: dezenter „gesperrt"-Look statt blass-blau */
+    .btn-primary:disabled,
+    .btn:disabled {
+        background: #ece7f3 !important;
+        color: #9a8baf !important;
+        box-shadow: none !important;
+        cursor: not-allowed;
+        opacity: 1 !important;
+        border: 1px solid #e0d6eb !important;
+    }
+
     /* ===== KI-Session Start: Lade-Animation ===== */
     .btn-spinner {
         display: inline-block;

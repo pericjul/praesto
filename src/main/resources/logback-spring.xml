@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Standard-Konsole (wie bisher) -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!-- Zusätzlich: letzte Logs im Speicher für den Super-Admin-Log-Tab -->
+    <appender name="MEMORY" class="ch.zhaw.praesto.config.InMemoryLogAppender"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="MEMORY"/>
+    </root>
+</configuration>

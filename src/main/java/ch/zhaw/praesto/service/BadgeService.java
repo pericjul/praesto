@@ -24,6 +24,7 @@ public class BadgeService {
     private final ApplicationRepository applicationRepository;
     private final SubmissionRepository submissionRepository;
     private final UserService userService;
+    private final BadgeAwardService badgeAwardService;
 
     /**
      * Alle verfügbaren Badges abrufen
@@ -91,17 +92,11 @@ public class BadgeService {
             boolean earned = checkBadgeRule(studentId, normalizedEmail, badge);
             
             if (earned) {
-                // Badge vergeben
-                UserBadge userBadge = UserBadge.builder()
-                        .studentId(studentId)
-                        .badgeId(badge.getId())
-                        .earnedAt(Instant.now())
-                        .build();
-                
-                userBadgeRepository.save(userBadge);
-                newlyEarnedBadges.add(badge);
-                
-                log.info("Badge '{}' an User {} vergeben", badge.getTitle(), studentId);
+                // Badge in eigener Transaktion vergeben (race-sicher gegen Duplikate)
+                if (badgeAwardService.awardIfAbsent(studentId, badge.getId())) {
+                    newlyEarnedBadges.add(badge);
+                    log.info("Badge '{}' an User {} vergeben", badge.getTitle(), studentId);
+                }
             }
         }
         
