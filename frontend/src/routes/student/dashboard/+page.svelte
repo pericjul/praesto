@@ -710,13 +710,13 @@
 
         .hero-right {
             width: 100%;
-            justify-content: space-between;
+            gap: 0.5rem;
         }
 
         .hero-stat {
-            flex: 1;
-            min-width: unset;
-            padding: 0.6rem 0.75rem;
+            flex: 1 1 0;
+            min-width: 0; /* erlaubt Schrumpfen unter die Inhaltsbreite -> 4 Karten passen */
+            padding: 0.6rem 0.4rem;
         }
 
         .task-card {
