@@ -9,6 +9,7 @@ import ch.zhaw.praesto.repository.SessionRepository;
 import ch.zhaw.praesto.repository.SubmissionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
@@ -40,6 +41,14 @@ public class SessionService {
 
     // Freies Üben: max. 15 Minuten pro Gespräch (Aufgaben haben ihre eigene Dauer)
     private static final int FREE_PRACTICE_MINUTES = 15;
+
+    // Kostenbremsen (per Azure-Variable überschreibbar):
+    // max. Schüler-Nachrichten pro Gespräch (Sicherheitsnetz gegen Endlos-Chat)
+    @Value("${praesto.ai.session.max-user-messages:30}")
+    private int maxUserMessages;
+    // max. Aufgaben-Gespräche pro Schüler:in und Woche
+    @Value("${praesto.ai.limit.assignment-interview-per-week:2}")
+    private int assignmentInterviewsPerWeek;
 
     // ============================================================
     // SYSTEM-PROMPT: Realistischer HR-Coach für Schüler
@@ -247,9 +256,17 @@ public class SessionService {
         // Roast nur beim freien Üben – bei Aufgaben immer der seriöse Modus.
         boolean roastEffective = roast && !isAssignment;
 
-        // Kontingent: nur freies Üben zählt (max. 3). Aufgaben sind zusätzlich/unbegrenzt.
+        // Kontingent: nur freies Üben zählt (max. 3). Aufgaben sind zusätzlich.
         if (!isAssignment) {
             aiQuotaService.consume(studentId, userService.getCurrentSchoolId(), AiFeature.PRACTICE_INTERVIEW);
+        } else {
+            // Aufgaben-Gespräche: max. N pro Woche (Kostenbremse, schülerfreundlich)
+            Instant weekAgo = Instant.now().minus(7, java.time.temporal.ChronoUnit.DAYS);
+            long thisWeek = sessionRepository.countAssignmentSessionsSince(studentId, weekAgo);
+            if (thisWeek >= assignmentInterviewsPerWeek) {
+                throw new BadRequestException("Du hast diese Woche schon " + assignmentInterviewsPerWeek
+                        + " Aufgaben-Gespräche gemacht. Nächste Woche kannst du wieder üben.");
+            }
         }
 
         Session.SessionBuilder sessionBuilder = Session.builder()
@@ -322,11 +339,19 @@ public class SessionService {
             throw new BadRequestException("Session ist bereits geschlossen");
         }
 
-        // Freies Üben: nach 15 Minuten ist Schluss (Aufgaben haben ihre eigene Dauer)
-        if (session.getAssignmentId() == null && session.getStartedAt() != null
-                && Instant.now().isAfter(session.getStartedAt().plus(FREE_PRACTICE_MINUTES, java.time.temporal.ChronoUnit.MINUTES))) {
+        // Harter Zeit-Stop für ALLE Gespräche: freies Üben 15 Min, Aufgaben ihre Dauer.
+        int limitMin = session.getTargetDurationMin() != null ? session.getTargetDurationMin() : FREE_PRACTICE_MINUTES;
+        if (session.getStartedAt() != null
+                && Instant.now().isAfter(session.getStartedAt().plus(limitMin, java.time.temporal.ChronoUnit.MINUTES))) {
             throw new BadRequestException(
-                    "Die 15 Minuten für dieses Übungsgespräch sind um. Schliesse es ab, um deine Bewertung zu sehen.");
+                    "Die Zeit für dieses Gespräch (" + limitMin + " Min.) ist um. Schliesse es ab, um deine Bewertung zu sehen.");
+        }
+
+        // Sicherheitsnetz gegen Endlos-Chat: maximale Anzahl Schüler-Nachrichten pro Gespräch.
+        long userMsgCount = session.getMessages().stream().filter(m -> "USER".equals(m.getRole())).count();
+        if (userMsgCount >= maxUserMessages) {
+            throw new BadRequestException(
+                    "Dieses Gespräch hat das Nachrichten-Maximum erreicht. Schliesse es ab, um deine Bewertung zu sehen.");
         }
 
         // User-Nachricht hinzufuegen
