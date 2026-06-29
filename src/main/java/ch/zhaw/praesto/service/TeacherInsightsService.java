@@ -78,7 +78,13 @@ public class TeacherInsightsService {
                     .orElse(null);
             long submissionCount = submissionRepository.countByStudentEmail(student.getEmail());
 
-            if (sessionCount > 0) {
+            // "Hat geübt?" stützt sich auf den persistenten Zähler ODER noch vorhandene
+            // Sessions. So gilt jemand, der geübt und danach seine Chats gelöscht hat,
+            // weiterhin als "geübt" – und Alt-Daten (vor Einführung des Zählers) zählen
+            // dank der Live-Sessions ebenfalls korrekt.
+            boolean everPracticed = student.getPracticeCount() > 0 || sessionCount > 0;
+
+            if (everPracticed) {
                 practicedCount++;
             }
             if (avgScore != null) {
@@ -87,7 +93,7 @@ public class TeacherInsightsService {
             }
 
             List<String> reasons = new ArrayList<>();
-            if (sessionCount == 0) {
+            if (!everPracticed) {
                 reasons.add("NEVER_PRACTICED");
             } else {
                 if (bestScore != null && bestScore < LOW_SCORE_THRESHOLD) {

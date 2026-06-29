@@ -124,6 +124,42 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Passwort eines Users zurücksetzen (für "Passwort vergessen"). Die Schulleitung
+     * darf nur User der EIGENEN Schule zurücksetzen und keine Super-Admins; der
+     * Super-Admin darf alle. Es wird ein neues Passwort gesetzt, das die Person danach
+     * direkt zum Einloggen nutzt.
+     */
+    @PutMapping("/admin/users/{id}/reset-password")
+    public ResponseEntity<Void> resetUserPassword(@PathVariable String id, @RequestBody Map<String, String> body) {
+        User current = userService.getCurrentUser();
+        boolean isSuper = current.getRole() == UserRole.SUPER_ADMIN;
+        boolean isSchoolAdmin = current.getRole() == UserRole.SCHOOL_ADMIN;
+        if (!isSuper && !isSchoolAdmin) {
+            throw new ForbiddenException("Keine Berechtigung");
+        }
+
+        String newPassword = body == null ? null : body.get("newPassword");
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new BadRequestException("Passwort muss mindestens 8 Zeichen haben");
+        }
+
+        User target = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
+
+        if (!isSuper) {
+            boolean sameSchool = current.getSchoolId() != null
+                    && current.getSchoolId().equals(target.getSchoolId());
+            if (!sameSchool || target.getRole() == UserRole.SUPER_ADMIN) {
+                throw new ForbiddenException("Keine Berechtigung");
+            }
+        }
+
+        target.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(target);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/admin/stats")
     public SchoolStats schoolStats() {
         return adminService.schoolStats();

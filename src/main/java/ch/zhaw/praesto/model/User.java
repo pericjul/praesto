@@ -50,6 +50,12 @@ public class User {
     private Instant createdAt;
     private Instant lastLoginAt;
 
+    // Persistenter Übungszähler: zählt jedes gestartete KI-Gespräch hoch und sinkt
+    // NIE – auch nicht, wenn der Schüler seine Chats löscht. So bleibt im Lehrer-
+    // Cockpit korrekt sichtbar, dass jemand bereits geübt hat.
+    @Builder.Default
+    private int practiceCount = 0;
+
     // ----- Zeitlich begrenzter Demo-Zugang (Stufe B) -----
     // Wird beim Registrieren aus der Demo-Schule übernommen. null = unbegrenzt.
     private Instant demoAccessFrom;

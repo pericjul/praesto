@@ -9,6 +9,7 @@ import ch.zhaw.praesto.exception.NotFoundException;
 import ch.zhaw.praesto.model.Assignment;
 import ch.zhaw.praesto.model.AssignmentCreateDTO;
 import ch.zhaw.praesto.model.AssignmentStatus;
+import ch.zhaw.praesto.model.AssignmentType;
 import ch.zhaw.praesto.model.SchoolClass;
 import ch.zhaw.praesto.service.UserService;
 

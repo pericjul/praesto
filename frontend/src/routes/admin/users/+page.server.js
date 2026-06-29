@@ -30,5 +30,24 @@ export const actions = {
 			return { error: "Benutzer konnte nicht deaktiviert werden." };
 		}
 		return { success: true };
+	},
+
+	resetPassword: async ({ request, locals, fetch }) => {
+		const data = await request.formData();
+		const id = data.get("id");
+		const newPassword = data.get("newPassword");
+		if (!newPassword || String(newPassword).length < 8) {
+			return { error: "Passwort muss mindestens 8 Zeichen haben.", resetFailed: true };
+		}
+		const res = await fetch(`${API_BASE}/admin/users/${id}/reset-password`, {
+			method: "PUT",
+			headers: apiHeaders(locals.jwt_token),
+			body: JSON.stringify({ newPassword })
+		});
+		if (!res.ok) {
+			const msg = await res.text().catch(() => "");
+			return { error: msg || "Passwort konnte nicht zurückgesetzt werden.", resetFailed: true };
+		}
+		return { resetDone: true };
 	}
 };

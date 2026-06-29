@@ -35,6 +35,7 @@ public class SessionService {
     private final AssignmentRepository assignmentRepository;
     private final SubmissionRepository submissionRepository;
     private final UserService userService;
+    private final ch.zhaw.praesto.repository.UserRepository userRepository;
     private final ChatClient chatClient;
     private final BadgeService badgeService;
     private final AiQuotaService aiQuotaService;
@@ -333,7 +334,15 @@ public class SessionService {
 
         sessionBuilder.messages(messages);
 
-        return sessionRepository.save(sessionBuilder.build());
+        Session saved = sessionRepository.save(sessionBuilder.build());
+
+        // Persistenten Übungszähler hochzählen (überlebt das Löschen von Chats).
+        userRepository.findById(studentId).ifPresent(u -> {
+            u.setPracticeCount(u.getPracticeCount() + 1);
+            userRepository.save(u);
+        });
+
+        return saved;
     }
 
     /**

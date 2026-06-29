@@ -136,7 +136,18 @@
       "Bash(echo \"=== BACKEND COMPILE EXIT: $? ===\")",
       "Bash(echo \"=== FRONTEND BUILD EXIT: $? ===\")",
       "Bash(grep -viE \"getPassword|setPassword|PasswordEncoder|JWT_SECRET|DB_PASSWORD|SUPER_ADMIN_PASSWORD|MAIL_PASSWORD|password=\\\\\\\\\\\\$\\\\{|Demo1234|password.*placeholder|\\\\.password\\\\\\(\")",
-      "Bash(echo \"=== PUSH EXIT: $? ===\")"
+      "Bash(echo \"=== PUSH EXIT: $? ===\")",
+      "Bash(echo \"COMPILE EXIT: $?\")",
+      "Bash(echo \"FE BUILD EXIT: $?\")",
+      "Bash(echo \"TEST EXIT: $?\")",
+      "Bash(./mvnw -q test -Dtest=SessionServiceTest)",
+      "Bash(echo \"SessionServiceTest EXIT: $?\")",
+      "Bash(./mvnw -q test -Dtest=SubmissionControllerTest)",
+      "Bash(./mvnw -q clean test -Dtest=SubmissionControllerTest)",
+      "Bash(echo \"CLEAN SubmissionControllerTest EXIT: $?\")",
+      "Bash(./mvnw -q clean package -DskipTests)",
+      "Bash(echo \"CLEAN PACKAGE EXIT: $?\")",
+      "Bash(echo \"FULL TEST EXIT: $?\")"
     ]
   }
 }
