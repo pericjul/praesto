@@ -1,5 +1,6 @@
 <script>
     import { enhance } from "$app/forms";
+    import RepeaterField from "$lib/components/RepeaterField.svelte";
 
     let { data, form } = $props();
 
@@ -44,26 +45,26 @@
         <label class="photo-field"><span>Bewerbungsfoto <em>(freiwillig, Hochformat – JPG/PNG)</em></span><input name="photo" type="file" accept="image/png,image/jpeg" /></label>
 
         <h2>Familie <em class="opt">(freiwillig)</em></h2>
-        <label><span>Eltern <em>(eine Zeile pro Person)</em></span><textarea name="parents" rows="2" placeholder="Mutter · Anna Muster · Pflegefachfrau&#10;Vater · Beat Muster · Schreiner"></textarea></label>
-        <label><span>Geschwister <em>(eine Zeile pro Person)</em></span><textarea name="siblings" rows="2" placeholder="Lena Muster · Primarschülerin&#10;Tim Muster · Lehre als Logistiker"></textarea></label>
+        <RepeaterField name="parents" label="Eltern" hint="(ein Eintrag pro Person)" placeholder="Mutter · Anna Muster · Pflegefachfrau" addLabel="Elternteil hinzufügen" />
+        <RepeaterField name="siblings" label="Geschwister" hint="(ein Eintrag pro Person)" placeholder="Lena Muster · Lehre als Logistikerin" addLabel="Geschwister hinzufügen" />
 
         <h2>Angestrebte Lehrstelle</h2>
         <label><span>Beruf / Lehrstelle *</span><input name="targetJob" placeholder="Kauffrau/Kaufmann EFZ" required /></label>
         <label><span>Über mich <em>(kurzer Satz, optional)</em></span><textarea name="aboutMe" rows="2" placeholder="z.B. Ich arbeite gerne organisiert und mit Menschen."></textarea></label>
 
         <h2>Schulbildung</h2>
-        <label><span>Schulen <em>(eine Zeile pro Schule)</em></span><textarea name="education" rows="3" placeholder="2021–2025 · Sekundarschule B, Zürich&#10;2018–2021 · Primarschule, Zürich"></textarea></label>
+        <RepeaterField name="education" label="Schulen" hint="(ein Eintrag pro Schule)" placeholder="2021–2025 · Sekundarschule B, Zürich" addLabel="Schule hinzufügen" />
 
         <h2>Praktische Erfahrung / Schnupperlehren</h2>
-        <label><span>Erfahrungen <em>(eine Zeile pro Eintrag)</em></span><textarea name="experience" rows="3" placeholder="Mai 2024 · Schnupperlehre Kauffrau, Muster AG — Büroarbeit, Kundenkontakt&#10;2023 · Babysitting"></textarea></label>
+        <RepeaterField name="experience" label="Erfahrungen" hint="(ein Eintrag pro Erfahrung)" placeholder="Mai 2024 · Schnupperlehre Kauffrau, Muster AG — Büroarbeit, Kundenkontakt" addLabel="Erfahrung hinzufügen" />
 
         <h2>Sprachen</h2>
-        <label><span>Sprachen mit Niveau <em>(eine Zeile pro Sprache)</em></span><textarea name="languages" rows="3" placeholder="Deutsch · Muttersprache&#10;Englisch · gut&#10;Französisch · Grundkenntnisse"></textarea></label>
+        <RepeaterField name="languages" label="Sprachen mit Niveau" hint="(ein Eintrag pro Sprache)" placeholder="Deutsch · Muttersprache" addLabel="Sprache hinzufügen" />
 
         <h2>Weiteres</h2>
         <label><span>Kenntnisse & Fähigkeiten <em>(Komma- oder zeilenweise)</em></span><textarea name="skills" rows="2" placeholder="Word, Excel, Teamarbeit, Zuverlässigkeit"></textarea></label>
         <label><span>Hobbys & Interessen</span><textarea name="hobbies" rows="2" placeholder="Fussball, Klavier, Pfadi"></textarea></label>
-        <label><span>Referenzen <em>(eine Zeile pro Person – nicht aus der Familie, vorher fragen)</em></span><textarea name="references" rows="2" placeholder="Frau Muster · Klassenlehrerin · 079 123 45 67"></textarea></label>
+        <RepeaterField name="references" label="Referenzen" hint="(ein Eintrag pro Person – nicht aus der Familie, vorher fragen)" placeholder="Frau Muster · Klassenlehrerin · 079 123 45 67" addLabel="Referenz hinzufügen" />
 
         <button type="submit" class="btn-primary" disabled={generating}>
             {generating ? "Wird erstellt …" : "Lebenslauf erstellen"}
