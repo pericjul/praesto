@@ -176,8 +176,8 @@
     .cat-group h3 { margin: 0 0 0.5rem; color: #2d2141; font-size: 1rem; }
     .doc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
     .doc { display: flex; justify-content: space-between; align-items: center; gap: 1rem; background: #fff; border: 1px solid #e8e0f0; border-radius: 0.75rem; padding: 0.7rem 1rem; }
-    .doc-title { font-weight: 600; color: #2d2141; }
-    .doc-meta { display: block; font-size: 0.78rem; color: #9a8b9d; }
+    .doc-title { font-weight: 600; color: #2d2141; overflow-wrap: anywhere; word-break: break-word; min-width: 0; }
+    .doc-meta { display: block; font-size: 0.78rem; color: #9a8b9d; overflow-wrap: anywhere; }
     .gen-badge { margin-left: 0.4rem; color: #2F124D; }
     .doc-actions { display: flex; align-items: center; gap: 0.5rem; }
     .btn-dl { background: #faf8fc; border: 1px solid #e8e0f0; border-radius: 0.5rem; padding: 0.4rem 0.85rem; text-decoration: none; color: #2d2141; font-size: 0.85rem; }

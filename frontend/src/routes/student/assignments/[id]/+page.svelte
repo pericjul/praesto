@@ -581,13 +581,23 @@
     }
 
     /* Responsive */
+    /* Download-Link (z.B. langer Dateiname) darf nie über den Rand laufen */
+    .card-success .btn,
+    .card-feedback .btn {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        text-align: left;
+        max-width: 100%;
+    }
+
     @media (max-width: 768px) {
         .content-grid {
             grid-template-columns: 1fr;
         }
-
+        /* Auf Handy zuerst die Aufgabe (Beschreibung/Abgabe), dann die Tipps */
         .sidebar {
-            order: -1;
+            order: 1;
         }
     }
 </style>
