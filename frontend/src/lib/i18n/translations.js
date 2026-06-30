@@ -25,6 +25,7 @@ import { dossier } from "./messages/dossier.js";
 import { generators } from "./messages/generators.js";
 import { calendarUi } from "./messages/calendarUi.js";
 import { bugs } from "./messages/bugs.js";
+import { help } from "./messages/help.js";
 
 export const LANGUAGES = [
 	{ code: "de", label: "Deutsch", flag: "🇩🇪" },
@@ -792,5 +793,6 @@ export const translations = deepMerge([
 	dossier,
 	generators,
 	calendarUi,
-	bugs
+	bugs,
+	help
 ]);

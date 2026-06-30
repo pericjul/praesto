@@ -34,14 +34,14 @@
   // Navigations-Einträge je Rolle (für Desktop-Nav UND Mobil-Menü)
   let navItems = $derived.by(() => {
     if (isStudent) return [
-      { href: "/student/dashboard", label: $t("nav.dashboard") },
-      { href: "/student/assignments", label: $t("nav.tasks") },
-      { href: "/student/sessions", label: $t("nav.training") },
-      { href: "/student/notes", label: $t("nav.notes") },
-      { href: "/student/applications", label: $t("nav.applications") },
-      { href: "/student/dossier", label: "📁 " + $t("nav.dossier") },
-      { href: "/student/badges", label: "🏅 " + $t("nav.badges") },
-      { href: "/bug-melden", label: "🐞 " + $t("bug.report") }
+      { href: "/student/dashboard", label: $t("nav.dashboard"), desc: $t("navd.dashboard") },
+      { href: "/student/assignments", label: $t("nav.tasks"), desc: $t("navd.tasks") },
+      { href: "/student/sessions", label: $t("nav.training"), desc: $t("navd.training") },
+      { href: "/student/notes", label: $t("nav.notes"), desc: $t("navd.notes") },
+      { href: "/student/applications", label: $t("nav.applications"), desc: $t("navd.applications") },
+      { href: "/student/dossier", label: "📁 " + $t("nav.dossier"), desc: $t("navd.dossier") },
+      { href: "/student/badges", label: "🏅 " + $t("nav.badges"), desc: $t("navd.badges") },
+      { href: "/bug-melden", label: "🐞 " + $t("bug.report"), desc: $t("navd.bug") }
     ];
     if (isTeacher) return [
       { href: "/teacher/dashboard", label: $t("nav.dashboard") },
@@ -119,7 +119,7 @@
       {#if isAuthenticated}
         <nav class="nav-main">
           {#each navItems as item}
-            <a href={item.href} class="nav-link" class:active={isActive(item.href)}>{item.label}</a>
+            <a href={item.href} class="nav-link" class:active={isActive(item.href)} title={item.desc ?? ""}>{item.label}</a>
           {/each}
         </nav>
       {/if}
@@ -150,7 +150,7 @@
   {#if isAuthenticated && mobileMenuOpen}
     <nav class="mobile-menu">
       {#each navItems as item}
-        <a href={item.href} class="mobile-link" class:active={isActive(item.href)} onclick={closeMenu}>{item.label}</a>
+        <a href={item.href} class="mobile-link" class:active={isActive(item.href)} title={item.desc ?? ""} onclick={closeMenu}>{item.label}</a>
       {/each}
       <a href="/account" class="mobile-link" onclick={closeMenu}>{$t('nav.account')}</a>
       <form method="POST" action="/logout" onsubmit={closeMenu}>
@@ -202,6 +202,7 @@
       <nav class="footer-links">
         <a href="/">{$t('footer.start')}</a>
         <a href="/demo">{$t('footer.demo')}</a>
+        <a href="/hilfe">{$t('help.nav')}</a>
         <a href="/rechtliches">{$t('footer.legal')}</a>
         <a href="/kontakt">{$t('footer.contact')}</a>
       </nav>
