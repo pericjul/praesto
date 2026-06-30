@@ -16,6 +16,8 @@ public record CvRequest(
         String birthDate,     // optional
         String hometown,      // optional (Heimat-/Geburtsort)
         String nationality,   // optional
+        String parents,       // optional, mehrzeilig: "Mutter · Name · Beruf"
+        String siblings,      // optional, mehrzeilig: "Name · Beruf/Schule"
         // Inhalt
         String aboutMe,
         String targetJob,

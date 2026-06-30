@@ -33,6 +33,8 @@ export const actions = {
 			birthDate: d.get("birthDate"),
 			hometown: d.get("hometown"),
 			nationality: d.get("nationality"),
+			parents: d.get("parents"),
+			siblings: d.get("siblings"),
 			aboutMe: d.get("aboutMe"),
 			targetJob: d.get("targetJob"),
 			education: d.get("education"),

@@ -79,6 +79,9 @@ public class GeneratorService {
         if (notBlank(r.hometown())) bullet(sb, "Heimat-/Geburtsort: " + r.hometown().trim());
         if (notBlank(r.nationality())) bullet(sb, "Nationalität: " + r.nationality().trim());
 
+        bulletsFromLines(sb, "Eltern", r.parents());
+        bulletsFromLines(sb, "Geschwister", r.siblings());
+
         bulletsFromLines(sb, "Schulbildung", r.education());
         bulletsFromLines(sb, "Praktische Erfahrung / Schnupperlehren", r.experience());
         bulletsFromLines(sb, "Sprachen", r.languages());

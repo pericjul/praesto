@@ -42,6 +42,10 @@
             <label><span>Nationalität <em>(freiwillig)</em></span><input name="nationality" /></label>
         </div>
 
+        <h2>Familie <em class="opt">(freiwillig)</em></h2>
+        <label><span>Eltern <em>(eine Zeile pro Person)</em></span><textarea name="parents" rows="2" placeholder="Mutter · Anna Muster · Pflegefachfrau&#10;Vater · Beat Muster · Schreiner"></textarea></label>
+        <label><span>Geschwister <em>(eine Zeile pro Person)</em></span><textarea name="siblings" rows="2" placeholder="Lena Muster · Primarschülerin&#10;Tim Muster · Lehre als Logistiker"></textarea></label>
+
         <h2>Angestrebte Lehrstelle</h2>
         <label><span>Beruf / Lehrstelle *</span><input name="targetJob" placeholder="Kauffrau/Kaufmann EFZ" required /></label>
         <label><span>Über mich <em>(kurzer Satz, optional)</em></span><textarea name="aboutMe" rows="2" placeholder="z.B. Ich arbeite gerne organisiert und mit Menschen."></textarea></label>
