@@ -4,6 +4,7 @@ import ch.zhaw.praesto.exception.BadRequestException;
 import ch.zhaw.praesto.exception.ForbiddenException;
 import ch.zhaw.praesto.exception.NotFoundException;
 import ch.zhaw.praesto.model.*;
+import ch.zhaw.praesto.repository.SchoolClassRepository;
 import ch.zhaw.praesto.repository.UserRepository;
 import ch.zhaw.praesto.service.AdminService;
 import ch.zhaw.praesto.service.InviteService;
@@ -30,6 +31,7 @@ public class UserController {
     private final AdminService adminService;
     private final InviteService inviteService;
     private final UserRepository userRepository;
+    private final SchoolClassRepository schoolClassRepository;
     private final PasswordEncoder passwordEncoder;
 
     // ============================================================
@@ -153,6 +155,46 @@ public class UserController {
             if (!sameSchool || target.getRole() == UserRole.SUPER_ADMIN) {
                 throw new ForbiddenException("Keine Berechtigung");
             }
+        }
+
+        target.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(target);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Passwort einer Schüler:in zurücksetzen – durch die LEHRPERSON. Erlaubt nur für
+     * Schüler:innen, die in einer eigenen Klasse der Lehrperson sind (gleiche Schule,
+     * Rolle STUDENT). Keine anderen Rollen.
+     */
+    @PutMapping("/teacher/students/{id}/reset-password")
+    public ResponseEntity<Void> teacherResetStudentPassword(@PathVariable String id,
+                                                            @RequestBody Map<String, String> body) {
+        User current = userService.getCurrentUser();
+        if (current.getRole() != UserRole.TEACHER) {
+            throw new ForbiddenException("Nur Lehrpersonen können das.");
+        }
+
+        String newPassword = body == null ? null : body.get("newPassword");
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new BadRequestException("Passwort muss mindestens 8 Zeichen haben");
+        }
+
+        User target = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Schüler:in nicht gefunden"));
+
+        if (target.getRole() != UserRole.STUDENT
+                || current.getSchoolId() == null
+                || !current.getSchoolId().equals(target.getSchoolId())) {
+            throw new ForbiddenException("Keine Berechtigung");
+        }
+
+        boolean inOwnClass = schoolClassRepository
+                .findBySchoolIdAndTeacherId(current.getSchoolId(), current.getId())
+                .stream()
+                .anyMatch(c -> c.hasStudent(id));
+        if (!inOwnClass) {
+            throw new ForbiddenException("Diese Schüler:in ist in keiner deiner Klassen.");
         }
 
         target.setPasswordHash(passwordEncoder.encode(newPassword));

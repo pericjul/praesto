@@ -294,6 +294,23 @@
                                         <li class="student-item">
                                             <span class="student-name">{student.firstName} {student.lastName}</span>
                                             <span class="student-email">{student.email}</span>
+                                            <form method="POST" action="?/resetStudentPw"
+                                                use:enhance={({ formData, cancel }) => {
+                                                    const pw = prompt($t('tclass.resetPwPrompt').replace('%N%', `${student.firstName} ${student.lastName}`.trim()));
+                                                    if (pw === null) { cancel(); return; }
+                                                    if (pw.length < 8) { cancel(); alert($t('tclass.resetPwShort')); return; }
+                                                    formData.set('newPassword', pw);
+                                                    return async ({ result }) => {
+                                                        if (result.type === 'success' && !result.data?.error) {
+                                                            alert($t('tclass.resetPwOk'));
+                                                        } else {
+                                                            alert(result.data?.error || $t('tclass.resetPwFail'));
+                                                        }
+                                                    };
+                                                }}>
+                                                <input type="hidden" name="userId" value={student.id} />
+                                                <button type="submit" class="btn-reset-pw" title={$t('tclass.resetPw')}>🔑</button>
+                                            </form>
                                             <form method="POST" action="?/removeStudent"
                                                 use:enhance={() => {
                                                     return async ({ result }) => {
@@ -479,6 +496,25 @@
     .btn-remove:hover {
         color: var(--color-error);
         background: var(--color-error-bg);
+    }
+
+    .btn-reset-pw {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: var(--space-xs);
+        border-radius: var(--radius-sm);
+        font-size: 0.95rem;
+        transition: all var(--transition-base);
+    }
+
+    .btn-reset-pw:hover {
+        background: var(--color-primary-bg, #f0e7fa);
+    }
+
+    /* Aktions-Buttons (Passwort/Entfernen) rechts gruppieren */
+    .student-item > form:first-of-type {
+        margin-left: auto;
     }
 
     .no-students {

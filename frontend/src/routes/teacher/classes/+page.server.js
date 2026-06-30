@@ -223,6 +223,36 @@ export const actions = {
         return { success: true, action: "studentRemoved" };
     },
 
+    // Passwort einer Schüler:in zurücksetzen (nur Lehrperson, nur eigene Klassen – Backend prüft das)
+    resetStudentPw: async ({ locals, fetch, request }) => {
+        if (!locals.isAuthenticated) {
+            throw redirect(302, "/login");
+        }
+
+        const token = locals.jwt_token;
+        const headers = {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+        };
+
+        const formData = await request.formData();
+        const userId = formData.get("userId")?.toString();
+        const newPassword = formData.get("newPassword")?.toString();
+
+        const res = await fetch(`${API_BASE}/teacher/students/${encodeURIComponent(userId)}/reset-password`, {
+            method: "PUT",
+            headers,
+            body: JSON.stringify({ newPassword })
+        });
+
+        if (!res.ok) {
+            const msg = await res.text().catch(() => null);
+            return { error: msg || "Passwort konnte nicht zurückgesetzt werden" };
+        }
+
+        return { success: true, action: "pwReset" };
+    },
+
     // Klassen-Einladungslink erzeugen (Schüler registrieren sich selbst darüber)
     createInvite: async ({ locals, fetch, request }) => {
         if (!locals.isAuthenticated) {

@@ -172,7 +172,13 @@
       "Bash(find routes/super -type d)",
       "Bash(grep -nB3 \"error during build\" /tmp/feab.log)",
       "Bash(grep -n '<h1\\\\|<header\\\\|class=\"page\\\\|intro\\\\|{$t\\('\\\\''tclass' +page.svelte)",
-      "Bash(./mvnw -q clean test -Dtest=FileAccessServiceTest,SubmissionControllerTest)"
+      "Bash(./mvnw -q clean test -Dtest=FileAccessServiceTest,SubmissionControllerTest)",
+      "Bash(gh run *)",
+      "Bash(curl -s -o /dev/null -w 'Finaler Status: HTTP %{http_code} nach %{time_total}s\\\\n' --max-time 100 --retry 6 --retry-delay 12 --retry-all-errors https://praesto-app-gjabfafaauh7cfgj.switzerlandnorth-01.azurewebsites.net/login)",
+      "Bash(gh api *)",
+      "Bash(echo \"EXIT-Hinweis: $?\")",
+      "Bash(curl -s -o /dev/null -w 'praesto.ch /login -> HTTP %{http_code} \\(nach %{time_total}s\\)\\\\n' --max-time 130 --retry 8 --retry-delay 15 --retry-all-errors https://praesto.ch/login)",
+      "Bash(curl -s -w ' => HTTP %{http_code}\\\\n' --max-time 20 https://praesto.ch/api/auth/invite/x)"
     ]
   }
 }
