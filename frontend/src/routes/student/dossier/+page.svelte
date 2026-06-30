@@ -68,8 +68,12 @@
 </svelte:head>
 
 <div class="page">
-    <h1>📁 {$t('dossier.title')}</h1>
-    <p class="subtitle">{$t('dossier.subtitle')}</p>
+    <header class="page-header">
+        <div>
+            <h1 class="title">📁 {$t('dossier.title')}</h1>
+            <p class="subtitle">{$t('dossier.subtitle')}</p>
+        </div>
+    </header>
 
     <!-- Erstellen -->
     <section class="create">

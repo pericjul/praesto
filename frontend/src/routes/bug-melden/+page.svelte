@@ -22,7 +22,12 @@
 </svelte:head>
 
 <div class="page">
-    <h1>🐞 {$t('bug.title')}</h1>
+    <header class="page-header">
+        <div>
+            <h1 class="title">🐞 {$t('bug.title')}</h1>
+            <p class="subtitle">{$t('bug.intro')}</p>
+        </div>
+    </header>
     <p class="contest">{$t('bug.contest')}</p>
 
     {#if form?.success}
@@ -31,7 +36,6 @@
             <a href="/bug-melden" class="btn-primary" data-sveltekit-reload>{$t('bug.again')}</a>
         </div>
     {:else}
-        <p class="intro">{$t('bug.intro')}</p>
         {#if form?.error}<div class="err">{$t('bug.error')}</div>{/if}
 
         <form method="POST" use:enhance={handle} class="form" class:busy={sending}>
@@ -85,7 +89,6 @@
         border: 1px solid #f7c98f; color: #8a4b12;
         border-radius: 0.75rem; padding: 0.7rem 1rem; margin: 0 0 1.25rem; font-weight: 600; font-size: 0.92rem;
     }
-    .intro { color: #6b647a; margin: 0 0 1.25rem; }
 
     .form { display: grid; gap: 0.9rem; }
     .form.busy { opacity: 0.6; pointer-events: none; }

@@ -190,7 +190,12 @@
       "Bash(git rm *)",
       "Bash(echo \"FE EXIT: $?\")",
       "Bash(./mvnw -q clean test -Dtest=SessionServiceTest,SessionControllerTest)",
-      "Bash(node -e \"Promise.all\\([import\\('./src/lib/i18n/messages/teacherB.js'\\),import\\('./src/lib/i18n/messages/teacherA.js'\\)]\\).then\\(\\([b,a]\\)=>{for\\(const l of['de','en','fr','it']\\){console.log\\('B',l,Object.keys\\(b.teacherB[l]\\).length,'| A',l,Object.keys\\(a.teacherA[l]\\).length\\)}}\\).catch\\(e=>{console.error\\('PARSE ERR',e.message\\);process.exit\\(1\\)}\\)\")"
+      "Bash(node -e \"Promise.all\\([import\\('./src/lib/i18n/messages/teacherB.js'\\),import\\('./src/lib/i18n/messages/teacherA.js'\\)]\\).then\\(\\([b,a]\\)=>{for\\(const l of['de','en','fr','it']\\){console.log\\('B',l,Object.keys\\(b.teacherB[l]\\).length,'| A',l,Object.keys\\(a.teacherA[l]\\).length\\)}}\\).catch\\(e=>{console.error\\('PARSE ERR',e.message\\);process.exit\\(1\\)}\\)\")",
+      "Bash(sed -n '104,125p' src/routes/student/notes/+page.svelte)",
+      "Bash(sed -n '132,145p' src/routes/student/applications/+page.svelte)",
+      "Bash(sed -n '53,62p' src/routes/student/badges/+page.svelte)",
+      "Bash(sed -n '20,40p' src/routes/bug-melden/+page.svelte)",
+      "Bash(sed -n '68,78p' src/routes/student/dossier/+page.svelte)"
     ]
   }
 }
