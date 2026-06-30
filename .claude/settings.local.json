@@ -182,7 +182,11 @@
       "Bash(sed -i '' 's/^\\\\\\(\t*\\\\\\)help$/\\\\1help,\\\\n\\\\1badgeNames/' translations.js)",
       "Bash(sed -n '795,801p' translations.js)",
       "Bash(sed -i '' 's#^import { badgeNames } from \"./messages/badgeNames.js\";#import { badgeNames } from \"./messages/badgeNames.js\";\\\\nimport { agb } from \"./messages/agb.js\";#' translations.js)",
-      "Bash(sed -i '' 's/^\\\\\\(\t*\\\\\\)badgeNames$/\\\\1badgeNames,\\\\n\\\\1agb/' translations.js)"
+      "Bash(sed -i '' 's/^\\\\\\(\t*\\\\\\)badgeNames$/\\\\1badgeNames,\\\\n\\\\1agb/' translations.js)",
+      "Bash(sed -i '' 's/max-width: 900px/max-width: 1000px/' student/dossier/+page.svelte)",
+      "Bash(sed -i '' 's/max-width: 760px/max-width: 1000px/' student/dossier/lebenslauf/+page.svelte student/dossier/brief/+page.svelte agb/+page.svelte)",
+      "Bash(sed -i '' 's/max-width: 720px/max-width: 1000px/' hilfe/+page.svelte)",
+      "Bash(sed -i '' 's/max-width: 1100px/max-width: 1000px/' student/dashboard/+page.svelte)"
     ]
   }
 }

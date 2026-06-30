@@ -141,7 +141,7 @@
 </div>
 
 <style>
-    .page { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    .page { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
     h1 { margin: 0 0 0.3rem; color: #2F124D; font-size: 1.6rem; }
     .subtitle { margin: 0 0 1.5rem; color: #6b647a; }
 

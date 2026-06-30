@@ -64,7 +64,7 @@
 </div>
 
 <style>
-    .help { max-width: 720px; margin: 0 auto; padding: 2rem 1rem 3rem; }
+    .help { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem 3rem; }
     h1 { margin: 0 0 0.5rem; color: var(--color-primary, #2F124D); font-size: clamp(1.6rem, 3vw, 2.1rem); }
     .intro { color: #5E4C6F; line-height: 1.6; margin: 0 0 1.75rem; }
     h2 { color: #2d2141; font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }

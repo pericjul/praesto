@@ -78,7 +78,7 @@
 </div>
 
 <style>
-    .page { max-width: 640px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    .page { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
     h1 { margin: 0 0 0.6rem; color: #2F124D; font-size: 1.5rem; }
     .contest {
         background: linear-gradient(135deg, #fff4e6, #ffe9d6);

@@ -215,7 +215,7 @@
 
 <style>
     .dashboard {
-        max-width: 1100px;
+        max-width: 1000px;
         margin: 0 auto;
         padding: 1.5rem 1rem 3rem;
     }

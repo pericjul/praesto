@@ -37,7 +37,7 @@
 </div>
 
 <style>
-    .agb { max-width: 760px; margin: 0 auto; padding: 2rem 1rem 3rem; }
+    .agb { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem 3rem; }
     h1 { margin: 0 0 0.5rem; color: var(--color-primary, #2F124D); font-size: clamp(1.6rem, 3vw, 2.1rem); }
     .intro { color: var(--color-text-muted, #5E4C6F); line-height: 1.6; margin: 0 0 0.4rem; }
     .updated { color: #9a8b9d; font-size: 0.85rem; margin: 0 0 1.75rem; }

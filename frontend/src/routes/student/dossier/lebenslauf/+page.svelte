@@ -71,7 +71,7 @@
 </div>
 
 <style>
-    .page { max-width: 760px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    .page { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
     .back { color: #6b647a; text-decoration: none; font-size: 0.9rem; }
     h1 { margin: 0.5rem 0 0.4rem; color: #2F124D; font-size: 1.5rem; }
     h2 { margin: 1.1rem 0 0.1rem; color: #2F124D; font-size: 1rem; border-bottom: 2px solid #ece3f5; padding-bottom: 0.3rem; }

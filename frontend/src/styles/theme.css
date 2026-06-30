@@ -165,6 +165,11 @@ table { max-width: 100%; }
   max-width: 100%;
 }
 
+/* Einheitliche Inhaltsbreite: alle Hauptseiten gleich breit (Listenseiten mit
+   .page-wrapper ohne eigenes Cap erben dies; Seiten mit .page setzen denselben
+   Wert direkt). So sind Training/Overview und die neueren Seiten gleich breit. */
+.page-wrapper { max-width: 1000px; margin-inline: auto; }
+
 /* Safe-Area (Notch / Dynamic Island) links/rechts berücksichtigen */
 .app-main {
   padding-left: max(clamp(1rem, 3vw, 3rem), env(safe-area-inset-left));
