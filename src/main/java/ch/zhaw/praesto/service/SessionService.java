@@ -423,9 +423,9 @@ public class SessionService {
         try {
             String startPrompt;
             if (isAssignment) {
-                startPrompt = systemPrompt + "\n\nBegrüsse kurz und stelle dann EINE Frage: Für welchen Beruf der Schüler üben möchte. Mehr nicht.";
+                startPrompt = systemPrompt + "\n\nBegrüsse kurz und stelle dann EINE Frage: Für welchen Beruf der Schüler üben möchte. Mehr nicht." + langSuffix();
             } else {
-                startPrompt = systemPrompt + "\n\nBegrüsse kurz und frag mit EINER Frage, ob der Schüler üben will oder eine Frage hat. Nicht mehr.";
+                startPrompt = systemPrompt + "\n\nBegrüsse kurz und frag mit EINER Frage, ob der Schüler üben will oder eine Frage hat. Nicht mehr." + langSuffix();
             }
             
             return chatClient
@@ -448,7 +448,7 @@ public class SessionService {
         try {
             // Konversation aufbauen
             List<Message> chatMessages = new ArrayList<>();
-            chatMessages.add(new SystemMessage(systemPrompt));
+            chatMessages.add(new SystemMessage(systemPrompt + langSuffix()));
 
             for (SessionMessage msg : messages) {
                 if ("USER".equals(msg.getRole())) {
@@ -464,6 +464,31 @@ public class SessionService {
             log.error("KI-Fehler: {}", e.getMessage());
             return "Entschuldigung, es gab einen technischen Fehler. Kannst du das bitte nochmal versuchen?";
         }
+    }
+
+    /**
+     * Sprach-Anweisung für die KI anhand der UI-Sprache des Requests (Header X-Locale,
+     * vom Frontend gesetzt). So antwortet Coach + Bewertung in der Sprache der Schüler:in.
+     * Ohne Request-Kontext (z.B. Auto-Close-Job) oder bei Deutsch: keine Zusatzanweisung.
+     */
+    private String langSuffix() {
+        String lang = "de";
+        try {
+            var attrs = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+            if (attrs instanceof org.springframework.web.context.request.ServletRequestAttributes sra) {
+                String h = sra.getRequest().getHeader("X-Locale");
+                if (h != null && !h.isBlank()) lang = h.trim().toLowerCase(java.util.Locale.ROOT);
+            }
+        } catch (Exception ignored) {
+            // kein Request-Kontext -> Deutsch
+        }
+        String name = switch (lang.length() >= 2 ? lang.substring(0, 2) : lang) {
+            case "en" -> "Englisch";
+            case "fr" -> "Französisch";
+            case "it" -> "Italienisch";
+            default -> null;   // de -> nichts anhängen
+        };
+        return name == null ? "" : "\n\nWICHTIG: Antworte ausschliesslich auf " + name + ".";
     }
 
     /**
@@ -719,7 +744,7 @@ public class SessionService {
         }
         try {
             String result = chatClient
-                    .prompt(SCORE_PROMPT + "\n\nGespräch:\n" + buildTranscript(session.getMessages()))
+                    .prompt(SCORE_PROMPT + langSuffix() + "\n\nGespräch:\n" + buildTranscript(session.getMessages()))
                     .call()
                     .content();
             parseScore(session, result);

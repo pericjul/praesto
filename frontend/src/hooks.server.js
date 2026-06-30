@@ -16,6 +16,10 @@ export async function handleFetch({ event, request, fetch }) {
         // globalThis.fetch ans interne Backend liefert nachweislich 200.
         const token = event?.locals?.jwt_token;
         if (token) headers.set("authorization", `Bearer ${token}`);
+        // UI-Sprache ans Backend durchreichen, damit KI (Coach + Bewertung)
+        // in der Sprache der Nutzer:in antwortet statt immer auf Deutsch.
+        const lang = event?.locals?.lang;
+        if (lang) headers.set("x-locale", lang);
         const init = { method: request.method, headers, redirect: "manual" };
         if (request.method !== "GET" && request.method !== "HEAD") {
             init.body = await request.arrayBuffer();
