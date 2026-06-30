@@ -17,9 +17,17 @@ function setSession(cookies, token, user) {
 }
 
 async function parseError(res, fallback) {
+  // Das Backend liefert Fehler als reinen Text (ResponseEntity<String>), teils als
+  // JSON. Beides unterstützen, damit der echte Grund sichtbar wird (statt Fallback).
   try {
-    const body = await res.json();
-    return body.message || body.error || fallback;
+    const text = await res.text();
+    if (!text || !text.trim()) return fallback;
+    try {
+      const body = JSON.parse(text);
+      return body.message || body.error || text;
+    } catch {
+      return text.trim();
+    }
   } catch {
     return fallback;
   }

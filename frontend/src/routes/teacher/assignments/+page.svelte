@@ -714,8 +714,6 @@
 
     .class-checkbox span {
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     .type-desc {
