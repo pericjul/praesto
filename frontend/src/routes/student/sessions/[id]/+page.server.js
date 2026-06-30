@@ -55,7 +55,8 @@ export const actions = {
         const token = locals.jwt_token;
         const headers = {
             "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(locals.lang ? { "X-Locale": locals.lang } : {})
         };
 
         const formData = await request.formData();

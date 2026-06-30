@@ -11,7 +11,10 @@ export async function PUT({ params, locals }) {
     const token = locals.jwt_token;
     const headers = {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        // UI-Sprache mitgeben, damit die KI-Bewertung in der Sprache der
+        // Schueler:in kommt (dieser Endpoint umgeht handleFetch -> Header explizit).
+        ...(locals.lang ? { "X-Locale": locals.lang } : {})
     };
 
     const sessionId = params.id;
