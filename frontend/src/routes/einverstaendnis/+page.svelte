@@ -99,9 +99,23 @@
     .foot { margin-top: 2rem; font-size: 0.75rem; color: #9a8b9d; text-align: center; }
 
     @media print {
+        @page { size: A4 portrait; margin: 14mm; }
         :global(.app-header), :global(.app-footer), :global(.demo-bar), :global(.demo-toast) { display: none !important; }
         :global(.app-main) { padding: 0 !important; }
         .no-print { display: none !important; }
-        .sheet { padding: 0; max-width: 100%; }
+        /* Alles auf EINE A4-Seite verdichten */
+        .sheet { padding: 0; max-width: 100%; font-size: 10.5pt; color: #000; }
+        .doc-head { padding-bottom: 0.5rem; margin-bottom: 0.8rem; }
+        .logo { font-size: 1.4rem; }
+        h1 { font-size: 1.2rem; margin: 0 0 0.5rem; }
+        h2 { font-size: 0.98rem; margin: 0.7rem 0 0.2rem; }
+        p, li { line-height: 1.38; }
+        ul { margin: 0.2rem 0; }
+        .consent { padding: 0.55rem 0.8rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .fields { margin-top: 1rem; gap: 0.95rem; }
+        .line { height: 1.35rem; }
+        .foot { margin-top: 1.1rem; }
+        /* Unterschriftsblock nicht über den Seitenrand brechen */
+        .consent, .fields, .row { break-inside: avoid; page-break-inside: avoid; }
     }
 </style>

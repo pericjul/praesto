@@ -312,7 +312,12 @@
                                                 <button type="submit" class="btn-reset-pw" title={$t('tclass.resetPw')}>🔑</button>
                                             </form>
                                             <form method="POST" action="?/removeStudent"
-                                                use:enhance={() => {
+                                                use:enhance={({ cancel }) => {
+                                                    const name = `${student.firstName} ${student.lastName}`.trim();
+                                                    if (!confirm($t('tclass.confirmRemoveStudent').replace('%N%', name))) {
+                                                        cancel();
+                                                        return;
+                                                    }
                                                     return async ({ result }) => {
                                                         if (result.type === 'success') await invalidateAll();
                                                     };

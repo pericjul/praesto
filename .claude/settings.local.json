@@ -189,7 +189,8 @@
       "Bash(sed -i '' 's/max-width: 1100px/max-width: 1000px/' student/dashboard/+page.svelte)",
       "Bash(git rm *)",
       "Bash(echo \"FE EXIT: $?\")",
-      "Bash(./mvnw -q clean test -Dtest=SessionServiceTest,SessionControllerTest)"
+      "Bash(./mvnw -q clean test -Dtest=SessionServiceTest,SessionControllerTest)",
+      "Bash(node -e \"Promise.all\\([import\\('./src/lib/i18n/messages/teacherB.js'\\),import\\('./src/lib/i18n/messages/teacherA.js'\\)]\\).then\\(\\([b,a]\\)=>{for\\(const l of['de','en','fr','it']\\){console.log\\('B',l,Object.keys\\(b.teacherB[l]\\).length,'| A',l,Object.keys\\(a.teacherA[l]\\).length\\)}}\\).catch\\(e=>{console.error\\('PARSE ERR',e.message\\);process.exit\\(1\\)}\\)\")"
     ]
   }
 }

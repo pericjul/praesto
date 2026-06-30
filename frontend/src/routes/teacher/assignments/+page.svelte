@@ -28,6 +28,15 @@
         { value: "RESEARCH", label: $t('tasks.typeResearch'), hasDuration: false }
     ]);
 
+    // Erklärt direkt im Modal, was ein Aufgabentyp bedeutet (Lehrpersonen-Hilfe).
+    const typeDescKeys = {
+        AI_INTERVIEW: "tasks.typeInterviewDesc",
+        DOCUMENT_UPLOAD: "tasks.typeDocumentDesc",
+        SELF_REFLECTION: "tasks.typeReflectionDesc",
+        VIDEO_PITCH: "tasks.typeVideoDesc",
+        RESEARCH: "tasks.typeResearchDesc"
+    };
+
     // Derived
     let assignments = $derived(data?.assignments ?? []);
     let classes = $derived(data?.classes ?? []);
@@ -402,6 +411,9 @@
                                 <option value={item.value}>{item.label}</option>
                             {/each}
                         </select>
+                        {#if selectedType && typeDescKeys[selectedType]}
+                            <p class="type-desc">ℹ️ {$t(typeDescKeys[selectedType])}</p>
+                        {/if}
                     </div>
                 {/if}
 
@@ -677,31 +689,44 @@
 
     .class-checkboxes {
         display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
         max-height: 220px;
         overflow-y: auto;
         padding: 0.15rem;
     }
 
     .class-checkbox {
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        gap: 0.6rem;
-        width: 100%;
+        gap: 0.5rem;
         box-sizing: border-box;
-        padding: 0.6rem 0.85rem;
+        padding: 0.55rem 0.95rem;
         border: 1.5px solid #e8e0f0;
-        border-radius: 0.7rem;
+        border-radius: 999px;
         background: #faf8fc;
         font-size: 0.9rem;
         cursor: pointer;
         transition: all 0.15s;
         user-select: none;
+        max-width: 100%;
     }
 
     .class-checkbox span {
-        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .type-desc {
+        margin: 0.5rem 0 0;
+        padding: 0.6rem 0.8rem;
+        background: #f3eefb;
+        border: 1px solid #e3d6f3;
+        border-radius: 0.6rem;
+        color: #4b3a66;
+        font-size: 0.85rem;
+        line-height: 1.45;
     }
 
     .class-checkbox:hover {
