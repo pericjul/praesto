@@ -1,8 +1,6 @@
 <script>
     import { enhance } from "$app/forms";
-    import { goto } from "$app/navigation";
     import { t } from "$lib/i18n";
-    import { get } from "svelte/store";
 
     let { data, form } = $props();
 
@@ -49,30 +47,6 @@
         return days;
     }
 
-    async function startAIInterview() {
-        isStartingSession = true;
-        try {
-            const response = await fetch("/api/sessions/start", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ assignmentId: assignment.id })
-            });
-            
-            if (response.ok) {
-                const newSession = await response.json();
-                goto(`/student/sessions/${newSession.id}`);
-            } else {
-                // Echte Backend-Erklärung zeigen (z.B. "Du hast diese Aufgabe bereits
-                // abgegeben") statt einer nichtssagenden Standardmeldung.
-                const msg = await response.text().catch(() => "");
-                alert(msg && msg.length < 300 ? msg : get(t)("stask.errorStarting"));
-            }
-        } catch {
-            alert(get(t)("stask.errorConnection"));
-        } finally {
-            isStartingSession = false;
-        }
-    }
 </script>
 
 <svelte:head>
@@ -192,9 +166,15 @@
 
                         {#if assignment.type === "AI_INTERVIEW"}
                             <p class="info-text">{$t("stask.interviewInfo")}</p>
-                            <button class="btn btn-primary btn-large" onclick={startAIInterview} disabled={isStartingSession}>
-                                {isStartingSession ? $t("stask.interviewStarting") : $t("stask.interviewStart")}
-                            </button>
+                            {#if form?.startError}<div class="alert alert-danger">{form.startError}</div>{/if}
+                            <form method="POST" action="?/startInterview" use:enhance={() => {
+                                isStartingSession = true;
+                                return async ({ update }) => { await update(); isStartingSession = false; };
+                            }}>
+                                <button type="submit" class="btn btn-primary btn-large" disabled={isStartingSession}>
+                                    {isStartingSession ? $t("stask.interviewStarting") : $t("stask.interviewStart")}
+                                </button>
+                            </form>
 
                         {:else if assignment.type === "SELF_REFLECTION"}
                             <form method="POST" action="?/submitReflection" use:enhance>

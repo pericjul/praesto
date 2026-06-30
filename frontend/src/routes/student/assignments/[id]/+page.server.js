@@ -80,6 +80,39 @@ export async function load({ locals, fetch, params }) {
 }
 
 export const actions = {
+    // KI-Interview zu dieser Aufgabe starten. MUSS serverseitig laufen, damit der
+    // JWT aus dem httpOnly-Cookie als Bearer mitgeht (Client-fetch auf /api/... wird
+    // in Produktion vom nginx ans Backend geleitet -> ohne Token -> 403).
+    startInterview: async ({ locals, fetch, params }) => {
+        if (!locals.isAuthenticated) {
+            return { startError: "Nicht eingeloggt" };
+        }
+        const token = locals.jwt_token;
+        const headers = {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(locals.lang ? { "X-Locale": locals.lang } : {})
+        };
+        let sessionId;
+        try {
+            const res = await fetch(`${API_BASE}/sessions`, {
+                method: "POST",
+                headers,
+                body: JSON.stringify({ assignmentId: params.id })
+            });
+            if (!res.ok) {
+                const text = await res.text().catch(() => "");
+                return { startError: (text && text.length < 300 ? text : "Interview konnte nicht gestartet werden.") };
+            }
+            const session = await res.json();
+            sessionId = session.id;
+        } catch (err) {
+            console.error("Start interview error:", err);
+            return { startError: "Verbindungsfehler. Bitte versuche es erneut." };
+        }
+        throw redirect(303, `/student/sessions/${sessionId}`);
+    },
+
     // Selbstreflexion abgeben
     submitReflection: async ({ locals, request, fetch, params }) => {
         if (!locals.isAuthenticated) {

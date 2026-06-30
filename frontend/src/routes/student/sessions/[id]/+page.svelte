@@ -1,9 +1,9 @@
 <script>
     import { enhance, applyAction } from "$app/forms";
+    // (get/svelte-store nicht mehr nötig – Abgabe läuft über Server-Action)
     import { invalidateAll } from "$app/navigation";
     import { onMount, onDestroy } from "svelte";
     import { goto } from "$app/navigation";
-    import { get } from "svelte/store";
     import { t } from "$lib/i18n";
 
     // Svelte 5: $props()
@@ -115,29 +115,12 @@
         }
     }
 
-    // Session als Aufgabe abgeben
-    async function submitAsAssignment() {
+    // Session als Aufgabe abgeben – MUSS serverseitig laufen (JWT-Cookie als Bearer),
+    // sonst 403 in Produktion. Wir lösen ein verstecktes Form mit Server-Action aus.
+    let submitForm;
+    function submitAsAssignment() {
         if (isSubmittingAssignment) return;
-        isSubmittingAssignment = true;
-        
-        try {
-            const response = await fetch(`/api/sessions/${session.id}/submit`, {
-                method: "PUT"
-            });
-            
-            if (response.ok) {
-                showTimeUpModal = false;
-                goto("/student/assignments");
-            } else {
-                const error = await response.text();
-                alert(get(t)("schat.submitError") + error);
-            }
-        } catch (err) {
-            console.error("Fehler:", err);
-            alert(get(t)("schat.connectionError"));
-        } finally {
-            isSubmittingAssignment = false;
-        }
+        submitForm?.requestSubmit();
     }
 
     function continueTraining() {
@@ -148,6 +131,17 @@
 <svelte:head>
     <title>{isAssignment ? assignmentTitle : $t('schat.headTraining')} – Praesto</title>
 </svelte:head>
+
+<form method="POST" action="?/submitAssignment" bind:this={submitForm} hidden
+    use:enhance={() => {
+        isSubmittingAssignment = true;
+        showTimeUpModal = false;
+        return async ({ result }) => {
+            if (result.type === "redirect") { await goto(result.location); }
+            else if (result.type === "failure") { alert(result.data?.error || $t('schat.submitError')); }
+            isSubmittingAssignment = false;
+        };
+    }}></form>
 
 <div class="chat-wrapper">
     <div class="chat-page">

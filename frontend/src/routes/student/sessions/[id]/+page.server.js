@@ -109,5 +109,26 @@ export const actions = {
 
         // Redirect zur Session-Übersicht
         throw redirect(302, "/student/sessions");
+    },
+
+    // Session als Aufgaben-Abgabe einreichen (serverseitig, damit der JWT mitgeht).
+    submitAssignment: async ({ locals, fetch, params }) => {
+        if (!locals.isAuthenticated) {
+            throw redirect(302, "/login");
+        }
+        const token = locals.jwt_token;
+        const headers = {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+        };
+        const res = await fetch(`${API_BASE}/sessions/${params.id}/submit`, {
+            method: "PUT",
+            headers
+        });
+        if (!res.ok) {
+            const text = await res.text().catch(() => "");
+            return { error: text && text.length < 300 ? text : "Abgabe fehlgeschlagen." };
+        }
+        throw redirect(303, "/student/assignments");
     }
 };

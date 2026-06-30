@@ -211,7 +211,8 @@
       "Bash(awk 'NR>=450 && /\\\\.modal|\\\\.modal-body|\\\\.modal-footer|\\\\.modal-header/{print NR\": \"$0}' src/routes/teacher/assignments/+page.svelte)",
       "Bash(sed -n '347,365p' src/routes/teacher/assignments/+page.svelte)",
       "Bash(sed -n '444,460p' src/routes/teacher/assignments/+page.svelte)",
-      "Bash(echo \"BE COMPILE: $?\")"
+      "Bash(echo \"BE COMPILE: $?\")",
+      "Bash(grep -rn 'fetch\\(`/api/\\\\|fetch\\(\"/api/\\\\|fetch\\(./api/' src/routes)"
     ]
   }
 }
