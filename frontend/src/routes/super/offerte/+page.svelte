@@ -10,7 +10,7 @@
     let items = $state([
         { desc: "Praesto – Lizenz pro Schuljahr (inkl. KI-Bewerbungstraining, Dossier, Lehrer-Cockpit)", price: "" }
     ]);
-    let notes = $state("Hosting & Datenhaltung in der Schweiz. Support per E-Mail inbegriffen. Preise in CHF, exkl. allfälliger MwSt.");
+    let notes = $state("Hosting & Datenhaltung in der Schweiz. Support per E-Mail inbegriffen. Preise in CHF, exkl. allfälliger MwSt. Es gelten die AGB und die Datenschutzerklärung von Praesto (praesto.ch/agb, praesto.ch/datenschutz).");
 
     let total = $derived(items.reduce((s, i) => s + (parseFloat(i.price) || 0), 0));
 
@@ -155,16 +155,29 @@
     .foot { margin-top: 1.5rem; font-size: 0.75rem; color: #9a8b9d; text-align: center; }
 
     @media print {
-        @page { size: A4 portrait; margin: 16mm; }
+        @page { size: A4 portrait; margin: 15mm; }
+        /* Verhindert eine leere 2. Seite durch Mindesthöhen des App-Layouts */
+        :global(html), :global(body), :global(.app-main), :global(#app), :global(.app-shell) {
+            height: auto !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
         :global(.app-header), :global(.app-footer), :global(.demo-bar), :global(.demo-toast) { display: none !important; }
-        :global(.app-main) { padding: 0 !important; }
         .no-print { display: none !important; }
-        .wrap { padding: 0; max-width: 100%; }
-        .sheet { border: none; border-radius: 0; padding: 0; }
-        /* Farben & Hintergründe wirklich mitdrucken (Browser lassen sie sonst weg) */
+        .wrap { padding: 0; margin: 0; max-width: 100%; }
+        /* Reines weisses Blatt, kompakt auf EINE Seite */
+        .sheet { border: none; border-radius: 0; padding: 0; font-size: 10.5pt; color: #000; }
         .sheet, .sheet * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .doc-head { padding-bottom: 0.5rem; margin-bottom: 0.85rem; }
+        .logo { font-size: 1.35rem; }
+        .meta { margin-bottom: 0.85rem; }
+        .doc-title { font-size: 1.25rem; margin: 0 0 0.7rem; }
+        .positions th, .positions td { padding: 0.45rem 0.4rem; }
+        .notes { padding: 0.55rem 0.8rem; background: #faf7fc !important; }
+        .thanks { margin-top: 0.7rem; }
+        .foot { margin-top: 1rem; }
         /* Nicht über den Seitenrand umbrechen */
         .doc-head, .meta, .positions, .notes { break-inside: avoid; page-break-inside: avoid; }
-        .notes { background: #faf7fc !important; }
     }
 </style>
