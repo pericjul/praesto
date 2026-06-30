@@ -28,7 +28,7 @@
     {#if form?.error}<div class="err">Konnte den Lebenslauf nicht erstellen. Bitte nochmals versuchen.</div>{/if}
     {#if generating}<div class="generating">Lebenslauf wird erstellt …</div>{/if}
 
-    <form method="POST" use:enhance={handle} class="survey" class:busy={generating}>
+    <form method="POST" enctype="multipart/form-data" use:enhance={handle} class="survey" class:busy={generating}>
         <h2>Personalien</h2>
         <div class="grid">
             <label><span>Vorname *</span><input name="firstName" value={prefillFirst} required /></label>
@@ -41,6 +41,7 @@
             <label><span>Heimat-/Geburtsort <em>(freiwillig)</em></span><input name="hometown" /></label>
             <label><span>Nationalität <em>(freiwillig)</em></span><input name="nationality" /></label>
         </div>
+        <label class="photo-field"><span>Bewerbungsfoto <em>(freiwillig, Hochformat – JPG/PNG)</em></span><input name="photo" type="file" accept="image/png,image/jpeg" /></label>
 
         <h2>Familie <em class="opt">(freiwillig)</em></h2>
         <label><span>Eltern <em>(eine Zeile pro Person)</em></span><textarea name="parents" rows="2" placeholder="Mutter · Anna Muster · Pflegefachfrau&#10;Vater · Beat Muster · Schreiner"></textarea></label>

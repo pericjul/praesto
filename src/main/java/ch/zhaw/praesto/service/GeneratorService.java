@@ -61,7 +61,7 @@ public class GeneratorService {
         String contact = joinNonBlank(" · ", req.address(), req.zipCity(), req.phone(), req.email());
 
         String body = buildCvBody(req);
-        String stored = docxService.writeStructured("Lebenslauf_" + name, name, contact, body);
+        String stored = docxService.writeStructured("Lebenslauf_" + name, name, contact, body, req.photoUrl());
 
         // KEIN aiQuotaService.consume – der Lebenslauf nutzt keine KI mehr.
         return DocumentDTO.from(documentService.saveGenerated(

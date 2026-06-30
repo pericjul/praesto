@@ -18,6 +18,7 @@ public record CvRequest(
         String nationality,   // optional
         String parents,       // optional, mehrzeilig: "Mutter · Name · Beruf"
         String siblings,      // optional, mehrzeilig: "Name · Beruf/Schule"
+        String photoUrl,      // optional, gespeicherter Dateiname des Bewerbungsfotos
         // Inhalt
         String aboutMe,
         String targetJob,

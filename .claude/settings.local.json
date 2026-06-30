@@ -187,7 +187,8 @@
       "Bash(sed -i '' 's/max-width: 760px/max-width: 1000px/' student/dossier/lebenslauf/+page.svelte student/dossier/brief/+page.svelte agb/+page.svelte)",
       "Bash(sed -i '' 's/max-width: 720px/max-width: 1000px/' hilfe/+page.svelte)",
       "Bash(sed -i '' 's/max-width: 1100px/max-width: 1000px/' student/dashboard/+page.svelte)",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(echo \"FE EXIT: $?\")"
     ]
   }
 }

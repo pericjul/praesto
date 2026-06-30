@@ -1,5 +1,5 @@
 import { redirect, fail } from "@sveltejs/kit";
-import { API_BASE, apiHeaders } from "$lib/server/api.js";
+import { API_BASE, apiHeaders, uploadFile } from "$lib/server/api.js";
 
 export async function load({ locals, fetch }) {
 	if (!locals.isAuthenticated) {
@@ -23,6 +23,19 @@ export async function load({ locals, fetch }) {
 export const actions = {
 	default: async ({ request, locals, fetch }) => {
 		const d = await request.formData();
+
+		// Optionales Bewerbungsfoto zuerst hochladen, dann als photoUrl mitschicken.
+		let photoUrl = null;
+		const photo = d.get("photo");
+		if (photo && typeof photo !== "string" && photo.size > 0) {
+			try {
+				const up = await uploadFile(photo, locals.jwt_token);
+				photoUrl = up.fileUrl;
+			} catch {
+				photoUrl = null; // Foto ist optional
+			}
+		}
+
 		const payload = {
 			firstName: d.get("firstName"),
 			lastName: d.get("lastName"),
@@ -35,6 +48,7 @@ export const actions = {
 			nationality: d.get("nationality"),
 			parents: d.get("parents"),
 			siblings: d.get("siblings"),
+			photoUrl,
 			aboutMe: d.get("aboutMe"),
 			targetJob: d.get("targetJob"),
 			education: d.get("education"),
