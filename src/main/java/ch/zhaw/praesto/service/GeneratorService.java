@@ -115,6 +115,8 @@ public class GeneratorService {
         StringBuilder sb = new StringBuilder();
         add(sb, "Name", r.fullName());
         add(sb, "Eigene Adresse", r.senderAddress());
+        add(sb, "Telefon", r.phone());
+        add(sb, "E-Mail", r.email());
         add(sb, "Ort (für Datum)", r.city());
         add(sb, "Firma", r.companyName());
         add(sb, "Firmen-Adresse", r.companyAddress());
@@ -125,6 +127,7 @@ public class GeneratorService {
         add(sb, "Warum diese Firma", r.whyCompany());
         add(sb, "Stärken (mit Beispiel)", r.strengths());
         add(sb, "Schnuppererfahrung (was gefiel)", r.schnupperExperience());
+        add(sb, "Verfügbarkeit (Gespräch/Schnuppertage)", r.availability());
         add(sb, "Sonstiges", r.extra());
         return sb.toString();
     }

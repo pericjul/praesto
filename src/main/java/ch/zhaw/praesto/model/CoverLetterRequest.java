@@ -7,6 +7,8 @@ package ch.zhaw.praesto.model;
 public record CoverLetterRequest(
         String fullName,
         String senderAddress,
+        String phone,                // Absender-Telefon (Briefkopf)
+        String email,                // Absender-E-Mail (Briefkopf)
         String city,                 // Ort für die Datumszeile
         String companyName,
         String companyAddress,
@@ -17,5 +19,6 @@ public record CoverLetterRequest(
         String whyCompany,           // warum genau diese Firma
         String strengths,            // Stärken (idealerweise mit Beispiel)
         String schnupperExperience,  // Schnupperlehre + was gefallen hat
+        String availability,         // optional: Verfügbarkeit für Vorstellungsgespräch / Schnuppertage
         String extra) {
 }

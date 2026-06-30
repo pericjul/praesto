@@ -40,6 +40,8 @@
             <div class="grid">
                 <label><span>Vor- und Name *</span><input name="fullName" value={prefillName} required /></label>
                 <label><span>Deine Adresse</span><input name="senderAddress" placeholder="Strasse, PLZ Ort" /></label>
+                <label><span>Telefon</span><input name="phone" placeholder="079 123 45 67" /></label>
+                <label><span>E-Mail</span><input name="email" type="email" value={data.user?.email ?? ""} /></label>
                 <label><span>Ort (für Datum)</span><input name="city" placeholder="Zürich" /></label>
                 <label><span>Beruf / Lehrstelle *</span><input name="targetJob" placeholder="Kauffrau/Kaufmann EFZ" required /></label>
             </div>
@@ -57,6 +59,7 @@
             <label><span>Warum diese Firma?</span><textarea name="whyCompany" rows="2"></textarea></label>
             <label><span>Deine Stärken <em>(mit kurzem Beispiel)</em></span><textarea name="strengths" rows="2" placeholder="z.B. zuverlässig – ich erledige Aufgaben in der Schule immer pünktlich"></textarea></label>
             <label><span>Schnuppererfahrung <em>(was hat dir gefallen?)</em></span><textarea name="schnupperExperience" rows="2"></textarea></label>
+            <label><span>Verfügbarkeit <em>(z.B. für ein Gespräch / Schnuppertage)</em></span><input name="availability" placeholder="z.B. mittwochs oder in den Ferien" /></label>
             <label><span>Sonstiges</span><textarea name="extra" rows="2"></textarea></label>
 
             <button type="submit" class="btn-primary" disabled={generating}>

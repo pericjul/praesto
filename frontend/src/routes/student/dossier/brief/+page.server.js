@@ -26,6 +26,8 @@ export const actions = {
 		const payload = {
 			fullName: d.get("fullName"),
 			senderAddress: d.get("senderAddress"),
+			phone: d.get("phone"),
+			email: d.get("email"),
 			city: d.get("city"),
 			companyName: d.get("companyName"),
 			companyAddress: d.get("companyAddress"),
@@ -36,6 +38,7 @@ export const actions = {
 			whyCompany: d.get("whyCompany"),
 			strengths: d.get("strengths"),
 			schnupperExperience: d.get("schnupperExperience"),
+			availability: d.get("availability"),
 			extra: d.get("extra")
 		};
 		const res = await fetch(`${API_BASE}/student/cover-letter`, {
