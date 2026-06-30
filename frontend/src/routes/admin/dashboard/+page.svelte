@@ -5,6 +5,8 @@
     let { data, form } = $props();
 
     let invites = $state(data.invites ?? []);
+    // Genau EIN Lehrer-Einladungslink reicht für alle Lehrpersonen (Mehrfach-Links sind unnötig).
+    let teacherInvite = $derived(invites.find((i) => i.type === "TEACHER"));
     let copiedToken = $state(null);
     let insights = $derived(data.insights);
 
@@ -119,38 +121,34 @@
     <section class="card">
         <div class="card-head">
             <h2>{$t('adash.invitesTitle')}</h2>
+        </div>
+
+        {#if teacherInvite}
+            <p class="invite-hint">{$t('adash.inviteHint')}</p>
+            <div class="invite">
+                <div class="invite-info">
+                    <code class="invite-url">{inviteUrl(teacherInvite.token)}</code>
+                    <span class="invite-exp">{$t('adash.validUntil')} {formatDate(teacherInvite.expiresAt)}</span>
+                </div>
+                <div class="invite-actions">
+                    <button class="btn-primary" type="button" onclick={() => copy(teacherInvite.token)}>
+                        {copiedToken === teacherInvite.token ? $t('adash.copied') : $t('adash.copy')}
+                    </button>
+                    {#if !data.isDemo}
+                        <form method="POST" action="?/deleteInvite" use:enhance={handleDelete(teacherInvite.id)}>
+                            <input type="hidden" name="id" value={teacherInvite.id} />
+                            <button class="btn-danger" type="submit">{$t('adash.deactivate')}</button>
+                        </form>
+                    {/if}
+                </div>
+            </div>
+        {:else}
+            <p class="empty">{$t('adash.invitesEmpty')}</p>
             {#if !data.isDemo}
                 <form method="POST" action="?/createTeacherInvite" use:enhance={handleCreate}>
                     <button class="btn-primary" type="submit">{$t('adash.inviteTeacher')}</button>
                 </form>
             {/if}
-        </div>
-
-        {#if invites.length === 0}
-            <p class="empty">{$t('adash.invitesEmpty')}</p>
-        {:else}
-            <ul class="invite-list">
-                {#each invites as invite (invite.id)}
-                    <li class="invite">
-                        <div class="invite-info">
-                            <span class="invite-type">{invite.type}</span>
-                            <code class="invite-url">{inviteUrl(invite.token)}</code>
-                            <span class="invite-exp">{$t('adash.validUntil')} {formatDate(invite.expiresAt)}</span>
-                        </div>
-                        <div class="invite-actions">
-                            <button class="btn-ghost" type="button" onclick={() => copy(invite.token)}>
-                                {copiedToken === invite.token ? $t('adash.copied') : $t('adash.copy')}
-                            </button>
-                            {#if !data.isDemo}
-                                <form method="POST" action="?/deleteInvite" use:enhance={handleDelete(invite.id)}>
-                                    <input type="hidden" name="id" value={invite.id} />
-                                    <button class="btn-danger" type="submit">{$t('adash.deactivate')}</button>
-                                </form>
-                            {/if}
-                        </div>
-                    </li>
-                {/each}
-            </ul>
         {/if}
     </section>
 
@@ -221,6 +219,7 @@
     .btn-ghost { background: #faf8fc; border: 1px solid #e8e0f0; border-radius: 0.5rem; padding: 0.4rem 0.8rem; cursor: pointer; }
     .btn-danger { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 0.5rem; padding: 0.4rem 0.8rem; cursor: pointer; }
 
+    .invite-hint { font-size: 0.85rem; color: #6b647a; margin: 0 0 0.75rem; }
     .invite-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }
     .invite { display: flex; justify-content: space-between; align-items: center; gap: 1rem; background: #faf8fc; border: 1px solid #e8e0f0; border-radius: 0.5rem; padding: 0.75rem 1rem; flex-wrap: wrap; }
     .invite-info { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }

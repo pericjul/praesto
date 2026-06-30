@@ -161,7 +161,12 @@
       "Bash(grep -nA5 \"\\\\.modal-footer {\" +page.svelte)",
       "Bash(grep -nA10 \"\\\\.modal\\\\b\" styles/components.css)",
       "Bash(xargs sed -i '' 's/julia-peric@hotmail\\\\.com/info@praesto.ch/g')",
-      "Bash(cd \"/Users/juliaperic/Library/Mobile Documents/com~apple~CloudDocs/praesto/praesto/frontend/src/routes/kontakt\" && grep -nE \"info@|praesto.ch|mailto|email|E-Mail|@t\\\\\\(.kontakt|kform|class=\\\\\"contact-email\" +page.svelte | head; echo \"=== Backend Kontakt-Empfänger env ===\"; grep -rn \"CONTACT_RECIPIENT_EMAIL\\\\|contact.recipient\\\\|MAIL_FROM\" ../../../../../../src/main/resources/application.yml 2>/dev/null)"
+      "Bash(cd \"/Users/juliaperic/Library/Mobile Documents/com~apple~CloudDocs/praesto/praesto/frontend/src/routes/kontakt\" && grep -nE \"info@|praesto.ch|mailto|email|E-Mail|@t\\\\\\(.kontakt|kform|class=\\\\\"contact-email\" +page.svelte | head; echo \"=== Backend Kontakt-Empfänger env ===\"; grep -rn \"CONTACT_RECIPIENT_EMAIL\\\\|contact.recipient\\\\|MAIL_FROM\" ../../../../../../src/main/resources/application.yml 2>/dev/null)",
+      "Bash(dig +short praesto.ch A)",
+      "Bash(dig +short praesto.ch AAAA)",
+      "Bash(openssl s_client -servername praesto.ch -connect praesto.ch:443 -4)",
+      "Bash(openssl x509 *)",
+      "Bash(curl -sI --max-time 15 https://praesto.ch)"
     ]
   }
 }
