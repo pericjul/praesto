@@ -50,12 +50,18 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST);
     }
 
-    /** Auffangnetz: alles Unerwartete wird geloggt, aber sauber gemeldet (kein nackter 500). */
+    /**
+     * Auffangnetz: alles Unerwartete wird mit vollem Stacktrace geloggt. In der
+     * Pilotphase wird zusätzlich der Fehlertyp + Kurzmeldung mitgegeben, damit
+     * der/die Betreiber:in die Ursache direkt sieht (Stacktrace bleibt nur im Log).
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleUnexpected(Exception e) {
         log.error("Unerwarteter Fehler", e);
+        String detail = e.getClass().getSimpleName()
+                + (e.getMessage() != null ? ": " + e.getMessage() : "");
         return new ResponseEntity<>(
-                "Es ist ein unerwarteter Fehler aufgetreten. Bitte versuche es später erneut.",
+                "Es ist ein unerwarteter Fehler aufgetreten. (" + detail + ")",
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

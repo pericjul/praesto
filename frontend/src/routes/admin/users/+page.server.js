@@ -12,8 +12,16 @@ export async function load({ locals, fetch }) {
 	}
 
 	const res = await fetch(`${API_BASE}/admin/users`, { headers: apiHeaders(locals.jwt_token) });
+	let users = [];
+	let loadError = null;
+	if (res.ok) {
+		users = await res.json();
+	} else {
+		loadError = (await res.text().catch(() => "")) || `Fehler ${res.status}`;
+	}
 	return {
-		users: res.ok ? await res.json() : [],
+		users,
+		loadError,
 		isDemo: locals.user?.role === "DEMO_USER"
 	};
 }

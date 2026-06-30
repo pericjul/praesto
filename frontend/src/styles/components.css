@@ -265,11 +265,23 @@
   color: #2d2141;
 }
 
+/* Umschliesst ein <form> Body+Footer, muss es die Flex-Kette fortsetzen, sonst
+   wächst es über die Modal-Höhe hinaus und der Footer (Buttons) wird abgeschnitten. */
+.modal > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .modal-body {
   padding: 1.5rem;
   overflow-y: auto;
   /* 0 1 auto = Inhalts-Höhe, kein erzwungenes Wachsen (verhindert riesige leere Modals) */
   flex: 0 1 auto;
+  /* min-height:0 erlaubt dem Body zu schrumpfen + zu scrollen statt den Footer wegzudrücken */
+  min-height: 0;
 }
 
 .modal-footer {

@@ -78,6 +78,10 @@
 <div class="page">
     <h1>{$t('ausers.title')}</h1>
 
+    {#if data.loadError}
+        <div class="alert">⚠️ {data.loadError}</div>
+    {/if}
+
     {#if form?.error}
         <div class="alert">{form.error}</div>
     {/if}

@@ -198,7 +198,20 @@
       "Bash(sed -n '68,78p' src/routes/student/dossier/+page.svelte)",
       "Bash(./mvnw -q clean test-compile)",
       "Bash(./mvnw -q clean test -Dtest=GeneratorServiceTest,SubmissionControllerTest)",
-      "Bash(node -e \"import\\('./src/lib/i18n/messages/dossier.js'\\).then\\(m=>{for\\(const l of['de','en','fr','it']\\)console.log\\(l,Object.keys\\(m.dossier[l]\\).length\\)}\\).catch\\(e=>{console.error\\('ERR',e.message\\);process.exit\\(1\\)}\\)\")"
+      "Bash(node -e \"import\\('./src/lib/i18n/messages/dossier.js'\\).then\\(m=>{for\\(const l of['de','en','fr','it']\\)console.log\\(l,Object.keys\\(m.dossier[l]\\).length\\)}\\).catch\\(e=>{console.error\\('ERR',e.message\\);process.exit\\(1\\)}\\)\")",
+      "Bash(sed -n '/private.*toDTOs/,/}/p' src/main/java/ch/zhaw/praesto/controller/UserController.java)",
+      "Bash(sed -n '/getCurrentSchoolId/,/}/p' src/main/java/ch/zhaw/praesto/service/UserService.java)",
+      "Bash(sed -n '/private User getCurrentUserOrNull/,/^    }/p' src/main/java/ch/zhaw/praesto/service/UserService.java)",
+      "Bash(sed -n '/requireRole/,/^    }/p' src/main/java/ch/zhaw/praesto/service/AdminService.java)",
+      "Bash(grep -n 'users\\\\.\\\\|\\\\.map\\\\|\\\\.filter\\\\|\\\\.length\\\\|\\\\.role\\\\|data\\\\.\\\\|$derived\\\\|reduce\\\\|\\\\.find' src/routes/admin/users/+page.svelte)",
+      "Bash(sed -n '/void requireRole/,/^    }/p' src/main/java/ch/zhaw/praesto/service/AdminService.java)",
+      "Bash(sed -n '1,46p' src/main/java/ch/zhaw/praesto/service/AdminService.java)",
+      "Bash(grep -nA10 \"^\\\\s*\\\\.modal\\\\s*{\" src/routes/teacher/assignments/+page.svelte)",
+      "Bash(grep -nA6 \"\\\\.modal-body\\\\s*{\\\\|\\\\.modal-footer\\\\s*{\\\\|\\\\.modal-header\\\\s*{\" src/routes/teacher/assignments/+page.svelte)",
+      "Bash(awk 'NR>=450 && /\\\\.modal|\\\\.modal-body|\\\\.modal-footer|\\\\.modal-header/{print NR\": \"$0}' src/routes/teacher/assignments/+page.svelte)",
+      "Bash(sed -n '347,365p' src/routes/teacher/assignments/+page.svelte)",
+      "Bash(sed -n '444,460p' src/routes/teacher/assignments/+page.svelte)",
+      "Bash(echo \"BE COMPILE: $?\")"
     ]
   }
 }
