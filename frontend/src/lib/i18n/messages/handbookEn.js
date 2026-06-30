@@ -114,7 +114,7 @@ export const handbookEn = {
 
 		// 9 Support
 		"hb.support.title": "Support & contact",
-		"hb.support.p1": "Questions or requests? We're happy to help. Write to us at julia-peric@hotmail.com."
+		"hb.support.p1": "Questions or requests? We're happy to help. Write to us at info@praesto.ch."
 	},
 	fr: {},
 	it: {}

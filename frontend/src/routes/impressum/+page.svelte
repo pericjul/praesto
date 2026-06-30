@@ -14,7 +14,6 @@
 
 <div class="imprint">
     <h1>{$t('imp.title')}</h1>
-    <p class="draft">⚠️ {$t('imp.draftNote')}</p>
 
     {#each sections as section}
         <section class="block">
@@ -29,15 +28,6 @@
 <style>
     .imprint { max-width: 700px; margin: 0 auto; padding: 2rem 1rem 3rem; }
     h1 { margin: 0 0 1rem; color: var(--color-primary, #2F124D); font-size: clamp(1.6rem, 3vw, 2.1rem); }
-    .draft {
-        background: var(--color-warning-bg, #fffbeb);
-        border: 1px solid var(--color-warning-border, #fcd34d);
-        color: #78600e;
-        border-radius: 0.6rem;
-        padding: 0.7rem 1rem;
-        font-size: 0.9rem;
-        margin: 0 0 1.75rem;
-    }
     .block { margin-bottom: 1.5rem; }
     .block h2 { font-size: 1.1rem; color: var(--color-text-secondary, #2d2141); margin: 0 0 0.4rem; }
     .block p { margin: 0; color: var(--color-text-muted, #5E4C6F); line-height: 1.65; }

@@ -115,7 +115,7 @@ export const handbookFr = {
 
 		// 9 Support
 		"hb.support.title": "Support et contact",
-		"hb.support.p1": "Des questions ou des souhaits ? Nous vous aidons volontiers. Écrivez-nous à julia-peric@hotmail.com."
+		"hb.support.p1": "Des questions ou des souhaits ? Nous vous aidons volontiers. Écrivez-nous à info@praesto.ch."
 	},
 	it: {}
 };

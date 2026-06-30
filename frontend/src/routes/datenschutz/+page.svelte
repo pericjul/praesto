@@ -11,8 +11,12 @@
         { t: $t("dp.s7.t"), p: $t("dp.s7.p") },
         { t: $t("dp.s8.t"), p: $t("dp.s8.p") },
         { t: $t("dp.s9.t"), p: $t("dp.s9.p") },
-        { t: $t("dp.s10.t"), p: $t("dp.s10.p") }
+        { t: $t("dp.s10.t"), p: $t("dp.s10.p") },
+        { t: $t("dp.s11.t"), p: $t("dp.s11.p") },
+        { t: $t("dp.s12.t"), p: $t("dp.s12.p") }
     ]);
+
+    let lastUpdated = "30.06.2026";
 </script>
 
 <svelte:head>
@@ -22,7 +26,7 @@
 <div class="privacy">
     <h1>{$t('dp.title')}</h1>
     <p class="intro">{$t('dp.intro')}</p>
-    <p class="draft">⚠️ {$t('dp.draftNote')}</p>
+    <p class="updated">Stand: {lastUpdated}</p>
 
     {#each sections as section}
         <section class="block">
@@ -53,13 +57,9 @@
         margin: 0 0 1rem;
     }
 
-    .draft {
-        background: var(--color-warning-bg, #fffbeb);
-        border: 1px solid var(--color-warning-border, #fcd34d);
-        color: #78600e;
-        border-radius: 0.6rem;
-        padding: 0.7rem 1rem;
-        font-size: 0.9rem;
+    .updated {
+        color: var(--color-text-muted, #8a7f9a);
+        font-size: 0.85rem;
         margin: 0 0 1.75rem;
     }
 

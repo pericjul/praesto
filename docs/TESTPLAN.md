@@ -206,4 +206,4 @@ Der Test gilt als bestanden, wenn:
 ## 12. Bekannte Punkte / Hinweise
 - Erstes KI-Antworten kann kurz dauern (Modell „aufwärmen") – das ist normal.
 - Nach einem neuen Deploy ggf. einmal hart neu laden (Cache).
-- Support-/Rückfragen: **julia-peric@hotmail.com**.
+- Support-/Rückfragen: **info@praesto.ch**.
