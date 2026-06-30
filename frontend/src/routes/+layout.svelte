@@ -40,24 +40,28 @@
       { href: "/student/notes", label: $t("nav.notes") },
       { href: "/student/applications", label: $t("nav.applications") },
       { href: "/student/dossier", label: "📁 " + $t("nav.dossier") },
-      { href: "/student/badges", label: "🏅 " + $t("nav.badges") }
+      { href: "/student/badges", label: "🏅 " + $t("nav.badges") },
+      { href: "/bug-melden", label: "🐞 " + $t("bug.report") }
     ];
     if (isTeacher) return [
       { href: "/teacher/dashboard", label: $t("nav.dashboard") },
       { href: "/teacher/cockpit", label: "📊 " + $t("nav.cockpit") },
       { href: "/teacher/classes", label: $t("nav.classes") },
-      { href: "/teacher/assignments", label: $t("nav.tasks") }
+      { href: "/teacher/assignments", label: $t("nav.tasks") },
+      { href: "/bug-melden", label: "🐞 " + $t("bug.report") }
     ];
     if (isSchoolAdmin) return [
       { href: "/admin/dashboard", label: $t("nav.dashboard") },
-      { href: "/admin/users", label: $t("nav.users") }
+      { href: "/admin/users", label: $t("nav.users") },
+      { href: "/bug-melden", label: "🐞 " + $t("bug.report") }
     ];
     if (isSuperAdmin) return [
       { href: "/super/dashboard", label: $t("nav.schools") },
       { href: "/super/demo-requests", label: $t("nav.demoRequests") },
       { href: "/super/inquiries", label: $t("nav.inquiries") },
       { href: "/super/users", label: $t("nav.userData") },
-      { href: "/super/logs", label: "📜 Logs" }
+      { href: "/super/logs", label: "📜 Logs" },
+      { href: "/super/bugs", label: $t("sbug.nav") }
     ];
     return [];
   });
