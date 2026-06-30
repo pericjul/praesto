@@ -46,6 +46,11 @@ public class FileController {
                           FileAccessService fileAccessService) {
         this.uploadDir = Paths.get(uploadsDir).toAbsolutePath().normalize();
         this.fileAccessService = fileAccessService;
+        // Verifizierung: in Azure muss dieser Pfad unter /home liegen (persistent + instanz-
+        // übergreifend), sonst gehen hochgeladene Dokumente bei Neustart/Skalierung verloren.
+        boolean persistent = this.uploadDir.startsWith("/home");
+        log.info("Uploads-Verzeichnis: {} ({})", this.uploadDir,
+                persistent ? "persistent /home" : "ACHTUNG: nicht unter /home – evtl. flüchtig");
     }
 
     @PostMapping

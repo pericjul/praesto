@@ -171,7 +171,8 @@
       "Bash(grep -rln \"consent\\\\|einverständnis\\\\|Einverständnis\\\\|einwilligung\" routes)",
       "Bash(find routes/super -type d)",
       "Bash(grep -nB3 \"error during build\" /tmp/feab.log)",
-      "Bash(grep -n '<h1\\\\|<header\\\\|class=\"page\\\\|intro\\\\|{$t\\('\\\\''tclass' +page.svelte)"
+      "Bash(grep -n '<h1\\\\|<header\\\\|class=\"page\\\\|intro\\\\|{$t\\('\\\\''tclass' +page.svelte)",
+      "Bash(./mvnw -q clean test -Dtest=FileAccessServiceTest,SubmissionControllerTest)"
     ]
   }
 }
