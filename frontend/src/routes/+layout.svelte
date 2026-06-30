@@ -61,7 +61,8 @@
       { href: "/super/inquiries", label: $t("nav.inquiries") },
       { href: "/super/users", label: $t("nav.userData") },
       { href: "/super/logs", label: "📜 Logs" },
-      { href: "/super/bugs", label: $t("sbug.nav") }
+      { href: "/super/bugs", label: $t("sbug.nav") },
+      { href: "/super/offerte", label: "📄 Offerte" }
     ];
     return [];
   });

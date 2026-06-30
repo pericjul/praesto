@@ -136,6 +136,10 @@
         </button>
     </header>
 
+    <a class="consent-link" href="/einverstaendnis" target="_blank" rel="noopener">
+        📄 Einverständniserklärung für Eltern herunterladen (zum Ausdrucken / als PDF)
+    </a>
+
     {#if form?.error}
         <div class="alert alert-danger">{form.error}</div>
     {/if}
@@ -354,6 +358,20 @@
 {/if}
 
 <style>
+    .consent-link {
+        display: inline-block;
+        margin: 0 0 1.25rem;
+        background: #f0e7fa;
+        color: #2F124D;
+        border: 1px solid #d9c8ee;
+        border-radius: 0.6rem;
+        padding: 0.6rem 1rem;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    .consent-link:hover { background: #e6d6f7; }
+
     /* ===== PAGE SPECIFIC STYLES ===== */
     .classes-list {
         display: flex;
