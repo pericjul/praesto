@@ -195,7 +195,9 @@
       "Bash(sed -n '132,145p' src/routes/student/applications/+page.svelte)",
       "Bash(sed -n '53,62p' src/routes/student/badges/+page.svelte)",
       "Bash(sed -n '20,40p' src/routes/bug-melden/+page.svelte)",
-      "Bash(sed -n '68,78p' src/routes/student/dossier/+page.svelte)"
+      "Bash(sed -n '68,78p' src/routes/student/dossier/+page.svelte)",
+      "Bash(./mvnw -q clean test-compile)",
+      "Bash(./mvnw -q clean test -Dtest=GeneratorServiceTest,SubmissionControllerTest)"
     ]
   }
 }

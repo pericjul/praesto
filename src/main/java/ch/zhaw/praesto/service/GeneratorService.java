@@ -56,40 +56,76 @@ public class GeneratorService {
         String userId = userService.getUserId();
         String schoolId = userService.getCurrentSchoolId();
 
-        String name = joinNonBlank(" ", req.firstName(), req.lastName());
+        String first = req.firstName() == null ? "" : req.firstName().trim();
+        String last = req.lastName() == null ? "" : req.lastName().trim();
+        String name = joinNonBlank(" ", first, last);
         if (name.isBlank()) name = userService.getUserName();
-        String contact = joinNonBlank(" · ", req.address(), req.zipCity(), req.phone(), req.email());
+        String subtitle = notBlank(req.targetJob()) ? "Bewerbung als " + req.targetJob().trim() : "Lebenslauf";
 
-        String body = buildCvBody(req);
-        String stored = docxService.writeStructured("Lebenslauf_" + name, name, contact, body, req.photoUrl());
+        // Personalien (Label, Wert) – leere Felder fallen weg, Werte dürfen mehrzeilig sein.
+        java.util.List<String[]> personal = new java.util.ArrayList<>();
+        pair(personal, "Vorname", first);
+        pair(personal, "Nachname", last);
+        pair(personal, "Adresse", joinNonBlank("\n", req.address(), req.zipCity()));
+        pair(personal, "Telefon", req.phone());
+        pair(personal, "E-Mail", req.email());
+        pair(personal, "Geburtsdatum", req.birthDate());
+        pair(personal, "Heimatort", req.hometown());
+        pair(personal, "Nationalität", req.nationality());
+        pair(personal, "Eltern", req.parents());
+        pair(personal, "Geschwister", req.siblings());
 
-        // KEIN aiQuotaService.consume – der Lebenslauf nutzt keine KI mehr.
+        // Abschnitte (Titel + Zeilen), jede Zeile am ersten " · " in zwei Spalten geteilt.
+        java.util.List<DocxService.CvSection> sections = new java.util.ArrayList<>();
+        if (notBlank(req.aboutMe())) {
+            sections.add(new DocxService.CvSection("Über mich",
+                    java.util.List.<String[]>of(new String[]{"", req.aboutMe().trim()})));
+        }
+        addSection(sections, "Schulbildung", req.education());
+        addSection(sections, "Praktische Erfahrung / Schnupperlehren", req.experience());
+        addSection(sections, "Sprachen", req.languages());
+        addCommaSection(sections, "Kenntnisse & Fähigkeiten", req.skills());
+        addCommaSection(sections, "Hobbys & Interessen", req.hobbies());
+        addSection(sections, "Referenzen", req.references());
+
+        String stored = docxService.writeCv("Lebenslauf_" + name, name, subtitle, personal, sections, req.photoUrl());
+
+        // KEIN aiQuotaService.consume – der Lebenslauf nutzt keine KI.
         return DocumentDTO.from(documentService.saveGenerated(
                 userId, schoolId, DocumentCategory.LEBENSLAUF, "Lebenslauf", stored, "Lebenslauf.docx"));
     }
 
-    private String buildCvBody(CvRequest r) {
-        StringBuilder sb = new StringBuilder();
+    private void pair(java.util.List<String[]> list, String label, String value) {
+        if (notBlank(value)) list.add(new String[]{label, value.trim()});
+    }
 
-        // Über mich (+ optionale Personalien-Details)
-        section(sb, "Über mich");
-        if (notBlank(r.aboutMe())) sb.append(r.aboutMe().trim()).append("\n");
-        if (notBlank(r.targetJob())) bullet(sb, "Angestrebte Lehrstelle: " + r.targetJob().trim());
-        if (notBlank(r.birthDate())) bullet(sb, "Geburtsdatum: " + r.birthDate().trim());
-        if (notBlank(r.hometown())) bullet(sb, "Heimat-/Geburtsort: " + r.hometown().trim());
-        if (notBlank(r.nationality())) bullet(sb, "Nationalität: " + r.nationality().trim());
+    /** Mehrzeiliges Feld → je Zeile eine Abschnittszeile, am ersten " · " zweispaltig geteilt. */
+    private void addSection(java.util.List<DocxService.CvSection> sections, String title, String multiline) {
+        if (!notBlank(multiline)) return;
+        java.util.List<String[]> rows = new java.util.ArrayList<>();
+        for (String line : multiline.split("\\r?\\n")) {
+            if (notBlank(line)) rows.add(splitRow(line.trim()));
+        }
+        if (!rows.isEmpty()) sections.add(new DocxService.CvSection(title, rows));
+    }
 
-        bulletsFromLines(sb, "Eltern", r.parents());
-        bulletsFromLines(sb, "Geschwister", r.siblings());
+    /** Komma- oder zeilenweise Liste → je Eintrag eine Zeile. */
+    private void addCommaSection(java.util.List<DocxService.CvSection> sections, String title, String value) {
+        if (!notBlank(value)) return;
+        String[] parts = value.contains("\n") ? value.split("\\r?\\n") : value.split(",");
+        java.util.List<String[]> rows = new java.util.ArrayList<>();
+        for (String p : parts) {
+            if (notBlank(p)) rows.add(splitRow(p.trim()));
+        }
+        if (!rows.isEmpty()) sections.add(new DocxService.CvSection(title, rows));
+    }
 
-        bulletsFromLines(sb, "Schulbildung", r.education());
-        bulletsFromLines(sb, "Praktische Erfahrung / Schnupperlehren", r.experience());
-        bulletsFromLines(sb, "Sprachen", r.languages());
-        bulletsFromCommaOrLines(sb, "Kenntnisse & Fähigkeiten", r.skills());
-        bulletsFromCommaOrLines(sb, "Hobbys & Interessen", r.hobbies());
-        bulletsFromLines(sb, "Referenzen", r.references());
-
-        return sb.toString();
+    /** Teilt "links · rechts" (oder "links – rechts") in zwei Spalten; sonst volle Breite rechts. */
+    private String[] splitRow(String line) {
+        int i = line.indexOf(" · ");
+        if (i < 0) i = line.indexOf(" – ");
+        if (i >= 0) return new String[]{line.substring(0, i).trim(), line.substring(i + 3).trim()};
+        return new String[]{"", line};
     }
 
     // ============================================================
@@ -164,33 +200,6 @@ public class GeneratorService {
         } catch (Exception e) {
             log.warn("KI-Generierung fehlgeschlagen, nutze Fallback: {}", e.getMessage());
             return fallback.get();
-        }
-    }
-
-    private void section(StringBuilder sb, String title) {
-        sb.append("## ").append(title).append("\n");
-    }
-
-    private void bullet(StringBuilder sb, String text) {
-        sb.append("- ").append(text).append("\n");
-    }
-
-    /** Abschnitt nur anlegen, wenn Inhalt da ist; jede nicht-leere Zeile = ein Punkt. */
-    private void bulletsFromLines(StringBuilder sb, String title, String multiline) {
-        if (!notBlank(multiline)) return;
-        section(sb, title);
-        for (String line : multiline.split("\\r?\\n")) {
-            if (notBlank(line)) bullet(sb, line.trim());
-        }
-    }
-
-    /** Wie oben, akzeptiert auch eine kommagetrennte Liste in EINER Zeile. */
-    private void bulletsFromCommaOrLines(StringBuilder sb, String title, String value) {
-        if (!notBlank(value)) return;
-        String[] parts = value.contains("\n") ? value.split("\\r?\\n") : value.split(",");
-        section(sb, title);
-        for (String p : parts) {
-            if (notBlank(p)) bullet(sb, p.trim());
         }
     }
 
