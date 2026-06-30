@@ -95,6 +95,10 @@
     .f.short { flex: 0 0 28%; }
     .f span { font-size: 0.78rem; color: #6b647a; }
     .line { border-bottom: 1px solid #2d2141; height: 1.6rem; }
+    @media (max-width: 640px) {
+        .row { flex-direction: column; gap: 0.9rem; }
+        .f.short { flex: 0 0 auto; }
+    }
 
     .foot { margin-top: 2rem; font-size: 0.75rem; color: #9a8b9d; text-align: center; }
 

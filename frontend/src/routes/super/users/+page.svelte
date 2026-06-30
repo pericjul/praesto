@@ -103,7 +103,7 @@
     .user-info { display: flex; align-items: center; gap: 0.7rem; }
     .user-role { font-size: 1.3rem; }
     .user-name { display: block; font-weight: 600; color: #2d2141; }
-    .user-email { display: block; font-size: 0.85rem; color: #9a8b9d; }
+    .user-email { display: block; font-size: 0.85rem; color: #9a8b9d; overflow-wrap: anywhere; word-break: break-word; }
     .user-actions { display: flex; gap: 0.5rem; }
 
     .confirm { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }

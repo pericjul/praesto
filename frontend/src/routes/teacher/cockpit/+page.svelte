@@ -186,7 +186,7 @@
 
     /* Klassen-Challenge */
     .challenge-panel { background: #fff; border: 1px solid #e8e0f0; border-radius: 1rem; padding: 1.1rem 1.25rem; margin-bottom: 1.25rem; }
-    .ch-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .ch-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
     .ch-head h2 { margin: 0; font-size: 1.1rem; color: #2F124D; }
     .ch-end { background: #faf8fc; border: 1px solid #e8e0f0; border-radius: 0.5rem; padding: 0.4rem 0.85rem; cursor: pointer; font-size: 0.82rem; color: #2d2141; }
     .ch-bar { height: 14px; background: #eee; border-radius: 999px; overflow: hidden; margin: 0.75rem 0 0.5rem; }

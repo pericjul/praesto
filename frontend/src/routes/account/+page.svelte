@@ -117,7 +117,8 @@
 
     .form { display: flex; flex-direction: column; gap: 0.85rem; }
     .row { display: flex; gap: 0.85rem; flex-wrap: wrap; }
-    .row label { flex: 1; min-width: 180px; }
+    .row label { flex: 1; min-width: 140px; }
+    @media (max-width: 500px) { .row label { min-width: 0; flex-basis: 100%; } }
 
     label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; color: var(--color-text-secondary, #2d2141); }
 

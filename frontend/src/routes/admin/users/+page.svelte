@@ -217,4 +217,9 @@
     @media (max-width: 640px) {
         .users-table { display: block; overflow-x: auto; white-space: nowrap; }
     }
+    @media (max-width: 480px) {
+        .filters { flex-direction: column; align-items: stretch; }
+        .filters .search { min-width: 0; width: 100%; }
+        .filters select { width: 100%; }
+    }
 </style>

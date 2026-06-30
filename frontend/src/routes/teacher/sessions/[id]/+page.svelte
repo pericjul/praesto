@@ -381,6 +381,7 @@
         font-size: 0.9rem;
         line-height: 1.5;
         white-space: pre-wrap;
+        overflow-wrap: break-word;
     }
 
     /* Alerts */
@@ -466,6 +467,7 @@
     .message-text {
         white-space: pre-wrap;
         display: block;
+        overflow-wrap: break-word;
     }
 
     .message-time {

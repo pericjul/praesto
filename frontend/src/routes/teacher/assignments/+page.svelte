@@ -679,6 +679,9 @@
         .assignment-meta-row {
             flex-wrap: wrap;
         }
+
+        .search-wrapper { min-width: 0; flex: 1 1 100%; }
+        .filter-bar, .quick-filters { flex-wrap: wrap; }
     }
 
     .hint-inline {

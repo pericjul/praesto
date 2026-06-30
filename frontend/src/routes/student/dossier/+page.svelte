@@ -188,5 +188,11 @@
     .inline { display: inline; }
     .err { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 0.5rem; padding: 0.6rem 0.9rem; margin-bottom: 0.6rem; }
 
-    @media (max-width: 640px) { .create { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) {
+        .create { grid-template-columns: 1fr; }
+        .doc { flex-direction: column; align-items: flex-start; }
+        .doc-actions { flex-wrap: wrap; width: 100%; }
+        .upload-form { flex-direction: column; align-items: stretch; }
+        .upload-form input, .upload-form select, .upload-form button { width: 100%; box-sizing: border-box; }
+    }
 </style>

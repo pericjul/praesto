@@ -243,5 +243,7 @@
     }
     @media (max-width: 480px) {
         .attention-grid { grid-template-columns: 1fr; }
+        .stats { grid-template-columns: 1fr; }
+        .page-head { flex-wrap: wrap; gap: 0.5rem; }
     }
 </style>

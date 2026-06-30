@@ -405,6 +405,8 @@
         color: #4b5563;
         line-height: 1.6;
         white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        word-break: break-word;
     }
 
     .meta-info {
@@ -413,6 +415,10 @@
         font-size: 0.9rem;
     }
 
+    .content-box, .content-box a, .links-list a {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
     .content-box {
         background: #fff;
         border: 1px solid #d1fae5;

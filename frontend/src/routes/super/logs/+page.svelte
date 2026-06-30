@@ -72,7 +72,8 @@
     .btn-refresh:disabled { opacity: 0.6; cursor: default; }
     .err-banner { background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; border-radius: 0.6rem; padding: 0.6rem 0.9rem; margin-bottom: 1rem; }
     .logs-controls { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
-    .logs-controls input[type="search"] { flex: 1; min-width: 220px; padding: 0.5rem 0.7rem; border: 1px solid #e0d6eb; border-radius: 0.5rem; font-size: 0.9rem; }
+    .logs-controls input[type="search"] { flex: 1; min-width: 140px; padding: 0.5rem 0.7rem; border: 1px solid #e0d6eb; border-radius: 0.5rem; font-size: 0.9rem; }
+    @media (max-width: 480px) { .logs-controls input[type="search"] { min-width: 0; flex: 1 1 100%; } }
     .chk { font-size: 0.85rem; color: #5E4C6F; display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap; }
     .count { font-size: 0.8rem; color: #9a8b9d; }
     .logs-box { background: #1e1530; color: #e7e2f0; border-radius: 0.75rem; padding: 0.75rem; max-height: 70vh; overflow: auto; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; line-height: 1.5; }

@@ -611,6 +611,10 @@
             align-self: flex-end;
         }
 
+        .invite-link { min-width: 0; }
+        .invite-link-row { flex-direction: column; align-items: stretch; }
+        .student-item { flex-wrap: wrap; }
+
         .add-student-form {
             flex-direction: column;
         }

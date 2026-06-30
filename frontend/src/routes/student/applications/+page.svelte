@@ -432,6 +432,10 @@
         .data-table td:nth-child(5) { display: none; }
     }
 
+    @media (max-width: 600px) {
+        .up-list li { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+    }
+
     .upcoming-banner {
         background: var(--color-warning-bg, #fffbeb);
         border: 1px solid var(--color-warning-border, #fcd34d);

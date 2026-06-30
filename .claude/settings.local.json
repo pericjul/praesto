@@ -212,7 +212,9 @@
       "Bash(sed -n '347,365p' src/routes/teacher/assignments/+page.svelte)",
       "Bash(sed -n '444,460p' src/routes/teacher/assignments/+page.svelte)",
       "Bash(echo \"BE COMPILE: $?\")",
-      "Bash(grep -rn 'fetch\\(`/api/\\\\|fetch\\(\"/api/\\\\|fetch\\(./api/' src/routes)"
+      "Bash(grep -rn 'fetch\\(`/api/\\\\|fetch\\(\"/api/\\\\|fetch\\(./api/' src/routes)",
+      "Bash(sed -n '700,730p' src/routes/student/dashboard/+page.svelte)",
+      "Bash(sed -n '665,690p' src/routes/teacher/dashboard/+page.svelte)"
     ]
   }
 }

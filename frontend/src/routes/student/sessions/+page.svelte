@@ -350,6 +350,10 @@
         white-space: nowrap;
     }
     .roast-toggle input { accent-color: #e8590c; cursor: pointer; }
+    @media (max-width: 600px) {
+        .start-form { flex-direction: column; align-items: stretch; }
+        .roast-toggle { justify-content: flex-start; }
+    }
 
     .quota-note { margin: 0 0 1rem; font-size: var(--font-size-sm); color: var(--color-text-muted); }
     .quota-note.quota-empty { color: #b45309; font-weight: 600; }

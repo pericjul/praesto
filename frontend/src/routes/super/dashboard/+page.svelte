@@ -135,7 +135,7 @@
 
 <style>
     .page { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
-    .page-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .page-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
     h1 { margin: 0; color: #2F124D; font-size: 1.6rem; }
 
     .totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }

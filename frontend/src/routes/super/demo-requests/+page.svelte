@@ -143,10 +143,10 @@
     .status.s-DONE { background: #f0fdf4; color: #16a34a; }
     .status.s-REJECTED { background: #fee2e2; color: #b91c1c; }
 
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem 1rem; margin-bottom: 0.75rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem 1rem; margin-bottom: 0.75rem; }
     .grid .k { display: block; font-size: 0.72rem; color: #9a8b9d; text-transform: uppercase; letter-spacing: 0.03em; }
-    .grid .v { font-size: 0.92rem; color: #2d2141; }
-    .grid a { color: #2F124D; }
+    .grid .v { font-size: 0.92rem; color: #2d2141; overflow-wrap: anywhere; }
+    .grid a { color: #2F124D; overflow-wrap: anywhere; word-break: break-word; }
 
     .message { margin: 0 0 0.85rem; padding: 0.75rem; background: #faf8fc; border-radius: 0.5rem; color: #374151; white-space: pre-wrap; font-size: 0.92rem; }
 
@@ -154,7 +154,7 @@
     .approved-for { margin: 0 0 0.5rem; color: #1e40af; font-size: 0.92rem; }
     .link-label { display: block; font-size: 0.72rem; color: #9a8b9d; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.3rem; }
     .link-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
-    .link-row code { flex: 1 1 240px; background: #fff; border: 1px solid #e8e0f0; border-radius: 0.4rem; padding: 0.45rem 0.6rem; font-size: 0.82rem; color: #2d2141; overflow-wrap: anywhere; }
+    .link-row code { flex: 1 1 150px; min-width: 0; background: #fff; border: 1px solid #e8e0f0; border-radius: 0.4rem; padding: 0.45rem 0.6rem; font-size: 0.82rem; color: #2d2141; overflow-wrap: anywhere; }
 
     .approve-form { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
     .day { display: grid; gap: 0.25rem; }

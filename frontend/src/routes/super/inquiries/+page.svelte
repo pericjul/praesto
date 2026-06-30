@@ -100,10 +100,10 @@
     .status { font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; background: #fef3c7; color: #92400e; white-space: nowrap; }
     .status.done { background: #f0fdf4; color: #16a34a; }
 
-    .inq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem 1rem; margin-bottom: 0.75rem; }
+    .inq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem 1rem; margin-bottom: 0.75rem; }
     .inq-grid .k { display: block; font-size: 0.72rem; color: #9a8b9d; text-transform: uppercase; letter-spacing: 0.03em; }
-    .inq-grid .v { font-size: 0.92rem; color: #2d2141; }
-    .inq-grid a { color: #2F124D; }
+    .inq-grid .v { font-size: 0.92rem; color: #2d2141; overflow-wrap: anywhere; }
+    .inq-grid a { color: #2F124D; overflow-wrap: anywhere; word-break: break-word; }
 
     .meeting { margin: 0 0 0.5rem; font-size: 0.9rem; color: #c97d3c; font-weight: 600; }
     .message { margin: 0 0 0.85rem; padding: 0.75rem; background: #faf8fc; border-radius: 0.5rem; color: #374151; white-space: pre-wrap; font-size: 0.92rem; }
