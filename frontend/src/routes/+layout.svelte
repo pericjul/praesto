@@ -198,8 +198,7 @@
       <nav class="footer-links">
         <a href="/">{$t('footer.start')}</a>
         <a href="/demo">{$t('footer.demo')}</a>
-        <a href="/datenschutz">{$t('footer.privacy')}</a>
-        <a href="/impressum">{$t('footer.imprint')}</a>
+        <a href="/rechtliches">{$t('footer.legal')}</a>
         <a href="/kontakt">{$t('footer.contact')}</a>
       </nav>
       <span class="footer-copy">{$t('footer.copy')}</span>
