@@ -443,6 +443,13 @@ class SessionServiceTest {
         @Mock
         private CallResponseSpec callResponseSpec;
 
+        @BeforeEach
+        void quotaStubs() {
+            // Freies Üben: Tages-Quota erlaubt (1 pro Tag, heute noch 0 genutzt).
+            lenient().when(aiQuotaService.practicePerDay()).thenReturn(1);
+            lenient().when(aiQuotaService.practiceUsedToday(anyString())).thenReturn(0);
+        }
+
         @Test
         @DisplayName("Session ohne Assignment erfolgreich starten")
         void startSession_noAssignment_createsSession() {

@@ -3,7 +3,8 @@
 
     let docs = $derived([
         { href: "/impressum", title: $t("imp.title"), desc: $t("legal.imprintDesc"), icon: "🏢" },
-        { href: "/datenschutz", title: $t("dp.title"), desc: $t("legal.privacyDesc"), icon: "🔒" }
+        { href: "/datenschutz", title: $t("dp.title"), desc: $t("legal.privacyDesc"), icon: "🔒" },
+        { href: "/agb", title: $t("agb.title"), desc: $t("legal.agbDesc"), icon: "📜" }
     ]);
 </script>
 

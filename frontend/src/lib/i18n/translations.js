@@ -25,6 +25,8 @@ import { dossier } from "./messages/dossier.js";
 import { generators } from "./messages/generators.js";
 import { calendarUi } from "./messages/calendarUi.js";
 import { bugs } from "./messages/bugs.js";
+import { badgeNames } from "./messages/badgeNames.js";
+import { agb } from "./messages/agb.js";
 import { help } from "./messages/help.js";
 
 export const LANGUAGES = [
@@ -61,6 +63,7 @@ const core = {
 		"legal.intro": "Hier findest du alle rechtlichen Dokumente zu Praesto.",
 		"legal.imprintDesc": "Angaben zum Betreiber und Kontakt.",
 		"legal.privacyDesc": "Wie wir deine Daten bearbeiten und schützen.",
+		"legal.agbDesc": "Nutzungsbedingungen für Praesto.",
 		"legal.back": "Zur Startseite",
 		"footer.copy": "© 2026 Praesto · Made in Switzerland 🇨🇭",
 
@@ -241,6 +244,7 @@ const core = {
 		"legal.intro": "Here you'll find all legal documents about Praesto.",
 		"legal.imprintDesc": "Operator details and contact.",
 		"legal.privacyDesc": "How we process and protect your data.",
+		"legal.agbDesc": "Terms of service for Praesto.",
 		"legal.back": "Back to home",
 		"footer.copy": "© 2026 Praesto · Made in Switzerland 🇨🇭",
 
@@ -421,6 +425,7 @@ const core = {
 		"legal.intro": "Tu trouves ici tous les documents légaux concernant Praesto.",
 		"legal.imprintDesc": "Informations sur l'exploitant et contact.",
 		"legal.privacyDesc": "Comment nous traitons et protégeons tes données.",
+		"legal.agbDesc": "Conditions d'utilisation de Praesto.",
 		"legal.back": "Vers l'accueil",
 		"footer.copy": "© 2026 Praesto · Made in Switzerland 🇨🇭",
 
@@ -601,6 +606,7 @@ const core = {
 		"legal.intro": "Qui trovi tutti i documenti legali su Praesto.",
 		"legal.imprintDesc": "Informazioni sul gestore e contatto.",
 		"legal.privacyDesc": "Come trattiamo e proteggiamo i tuoi dati.",
+		"legal.agbDesc": "Condizioni d'uso di Praesto.",
 		"legal.back": "Alla home",
 		"footer.copy": "© 2026 Praesto · Made in Switzerland 🇨🇭",
 
@@ -794,5 +800,7 @@ export const translations = deepMerge([
 	generators,
 	calendarUi,
 	bugs,
-	help
+	help,
+	badgeNames,
+	agb
 ]);

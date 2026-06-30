@@ -14,6 +14,28 @@
         });
     }
 
+    // Badge-Name/-Text mehrsprachig (pro ruleType + threshold). Fehlt eine Übersetzung,
+    // wird der (deutsche) Titel aus der Datenbank als Fallback genutzt.
+    function tr(key, n) {
+        const v = $t(key);
+        if (v === key) return null;
+        return n != null ? v.replace("%N", n) : v;
+    }
+    function badgeTitle(item) {
+        const b = item.badge;
+        const v = b.ruleType === "APPLICATION_STATUS"
+            ? tr(`badge.as.${b.threshold}`)
+            : tr(`badge.t.${b.ruleType}`, b.threshold);
+        return v ?? b.title;
+    }
+    function badgeDesc(item) {
+        const b = item.badge;
+        const v = b.ruleType === "APPLICATION_STATUS"
+            ? tr(`badge.asd.${b.threshold}`)
+            : tr(`badge.d.${b.ruleType}`, b.threshold);
+        return v ?? b.description;
+    }
+
     // Gruppiere Badges nach Kategorie
     let sessionBadges = $derived(badges.filter(b => b.badge.ruleType === "SESSIONS_COMPLETED"));
     let noteBadges = $derived(badges.filter(b => b.badge.ruleType === "NOTES_CREATED"));
@@ -62,8 +84,8 @@
                         <div class="badge-card" class:earned={item.earned} class:locked={!item.earned}>
                             <div class="badge-icon">{item.badge.icon}</div>
                             <div class="badge-info">
-                                <h3 class="badge-title">{item.badge.title}</h3>
-                                <p class="badge-desc">{item.badge.description}</p>
+                                <h3 class="badge-title">{badgeTitle(item)}</h3>
+                                <p class="badge-desc">{badgeDesc(item)}</p>
                                 {#if item.earned}
                                     <span class="badge-date">{$t('badges.earnedOn')} {formatDate(item.earnedAt)}</span>
                                 {:else}

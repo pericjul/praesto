@@ -178,7 +178,11 @@
       "Bash(gh api *)",
       "Bash(echo \"EXIT-Hinweis: $?\")",
       "Bash(curl -s -o /dev/null -w 'praesto.ch /login -> HTTP %{http_code} \\(nach %{time_total}s\\)\\\\n' --max-time 130 --retry 8 --retry-delay 15 --retry-all-errors https://praesto.ch/login)",
-      "Bash(curl -s -w ' => HTTP %{http_code}\\\\n' --max-time 20 https://praesto.ch/api/auth/invite/x)"
+      "Bash(curl -s -w ' => HTTP %{http_code}\\\\n' --max-time 20 https://praesto.ch/api/auth/invite/x)",
+      "Bash(sed -i '' 's/^\\\\\\(\t*\\\\\\)help$/\\\\1help,\\\\n\\\\1badgeNames/' translations.js)",
+      "Bash(sed -n '795,801p' translations.js)",
+      "Bash(sed -i '' 's#^import { badgeNames } from \"./messages/badgeNames.js\";#import { badgeNames } from \"./messages/badgeNames.js\";\\\\nimport { agb } from \"./messages/agb.js\";#' translations.js)",
+      "Bash(sed -i '' 's/^\\\\\\(\t*\\\\\\)badgeNames$/\\\\1badgeNames,\\\\n\\\\1agb/' translations.js)"
     ]
   }
 }
