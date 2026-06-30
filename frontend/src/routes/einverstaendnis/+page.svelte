@@ -60,12 +60,12 @@
         <div class="consent">
             <p>Als erziehungsberechtigte Person bestätige ich mit meiner Unterschrift:</p>
             <ul class="checks">
-                <li><span class="box"></span> Ich habe die <strong>Datenschutzerklärung</strong> (praesto.ch/datenschutz)
-                    und die <strong>AGB</strong> (praesto.ch/agb) gelesen und bin damit einverstanden.</li>
-                <li><span class="box"></span> Ich willige ein, dass mein Kind Praesto im Rahmen des Unterrichts nutzt
-                    und die dafür notwendigen Personendaten gemäss Datenschutzerklärung bearbeitet werden.</li>
-                <li><span class="box"></span> Mir ist bekannt, dass die Nutzung freiwillig ist und ich diese
-                    Einwilligung jederzeit widerrufen und die Löschung der Daten verlangen kann.</li>
+                <li><span class="box"></span><span class="ct">Ich habe die <strong>Datenschutzerklärung</strong> (praesto.ch/datenschutz)
+                    und die <strong>AGB</strong> (praesto.ch/agb) gelesen und bin damit einverstanden.</span></li>
+                <li><span class="box"></span><span class="ct">Ich willige ein, dass mein Kind Praesto im Rahmen des Unterrichts nutzt
+                    und die dafür notwendigen Personendaten gemäss Datenschutzerklärung bearbeitet werden.</span></li>
+                <li><span class="box"></span><span class="ct">Mir ist bekannt, dass die Nutzung freiwillig ist und ich diese
+                    Einwilligung jederzeit widerrufen und die Löschung der Daten verlangen kann.</span></li>
             </ul>
         </div>
 
@@ -126,6 +126,7 @@
     .consent p { margin: 0 0 0.5rem; font-weight: 600; }
     .checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.55rem; }
     .checks li { display: flex; gap: 0.6rem; align-items: flex-start; line-height: 1.5; }
+    .checks .ct { flex: 1; min-width: 0; }
     .box { flex: 0 0 auto; width: 1rem; height: 1rem; margin-top: 0.2rem; border: 1.5px solid #2F124D; border-radius: 3px; background: #fff; }
 
     .fields { margin-top: 1.75rem; display: flex; flex-direction: column; gap: 1.5rem; }
@@ -149,7 +150,8 @@
         :global(.app-main) { padding: 0 !important; }
         .no-print { display: none !important; }
         /* Reines weisses Blatt, alles auf EINE A4-Seite verdichtet */
-        .doc-bg { background: #fff; padding: 0; }
+        :global(html), :global(body), :global(.app-main) { height: auto !important; min-height: 0 !important; }
+        .doc-bg { background: #fff; padding: 0; min-height: 0; }
         .sheet { padding: 0; max-width: 100%; box-shadow: none; border-radius: 0; font-size: 10.5pt; color: #000; }
         .sheet, .sheet * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         .doc-head { padding-bottom: 0.5rem; margin-bottom: 0.85rem; }
