@@ -1,5 +1,6 @@
 <script>
     import { enhance } from "$app/forms";
+    import { t } from "$lib/i18n";
     import RepeaterField from "$lib/components/RepeaterField.svelte";
 
     let { data, form } = $props();
@@ -18,56 +19,56 @@
 </script>
 
 <svelte:head>
-    <title>Lebenslauf erstellen – Praesto</title>
+    <title>{$t("cvform.title")} – Praesto</title>
 </svelte:head>
 
 <div class="page">
-    <a href="/student/dossier" class="back">← Zurück zum Dossier</a>
-    <h1>📄 Lebenslauf erstellen</h1>
-    <p class="intro">Fülle die Felder aus – dein Lebenslauf wird automatisch sauber formatiert (ohne KI). Leere Felder werden weggelassen. Bei mehrzeiligen Feldern: <strong>eine Zeile pro Eintrag</strong>.</p>
+    <a href="/student/dossier" class="back">{$t("cvform.back")}</a>
+    <h1>📄 {$t("cvform.title")}</h1>
+    <p class="intro">{$t("cvform.intro")}</p>
 
-    {#if form?.error}<div class="err">Konnte den Lebenslauf nicht erstellen. Bitte nochmals versuchen.</div>{/if}
-    {#if generating}<div class="generating">Lebenslauf wird erstellt …</div>{/if}
+    {#if form?.error}<div class="err">{$t("cvform.error")}</div>{/if}
+    {#if generating}<div class="generating">{$t("cvform.generating")}</div>{/if}
 
     <form method="POST" enctype="multipart/form-data" use:enhance={handle} class="survey" class:busy={generating}>
-        <h2>Personalien</h2>
+        <h2>{$t("cvform.sec.personal")}</h2>
         <div class="grid">
-            <label><span>Vorname *</span><input name="firstName" value={prefillFirst} required /></label>
-            <label><span>Name *</span><input name="lastName" value={prefillLast} required /></label>
-            <label><span>Strasse / Nr. *</span><input name="address" required /></label>
-            <label><span>PLZ / Ort *</span><input name="zipCity" placeholder="8000 Zürich" required /></label>
-            <label><span>Telefon *</span><input name="phone" placeholder="079 123 45 67" required /></label>
-            <label><span>E-Mail *</span><input name="email" type="email" value={data.user?.email ?? ""} required /></label>
-            <label><span>Geburtsdatum <em>(freiwillig)</em></span><input name="birthDate" placeholder="01.05.2009" /></label>
-            <label><span>Heimat-/Geburtsort <em>(freiwillig)</em></span><input name="hometown" /></label>
-            <label><span>Nationalität <em>(freiwillig)</em></span><input name="nationality" /></label>
+            <label><span>{$t("cvform.firstName")} *</span><input name="firstName" value={prefillFirst} required /></label>
+            <label><span>{$t("cvform.lastName")} *</span><input name="lastName" value={prefillLast} required /></label>
+            <label><span>{$t("cvform.street")} *</span><input name="address" required /></label>
+            <label><span>{$t("cvform.zipCity")} *</span><input name="zipCity" placeholder={$t("cvform.ph.zipCity")} required /></label>
+            <label><span>{$t("cvform.phone")} *</span><input name="phone" placeholder="079 123 45 67" required /></label>
+            <label><span>{$t("cvform.email")} *</span><input name="email" type="email" value={data.user?.email ?? ""} required /></label>
+            <label><span>{$t("cvform.birthDate")} <em>({$t("cvform.optional")})</em></span><input name="birthDate" placeholder={$t("cvform.ph.birthDate")} /></label>
+            <label><span>{$t("cvform.hometown")} <em>({$t("cvform.optional")})</em></span><input name="hometown" /></label>
+            <label><span>{$t("cvform.nationality")} <em>({$t("cvform.optional")})</em></span><input name="nationality" /></label>
         </div>
-        <label class="photo-field"><span>Bewerbungsfoto <em>(freiwillig, Hochformat – JPG/PNG)</em></span><input name="photo" type="file" accept="image/png,image/jpeg" /></label>
+        <label class="photo-field"><span>{$t("cvform.photo")} <em>({$t("cvform.photoHint")})</em></span><input name="photo" type="file" accept="image/png,image/jpeg" /></label>
 
-        <h2>Familie <em class="opt">(freiwillig)</em></h2>
-        <RepeaterField name="parents" label="Eltern" hint="(ein Eintrag pro Person)" placeholder="Mutter · Anna Muster · Pflegefachfrau" addLabel="Elternteil hinzufügen" />
-        <RepeaterField name="siblings" label="Geschwister" hint="(ein Eintrag pro Person)" placeholder="Lena Muster · Lehre als Logistikerin" addLabel="Geschwister hinzufügen" />
+        <h2>{$t("cvform.sec.family")} <em class="opt">({$t("cvform.optional")})</em></h2>
+        <RepeaterField name="parents" label={$t("cvform.parents")} hint={"(" + $t("cvform.perPerson") + ")"} placeholder={$t("cvform.ph.parents")} addLabel={$t("cvform.parentsAdd")} />
+        <RepeaterField name="siblings" label={$t("cvform.siblings")} hint={"(" + $t("cvform.perPerson") + ")"} placeholder={$t("cvform.ph.siblings")} addLabel={$t("cvform.siblingsAdd")} />
 
-        <h2>Angestrebte Lehrstelle</h2>
-        <label><span>Beruf / Lehrstelle *</span><input name="targetJob" placeholder="Kauffrau/Kaufmann EFZ" required /></label>
-        <label><span>Über mich <em>(kurzer Satz, optional)</em></span><textarea name="aboutMe" rows="2" placeholder="z.B. Ich arbeite gerne organisiert und mit Menschen."></textarea></label>
+        <h2>{$t("cvform.sec.job")}</h2>
+        <label><span>{$t("cvform.targetJob")} *</span><input name="targetJob" placeholder={$t("cvform.ph.targetJob")} required /></label>
+        <label><span>{$t("cvform.aboutMe")} <em>({$t("cvform.aboutMeHint")})</em></span><textarea name="aboutMe" rows="2" placeholder={$t("cvform.ph.aboutMe")}></textarea></label>
 
-        <h2>Schulbildung</h2>
-        <RepeaterField name="education" label="Schulen" hint="(ein Eintrag pro Schule)" placeholder="2021–2025 · Sekundarschule B, Zürich" addLabel="Schule hinzufügen" />
+        <h2>{$t("cvform.sec.school")}</h2>
+        <RepeaterField name="education" label={$t("cvform.schools")} hint={"(" + $t("cvform.perSchool") + ")"} placeholder={$t("cvform.ph.schools")} addLabel={$t("cvform.schoolsAdd")} />
 
-        <h2>Praktische Erfahrung / Schnupperlehren</h2>
-        <RepeaterField name="experience" label="Erfahrungen" hint="(ein Eintrag pro Erfahrung)" placeholder="Mai 2024 · Schnupperlehre Kauffrau, Muster AG — Büroarbeit, Kundenkontakt" addLabel="Erfahrung hinzufügen" />
+        <h2>{$t("cvform.sec.exp")}</h2>
+        <RepeaterField name="experience" label={$t("cvform.experiences")} hint={"(" + $t("cvform.perEntry") + ")"} placeholder={$t("cvform.ph.experiences")} addLabel={$t("cvform.experiencesAdd")} />
 
-        <h2>Sprachen</h2>
-        <RepeaterField name="languages" label="Sprachen mit Niveau" hint="(ein Eintrag pro Sprache)" placeholder="Deutsch · Muttersprache" addLabel="Sprache hinzufügen" />
+        <h2>{$t("cvform.sec.lang")}</h2>
+        <RepeaterField name="languages" label={$t("cvform.langLevel")} hint={"(" + $t("cvform.perLang") + ")"} placeholder={$t("cvform.ph.languages")} addLabel={$t("cvform.langAdd")} />
 
-        <h2>Weiteres</h2>
-        <label><span>Kenntnisse & Fähigkeiten <em>(Komma- oder zeilenweise)</em></span><textarea name="skills" rows="2" placeholder="Word, Excel, Teamarbeit, Zuverlässigkeit"></textarea></label>
-        <label><span>Hobbys & Interessen</span><textarea name="hobbies" rows="2" placeholder="Fussball, Klavier, Pfadi"></textarea></label>
-        <RepeaterField name="references" label="Referenzen" hint="(ein Eintrag pro Person – nicht aus der Familie, vorher fragen)" placeholder="Frau Muster · Klassenlehrerin · 079 123 45 67" addLabel="Referenz hinzufügen" />
+        <h2>{$t("cvform.sec.more")}</h2>
+        <label><span>{$t("cvform.skills")} <em>({$t("cvform.skillsHint")})</em></span><textarea name="skills" rows="2" placeholder={$t("cvform.ph.skills")}></textarea></label>
+        <label><span>{$t("cvform.hobbies")}</span><textarea name="hobbies" rows="2" placeholder={$t("cvform.ph.hobbies")}></textarea></label>
+        <RepeaterField name="references" label={$t("cvform.references")} hint={"(" + $t("cvform.referencesHint") + ")"} placeholder={$t("cvform.ph.references")} addLabel={$t("cvform.referencesAdd")} />
 
         <button type="submit" class="btn-primary" disabled={generating}>
-            {generating ? "Wird erstellt …" : "Lebenslauf erstellen"}
+            {generating ? $t("cvform.submitting") : $t("cvform.submit")}
         </button>
     </form>
 </div>

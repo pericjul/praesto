@@ -31,36 +31,36 @@
             <a href="/student/dossier" class="btn-primary">{$t('cvform.toDossier')}</a>
         </div>
     {:else}
-        <p class="intro">{$t('clform.intro')} · {$t('clform.left').replace('%N%', clLeft)}</p>
+        <p class="intro">{$t('clform.intro')} · {$t('clform.left').replace('%N', clLeft)}</p>
         {#if form?.error}<div class="err">{$t('cvform.error')}</div>{/if}
         {#if generating}<div class="generating">{$t('clform.generating')}</div>{/if}
 
         <form method="POST" use:enhance={handle} class="survey" class:busy={generating}>
-            <h2>Du</h2>
+            <h2>{$t('clform.you')}</h2>
             <div class="grid">
-                <label><span>Vor- und Name *</span><input name="fullName" value={prefillName} required /></label>
-                <label><span>Deine Adresse</span><input name="senderAddress" placeholder="Strasse, PLZ Ort" /></label>
-                <label><span>Telefon</span><input name="phone" placeholder="079 123 45 67" /></label>
-                <label><span>E-Mail</span><input name="email" type="email" value={data.user?.email ?? ""} /></label>
-                <label><span>Ort (für Datum)</span><input name="city" placeholder="Zürich" /></label>
-                <label><span>Beruf / Lehrstelle *</span><input name="targetJob" placeholder="Kauffrau/Kaufmann EFZ" required /></label>
+                <label><span>{$t('clform.fullName')} *</span><input name="fullName" value={prefillName} required /></label>
+                <label><span>{$t('clform.senderAddress')}</span><input name="senderAddress" placeholder={$t('clform.ph.senderAddress')} /></label>
+                <label><span>{$t('clform.phone')}</span><input name="phone" placeholder="079 123 45 67" /></label>
+                <label><span>{$t('clform.email')}</span><input name="email" type="email" value={data.user?.email ?? ""} /></label>
+                <label><span>{$t('clform.city')}</span><input name="city" placeholder={$t('clform.ph.city')} /></label>
+                <label><span>{$t('clform.targetJob')} *</span><input name="targetJob" placeholder={$t('clform.ph.targetJob')} required /></label>
             </div>
 
-            <h2>Firma</h2>
+            <h2>{$t('clform.companySec')}</h2>
             <div class="grid">
-                <label><span>Firma *</span><input name="companyName" required /></label>
-                <label><span>Ansprechperson <em>(falls bekannt)</em></span><input name="contactPerson" placeholder="Frau Muster" /></label>
-                <label><span>Firmen-Adresse</span><input name="companyAddress" /></label>
-                <label><span>Wo gefunden <em>(Quelle)</em></span><input name="applicationSource" placeholder="yousty.ch / Inserat / Website" /></label>
-                <label><span>Möglicher Lehrbeginn</span><input name="startDate" placeholder="August 2026" /></label>
+                <label><span>{$t('clform.companyName')} *</span><input name="companyName" required /></label>
+                <label><span>{$t('clform.contactPerson')} <em>({$t('clform.ifKnown')})</em></span><input name="contactPerson" placeholder={$t('clform.ph.contactPerson')} /></label>
+                <label><span>{$t('clform.companyAddress')}</span><input name="companyAddress" /></label>
+                <label><span>{$t('clform.source')} <em>({$t('clform.sourceHint')})</em></span><input name="applicationSource" placeholder={$t('clform.ph.source')} /></label>
+                <label><span>{$t('clform.startDate')}</span><input name="startDate" placeholder={$t('clform.ph.startDate')} /></label>
             </div>
 
-            <h2>Inhalt (Stichworte – die KI macht schöne Sätze daraus)</h2>
-            <label><span>Warum diese Firma?</span><textarea name="whyCompany" rows="2"></textarea></label>
-            <label><span>Deine Stärken <em>(mit kurzem Beispiel)</em></span><textarea name="strengths" rows="2" placeholder="z.B. zuverlässig – ich erledige Aufgaben in der Schule immer pünktlich"></textarea></label>
-            <label><span>Schnuppererfahrung <em>(was hat dir gefallen?)</em></span><textarea name="schnupperExperience" rows="2"></textarea></label>
-            <label><span>Verfügbarkeit <em>(z.B. für ein Gespräch / Schnuppertage)</em></span><input name="availability" placeholder="z.B. mittwochs oder in den Ferien" /></label>
-            <label><span>Sonstiges</span><textarea name="extra" rows="2"></textarea></label>
+            <h2>{$t('clform.contentSec')}</h2>
+            <label><span>{$t('clform.whyCompany')}</span><textarea name="whyCompany" rows="2"></textarea></label>
+            <label><span>{$t('clform.strengths')} <em>({$t('clform.strengthsHint')})</em></span><textarea name="strengths" rows="2" placeholder={$t('clform.ph.strengths')}></textarea></label>
+            <label><span>{$t('clform.schnupper')} <em>({$t('clform.schnupperHint')})</em></span><textarea name="schnupperExperience" rows="2"></textarea></label>
+            <label><span>{$t('clform.availability')} <em>({$t('clform.availabilityHint')})</em></span><input name="availability" placeholder={$t('clform.ph.availability')} /></label>
+            <label><span>{$t('clform.extra')}</span><textarea name="extra" rows="2"></textarea></label>
 
             <button type="submit" class="btn-primary" disabled={generating}>
                 {generating ? $t('clform.generating') : $t('clform.submit')}
