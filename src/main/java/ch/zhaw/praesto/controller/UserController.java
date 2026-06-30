@@ -234,6 +234,13 @@ public class UserController {
         return inviteService.createSchoolAdminInvite(id, days);
     }
 
+    /** Schule sperren/entsperren (Zahlung). Daten bleiben; nur der Login wird blockiert. */
+    @PutMapping("/super/schools/{id}/active")
+    public ResponseEntity<Void> setSchoolActive(@PathVariable String id, @RequestBody Map<String, Boolean> body) {
+        adminService.setSchoolActive(id, Boolean.TRUE.equals(body.get("active")));
+        return ResponseEntity.noContent().build();
+    }
+
     private List<UserDTO> toDTOs(List<User> users) {
         return users.stream().map(UserDTO::from).toList();
     }

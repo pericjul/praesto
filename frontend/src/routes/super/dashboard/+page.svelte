@@ -106,10 +106,26 @@
                 </div>
                 <p class="school-meta">{school.city ?? "–"}{school.canton ? `, ${school.canton}` : ""}</p>
                 <p class="school-count">👥 {school.userCount} {$t('sadmin.userCountSuffix')}</p>
-                <form method="POST" action="?/createAdminInvite" use:enhance={handleInvite}>
-                    <input type="hidden" name="schoolId" value={school.id} />
-                    <button class="btn-secondary" type="submit">{$t('sadmin.createAdminLink')}</button>
-                </form>
+                <div class="school-actions">
+                    <form method="POST" action="?/createAdminInvite" use:enhance={handleInvite}>
+                        <input type="hidden" name="schoolId" value={school.id} />
+                        <button class="btn-secondary" type="submit">{$t('sadmin.createAdminLink')}</button>
+                    </form>
+                    <form method="POST" action="?/setSchoolActive"
+                        use:enhance={({ cancel }) => {
+                            if (school.active && !confirm(`Schule «${school.name}» sperren? Niemand dieser Schule kann sich dann mehr einloggen. Die Daten bleiben vollständig erhalten und du kannst jederzeit wieder entsperren.`)) {
+                                cancel();
+                                return;
+                            }
+                            return async ({ update }) => { await update(); };
+                        }}>
+                        <input type="hidden" name="schoolId" value={school.id} />
+                        <input type="hidden" name="active" value={school.active ? "false" : "true"} />
+                        <button class="btn-ghost" class:lock={school.active} class:unlock={!school.active} type="submit">
+                            {school.active ? "🔒 Sperren (Zahlung)" : "🔓 Entsperren"}
+                        </button>
+                    </form>
+                </div>
             </article>
         {:else}
             <p class="empty">{$t('sadmin.empty')}</p>
@@ -136,6 +152,9 @@
     .btn-primary { background: #2F124D; color: #fff; border: none; border-radius: 0.5rem; padding: 0.55rem 1.1rem; font-weight: 600; cursor: pointer; }
     .btn-secondary { background: transparent; border: 1px solid #2F124D; color: #2F124D; border-radius: 0.5rem; padding: 0.45rem 0.9rem; font-weight: 600; cursor: pointer; }
     .btn-ghost { background: #faf8fc; border: 1px solid #e8e0f0; border-radius: 0.5rem; padding: 0.4rem 0.8rem; cursor: pointer; }
+    .school-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.25rem; }
+    .btn-ghost.lock { color: #b91c1c; border-color: #fecaca; }
+    .btn-ghost.unlock { color: #166534; border-color: #bbf7d0; }
 
     .invite-banner { display: flex; justify-content: space-between; align-items: center; gap: 1rem; background: #f0fdf4; border-color: #bbf7d0; flex-wrap: wrap; }
     .invite-banner code { display: block; font-size: 0.8rem; word-break: break-all; margin-top: 0.25rem; }

@@ -27,6 +27,16 @@
   let isSchoolAdmin = $derived(role === "SCHOOL_ADMIN" || role === "DEMO_USER");
   let isSuperAdmin = $derived(role === "SUPER_ADMIN");
 
+  // Logo-Ziel: nicht eingeloggt -> Startseite; sonst direkt aufs passende Dashboard.
+  let homeHref = $derived(
+    !isAuthenticated ? "/"
+      : isStudent ? "/student/dashboard"
+      : isTeacher ? "/teacher/dashboard"
+      : isSchoolAdmin ? "/admin/dashboard"
+      : isSuperAdmin ? "/super/dashboard"
+      : "/"
+  );
+
   function isActive(path) {
     return $page.url.pathname.startsWith(path);
   }
@@ -112,7 +122,7 @@
 <div class="app-root">
   <header class="app-header">
     <div class="app-header-left">
-      <a class="brand" href="/">
+      <a class="brand" href={homeHref}>
         <img src={logo} alt="Praesto Logo" class="brand-logo" />
         <span class="brand-text">Praesto</span>
       </a>
@@ -154,7 +164,7 @@
         <a href={item.href} class="mobile-link" class:active={isActive(item.href)} title={item.desc ?? ""} onclick={closeMenu}>{item.label}</a>
       {/each}
       <a href="/account" class="mobile-link" onclick={closeMenu}>{$t('nav.account')}</a>
-      <form method="POST" action="/logout" onsubmit={closeMenu}>
+      <form method="POST" action="/logout">
         <button type="submit" class="mobile-logout">{$t('nav.logout')}</button>
       </form>
     </nav>

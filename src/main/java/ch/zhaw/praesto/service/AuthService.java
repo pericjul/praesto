@@ -69,6 +69,18 @@ public class AuthService {
             throw new ForbiddenException("Dieser Demo-Zugang ist nur am gebuchten Tag aktiv.");
         }
 
+        // Schul-Sperre (z.B. bei ausbleibender Zahlung): Login für alle Nutzer der Schule
+        // blockieren, Daten bleiben erhalten. Super-Admin ist davon ausgenommen.
+        if (user.getRole() != UserRole.SUPER_ADMIN && user.getSchoolId() != null) {
+            boolean schoolActive = schoolRepository.findById(user.getSchoolId())
+                    .map(School::isActive)
+                    .orElse(true);
+            if (!schoolActive) {
+                throw new ForbiddenException(
+                        "Diese Schule ist aktuell gesperrt. Bitte wende dich an deine Schulleitung.");
+            }
+        }
+
         loginAttempts.remove(normalized);
         user.setLastLoginAt(Instant.now());
         return userRepository.save(user);

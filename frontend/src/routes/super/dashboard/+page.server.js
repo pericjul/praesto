@@ -50,5 +50,21 @@ export const actions = {
 			return fail(400, { error: "Einladung konnte nicht erstellt werden." });
 		}
 		return { invite: await res.json() };
+	},
+
+	// Schule sperren/entsperren (Zahlung). Daten bleiben erhalten; nur Login wird blockiert.
+	setSchoolActive: async ({ request, locals, fetch }) => {
+		const data = await request.formData();
+		const schoolId = data.get("schoolId");
+		const active = data.get("active") === "true";
+		const res = await fetch(`${API_BASE}/super/schools/${schoolId}/active`, {
+			method: "PUT",
+			headers: apiHeaders(locals.jwt_token),
+			body: JSON.stringify({ active })
+		});
+		if (!res.ok) {
+			return fail(400, { error: "Status konnte nicht geändert werden." });
+		}
+		return { success: true };
 	}
 };

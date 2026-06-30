@@ -155,6 +155,19 @@ public class AdminService {
         return schoolRepository.save(school);
     }
 
+    /**
+     * Schule sperren/entsperren (z.B. bei ausbleibender Zahlung). Die Daten bleiben
+     * vollständig erhalten – nur der Login aller Nutzer dieser Schule wird blockiert,
+     * bis wieder entsperrt wird.
+     */
+    public void setSchoolActive(String schoolId, boolean active) {
+        requireRole(UserRole.SUPER_ADMIN);
+        School school = schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new ch.zhaw.praesto.exception.NotFoundException("Schule nicht gefunden"));
+        school.setActive(active);
+        schoolRepository.save(school);
+    }
+
     // ============================================================
     // Intern
     // ============================================================
