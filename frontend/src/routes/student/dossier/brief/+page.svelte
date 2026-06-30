@@ -32,6 +32,7 @@
         </div>
     {:else}
         <p class="intro">{$t('clform.intro')} · {$t('clform.left').replace('%N', clLeft)}</p>
+        <p class="disclaimer">⚠️ {$t('dossier.disclaimer')}</p>
         {#if form?.error}<div class="err">{$t('cvform.error')}</div>{/if}
         {#if generating}<div class="generating">{$t('clform.generating')}</div>{/if}
 
@@ -74,7 +75,8 @@
     .back { color: #6b647a; text-decoration: none; font-size: 0.9rem; }
     h1 { margin: 0.5rem 0 0.4rem; color: #2F124D; font-size: 1.5rem; }
     h2 { margin: 1.1rem 0 0.1rem; color: #2F124D; font-size: 1rem; border-bottom: 2px solid #ece3f5; padding-bottom: 0.3rem; }
-    .intro { margin: 0 0 1.25rem; color: #6b647a; }
+    .intro { margin: 0 0 0.6rem; color: #6b647a; }
+    .disclaimer { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 0.6rem; padding: 0.7rem 0.9rem; font-size: 0.85rem; line-height: 1.45; margin: 0 0 1.25rem; }
     label em { color: #9a8baf; font-weight: 400; font-style: normal; }
     input, textarea { width: 100%; box-sizing: border-box; }
 

@@ -197,7 +197,8 @@
       "Bash(sed -n '20,40p' src/routes/bug-melden/+page.svelte)",
       "Bash(sed -n '68,78p' src/routes/student/dossier/+page.svelte)",
       "Bash(./mvnw -q clean test-compile)",
-      "Bash(./mvnw -q clean test -Dtest=GeneratorServiceTest,SubmissionControllerTest)"
+      "Bash(./mvnw -q clean test -Dtest=GeneratorServiceTest,SubmissionControllerTest)",
+      "Bash(node -e \"import\\('./src/lib/i18n/messages/dossier.js'\\).then\\(m=>{for\\(const l of['de','en','fr','it']\\)console.log\\(l,Object.keys\\(m.dossier[l]\\).length\\)}\\).catch\\(e=>{console.error\\('ERR',e.message\\);process.exit\\(1\\)}\\)\")"
     ]
   }
 }

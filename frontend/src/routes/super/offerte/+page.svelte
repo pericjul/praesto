@@ -155,10 +155,16 @@
     .foot { margin-top: 1.5rem; font-size: 0.75rem; color: #9a8b9d; text-align: center; }
 
     @media print {
+        @page { size: A4 portrait; margin: 16mm; }
         :global(.app-header), :global(.app-footer), :global(.demo-bar), :global(.demo-toast) { display: none !important; }
         :global(.app-main) { padding: 0 !important; }
         .no-print { display: none !important; }
         .wrap { padding: 0; max-width: 100%; }
         .sheet { border: none; border-radius: 0; padding: 0; }
+        /* Farben & Hintergründe wirklich mitdrucken (Browser lassen sie sonst weg) */
+        .sheet, .sheet * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        /* Nicht über den Seitenrand umbrechen */
+        .doc-head, .meta, .positions, .notes { break-inside: avoid; page-break-inside: avoid; }
+        .notes { background: #faf7fc !important; }
     }
 </style>

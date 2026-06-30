@@ -111,7 +111,9 @@
         h2 { font-size: 0.98rem; margin: 0.7rem 0 0.2rem; }
         p, li { line-height: 1.38; }
         ul { margin: 0.2rem 0; }
-        .consent { padding: 0.55rem 0.8rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .consent { padding: 0.55rem 0.8rem; }
+        /* Farben & Hintergründe wirklich mitdrucken (Browser lassen sie sonst weg) */
+        .sheet, .sheet * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         .fields { margin-top: 1rem; gap: 0.95rem; }
         .line { height: 1.35rem; }
         .foot { margin-top: 1.1rem; }

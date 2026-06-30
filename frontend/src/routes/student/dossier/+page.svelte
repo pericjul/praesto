@@ -89,6 +89,8 @@
         </a>
     </section>
 
+    <p class="disclaimer">⚠️ {$t('dossier.disclaimer')}</p>
+
     <!-- Upload -->
     <section class="upload">
         <h2>⬆️ {$t('dossier.uploadTitle')}</h2>
@@ -149,7 +151,8 @@
     h1 { margin: 0 0 0.3rem; color: #2F124D; font-size: 1.6rem; }
     .subtitle { margin: 0 0 1.5rem; color: #6b647a; }
 
-    .create { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .create { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .disclaimer { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 0.6rem; padding: 0.7rem 0.9rem; font-size: 0.85rem; line-height: 1.45; margin: 0 0 1.5rem; }
     .create-btn {
         display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem;
         text-decoration: none; padding: 1.1rem 1.25rem; border-radius: 1rem;
