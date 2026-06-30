@@ -115,4 +115,10 @@ ENV NODE_ENV=production
 # Azure Web App uses this to route external traffic to the container
 ENV WEBSITES_PORT=80
 
+# Hochgeladene & generierte Dokumente in den persistenten, instanz-uebergreifenden
+# /home-Speicher von Azure App Service legen. Wirkt nur, wenn in Azure zusaetzlich
+# WEBSITES_ENABLE_APP_SERVICE_STORAGE=true gesetzt ist. Lokal/Tests (mvn, nicht Docker)
+# nutzen weiter den Default "uploads".
+ENV PRAESTO_UPLOADS_DIR=/home/data/uploads
+
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
