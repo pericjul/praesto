@@ -233,7 +233,9 @@
       "Bash(cd \"/Users/juliaperic/Library/Mobile Documents/com~apple~CloudDocs/praesto/praesto/frontend\" && grep -n \"classIds\\\\|classId\\\\|create\\\\|getAll\\\\|assignments\" src/routes/teacher/assignments/+page.server.js | head -20; echo \"=== backend assignment create endpoint ===\"; grep -rn \"classId\\\\|classIds\\\\|createAssignment\\\\|AssignmentCreate\\\\|@PostMapping.*assignment\" src/../../../src/main/java/ch/zhaw/praesto/controller/*.java 2>/dev/null | head; cd \"/Users/juliaperic/Library/Mobile Documents/com~apple~CloudDocs/praesto/praesto\" && grep -rn \"classId\\\\|classIds\\\\|@PostMapping\" src/main/java/ch/zhaw/praesto/controller/AssignmentController.java 2>/dev/null | head)",
       "Bash(node -e \"import\\('./src/lib/i18n/translations.js'\\).then\\(m=>{const t=m.translations;for\\(const l of['de','en','fr','it']\\)console.log\\(l, t[l]['hb.teacher.asgP']?.includes\\('mehrere'\\)||t[l]['landing.teachers2Text']?.match\\(/mehrere|several|plusieurs|più/\\) ? 'NOCH-ALT' : 'ok'\\)}\\).catch\\(e=>{console.error\\(e.message\\);process.exit\\(1\\)}\\)\")",
       "Bash(rm -f static/favicon.svg static/images/vite.svg)",
-      "Bash(ls static/*.png static/*.svg)"
+      "Bash(ls static/*.png static/*.svg)",
+      "Bash(echo \"COMPILE: $?\")",
+      "Bash(./mvnw -q test -Dtest=TestDataSeederTest)"
     ]
   }
 }
