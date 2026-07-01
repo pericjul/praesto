@@ -1,5 +1,5 @@
-// Nimmt das Offerten-Formular (POST), ruft serverseitig das Backend (mit JWT aus
-// dem Cookie) und liefert die fertige .docx als Download zurück.
+// Nimmt die Offerten-Daten (JSON), ruft serverseitig das Backend (mit JWT aus dem
+// Cookie) und liefert die fertige .docx als Download zurück.
 import { API_BASE } from "$lib/server/api.js";
 
 export async function POST({ request, locals }) {
@@ -7,10 +7,7 @@ export async function POST({ request, locals }) {
         return new Response("Nicht berechtigt", { status: 403 });
     }
 
-    const fd = await request.formData();
-    const body = {};
-    for (const [k, v] of fd.entries()) body[k] = typeof v === "string" ? v : "";
-
+    const body = await request.json().catch(() => ({}));
     const token = locals.jwt_token;
     const res = await fetch(`${API_BASE}/super/offerte`, {
         method: "POST",

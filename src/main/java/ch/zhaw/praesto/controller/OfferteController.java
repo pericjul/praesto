@@ -1,9 +1,11 @@
 package ch.zhaw.praesto.controller;
 
 import ch.zhaw.praesto.exception.ForbiddenException;
+import ch.zhaw.praesto.model.OfferteRequest;
 import ch.zhaw.praesto.model.User;
 import ch.zhaw.praesto.model.UserRole;
 import ch.zhaw.praesto.service.OfferteService;
+import ch.zhaw.praesto.service.OfferteService.Position;
 import ch.zhaw.praesto.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -12,13 +14,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 /**
  * Erstellt aus der Word-Vorlage eine fertige Offerte (.docx) mit den im UI erfassten
- * Werten. Nur für den Super-Admin. Beträge/Totale werden serverseitig berechnet.
+ * Werten. Nur für den Super-Admin. Positionen sind dynamisch; Totale/MwSt. werden
+ * serverseitig berechnet.
  */
 @RestController
 @RequestMapping("/api")
@@ -31,46 +36,53 @@ public class OfferteController {
     private final UserService userService;
 
     @PostMapping("/super/offerte")
-    public ResponseEntity<byte[]> createOfferte(@RequestBody Map<String, String> b) {
+    public ResponseEntity<byte[]> createOfferte(@RequestBody OfferteRequest req) {
         User current = userService.getCurrentUser();
         if (current.getRole() != UserRole.SUPER_ADMIN) {
             throw new ForbiddenException("Nur der Super-Admin kann Offerten erstellen.");
         }
 
-        double total1 = parse(b.get("total1"));
-        double total2 = parse(b.get("total2"));
-        double total3 = parse(b.get("total3"));
-        double subtotal = total1 + total2 + total3;
+        List<Position> positions = new ArrayList<>();
+        double subtotal = 0;
+        if (req.positions() != null) {
+            for (OfferteRequest.Pos p : req.positions()) {
+                if (p == null) continue;
+                String bez = str(p.bezeichnung());
+                if (bez.isBlank()) continue; // leere Positionen überspringen
+                double menge = parse(p.menge());
+                if (menge == 0) menge = 1;
+                double preis = parse(p.preis());
+                double total = round(menge * preis);
+                subtotal += total;
+                positions.add(new Position(
+                        bez,
+                        trimNum(menge),
+                        str(p.einheit()),
+                        money(preis),
+                        money(total)));
+            }
+        }
         double mwst = round(subtotal * 0.081);
         double gesamt = subtotal + mwst;
 
-        Map<String, String> v = new LinkedHashMap<>();
-        v.put("{{SCHULE_NAME}}", str(b.get("schuleName")));
-        v.put("{{ANSPRECHPERSON}}", str(b.get("ansprechperson")));
-        v.put("{{STRASSE}}", str(b.get("strasse")));
-        v.put("{{PLZ}}", str(b.get("plz")));
-        v.put("{{ORT}}", str(b.get("ort")));
-        v.put("{{OFFERTEN_NR}}", str(b.get("offertenNr")));
-        v.put("{{DATUM}}", str(b.get("datum")));
-        v.put("{{GUELTIG_BIS}}", str(b.get("gueltigBis")));
-        v.put("{{SCHULJAHR}}", str(b.get("schuljahr")));
-        v.put("{{LAUFZEIT}}", str(b.get("laufzeit")));
-        v.put("{{MENGE}}", str(b.get("menge")));
-        v.put("{{EINHEIT}}", str(b.get("einheit")));
-        v.put("{{PREIS}}", money(parse(b.get("preis"))));
-        v.put("{{POSITION_1_BEZEICHNUNG}}", str(b.get("position1")));
-        v.put("{{POSITION_2_BEZEICHNUNG}}", str(b.get("position2")));
-        v.put("{{POSITION_3_BEZEICHNUNG}}", str(b.get("position3")));
-        v.put("{{TOTAL_1}}", total1 > 0 ? money(total1) : "");
-        v.put("{{TOTAL_2}}", total2 > 0 ? money(total2) : "");
-        v.put("{{TOTAL_3}}", total3 > 0 ? money(total3) : "");
-        v.put("{{SUBTOTAL}}", money(subtotal));
-        v.put("{{MWST}}", money(mwst));
-        v.put("{{GESAMTTOTAL}}", money(gesamt));
+        Map<String, String> tokens = new LinkedHashMap<>();
+        tokens.put("{{SCHULE_NAME}}", str(req.schuleName()));
+        tokens.put("{{ANSPRECHPERSON}}", str(req.ansprechperson()));
+        tokens.put("{{STRASSE}}", str(req.strasse()));
+        tokens.put("{{PLZ}}", str(req.plz()));
+        tokens.put("{{ORT}}", str(req.ort()));
+        tokens.put("{{OFFERTEN_NR}}", str(req.offertenNr()));
+        tokens.put("{{DATUM}}", str(req.datum()));
+        tokens.put("{{GUELTIG_BIS}}", str(req.gueltigBis()));
+        tokens.put("{{SCHULJAHR}}", str(req.schuljahr()));
+        tokens.put("{{LAUFZEIT}}", str(req.laufzeit()));
+        tokens.put("{{SUBTOTAL}}", money(subtotal));
+        tokens.put("{{MWST}}", money(mwst));
+        tokens.put("{{GESAMTTOTAL}}", money(gesamt));
 
-        byte[] docx = offerteService.fill(v);
+        byte[] docx = offerteService.fill(tokens, positions);
 
-        String nr = str(b.get("offertenNr")).replaceAll("[^a-zA-Z0-9._-]", "_");
+        String nr = str(req.offertenNr()).replaceAll("[^a-zA-Z0-9._-]", "_");
         String filename = "Offerte_Praesto" + (nr.isBlank() ? "" : "_" + nr) + ".docx";
 
         return ResponseEntity.ok()
@@ -84,16 +96,18 @@ public class OfferteController {
         return s == null ? "" : s.trim();
     }
 
+    private static String trimNum(double d) {
+        if (d == Math.rint(d)) return String.valueOf((long) d);
+        return money(d);
+    }
+
     private static double parse(String s) {
         if (s == null || s.isBlank()) return 0;
-        String cleaned = s.replaceAll("[^0-9,\\.]", "").replace(",", ".");
-        // Falls mehrere Punkte (Tausender), nur den letzten als Dezimalpunkt lassen
-        int last = cleaned.lastIndexOf('.');
-        if (last >= 0) {
-            cleaned = cleaned.substring(0, last).replace(".", "") + cleaned.substring(last);
-        }
+        String c = s.replaceAll("[^0-9,\\.]", "").replace(",", ".");
+        int last = c.lastIndexOf('.');
+        if (last >= 0) c = c.substring(0, last).replace(".", "") + c.substring(last);
         try {
-            return Double.parseDouble(cleaned);
+            return Double.parseDouble(c);
         } catch (NumberFormatException e) {
             return 0;
         }
