@@ -145,6 +145,43 @@ public class AdminService {
                 .toList();
     }
 
+    /**
+     * Gesamt-Statistik über alle Schulen + Kennzahlen pro Schule (inkl. jüngster Aktivität)
+     * für das Super-Admin-Dashboard.
+     */
+    public SuperStats superStats() {
+        requireRole(UserRole.SUPER_ADMIN);
+        List<School> all = schoolRepository.findAll();
+
+        List<SchoolStat> schoolStats = all.stream().map(s -> {
+            String id = s.getId();
+            List<User> users = userRepository.findBySchoolId(id);
+            long studentCount = users.stream().filter(u -> u.getRole() == UserRole.STUDENT).count();
+            long teacherCount = users.stream().filter(u -> u.getRole() == UserRole.TEACHER).count();
+            Instant lastActivity = users.stream()
+                    .map(User::getLastLoginAt)
+                    .filter(java.util.Objects::nonNull)
+                    .max(Instant::compareTo)
+                    .orElse(null);
+            return new SchoolStat(
+                    id, s.getName(), s.getCity(), s.getCanton(), s.isActive(),
+                    users.size(), studentCount, teacherCount,
+                    sessionRepository.countBySchoolId(id),
+                    submissionRepository.countBySchoolId(id),
+                    lastActivity);
+        }).sorted(Comparator.comparingLong(SchoolStat::sessionCount).reversed()).toList();
+
+        long totalUsers = schoolStats.stream().mapToLong(SchoolStat::userCount).sum();
+        long totalStudents = schoolStats.stream().mapToLong(SchoolStat::studentCount).sum();
+        long totalTeachers = schoolStats.stream().mapToLong(SchoolStat::teacherCount).sum();
+        long totalSessions = schoolStats.stream().mapToLong(SchoolStat::sessionCount).sum();
+        long totalSubmissions = schoolStats.stream().mapToLong(SchoolStat::submissionCount).sum();
+        long activeSchools = schoolStats.stream().filter(SchoolStat::active).count();
+
+        return new SuperStats(all.size(), activeSchools, totalUsers, totalStudents,
+                totalTeachers, totalSessions, totalSubmissions, schoolStats);
+    }
+
     /** Alle Nutzer:innen aller Schulen mit Schulname + „zuletzt eingeloggt" (Super-Admin-Übersicht). */
     public List<SuperUserView> listAllUsersForSuper() {
         requireRole(UserRole.SUPER_ADMIN);

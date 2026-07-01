@@ -270,6 +270,12 @@ public class UserController {
         return adminService.listSchools();
     }
 
+    /** Gesamt-Statistik + Kennzahlen pro Schule (Super-Admin-Dashboard). */
+    @GetMapping("/super/stats")
+    public SuperStats superStats() {
+        return adminService.superStats();
+    }
+
     /** Alle Nutzer:innen aller Schulen mit Schulname + „zuletzt eingeloggt" (Super-Admin-Übersicht). */
     @GetMapping("/super/users/all")
     public List<SuperUserView> allUsers() {

@@ -9,9 +9,11 @@ export async function load({ locals, fetch, url }) {
 		throw redirect(302, "/");
 	}
 
-	const res = await fetch(`${API_BASE}/super/schools`, { headers: apiHeaders(locals.jwt_token) });
+	const res = await fetch(`${API_BASE}/super/stats`, { headers: apiHeaders(locals.jwt_token) });
+	const stats = res.ok ? await res.json() : null;
 	return {
-		schools: res.ok ? await res.json() : [],
+		stats,
+		schools: stats?.schools ?? [],
 		origin: url.origin
 	};
 }
