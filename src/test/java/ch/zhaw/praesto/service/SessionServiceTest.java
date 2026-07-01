@@ -64,7 +64,6 @@ class SessionServiceTest {
     void setUp() {
         // @Value-Felder werden in Unit-Tests nicht injiziert -> hier setzen.
         org.springframework.test.util.ReflectionTestUtils.setField(sessionService, "maxUserMessages", 30);
-        org.springframework.test.util.ReflectionTestUtils.setField(sessionService, "assignmentInterviewsPerWeek", 2);
 
         testSession = Session.builder()
                 .id("session-123")

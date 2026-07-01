@@ -46,9 +46,6 @@ public class SessionService {
     // max. Schüler-Nachrichten pro Gespräch (Sicherheitsnetz gegen Endlos-Chat)
     @Value("${praesto.ai.session.max-user-messages:30}")
     private int maxUserMessages;
-    // max. Aufgaben-Gespräche pro Schüler:in und Woche
-    @Value("${praesto.ai.limit.assignment-interview-per-week:2}")
-    private int assignmentInterviewsPerWeek;
 
     // ============================================================
     // SYSTEM-PROMPT: Realistischer HR-Coach für Schüler
@@ -270,19 +267,11 @@ public class SessionService {
         // Roast nur beim freien Üben – bei Aufgaben immer der seriöse Modus.
         boolean roastEffective = roast && !isAssignment;
 
-        // Freies Üben: UNBEGRENZT viele Gespräche pro Tag. Begrenzt wird nur die Dauer
-        // pro Chat (15 Min, siehe targetDurationMin). Aufgaben-Gespräche sind separat.
+        // KI-Gespräche sind UNBEGRENZT – weder beim freien Üben noch bei Aufgaben gibt es
+        // eine Anzahl-Grenze. Begrenzt wird nur die Dauer pro Chat (15 Min, targetDurationMin).
         if (!isAssignment) {
             // Kumulativen Übungszähler hochzählen (für das Lehrer-Cockpit, überlebt Chat-Löschen).
             aiQuotaService.recordUse(studentId, userService.getCurrentSchoolId(), AiFeature.PRACTICE_INTERVIEW);
-        } else {
-            // Aufgaben-Gespräche: max. N pro Woche (Kostenbremse, schülerfreundlich)
-            Instant weekAgo = Instant.now().minus(7, java.time.temporal.ChronoUnit.DAYS);
-            long thisWeek = sessionRepository.countAssignmentSessionsSince(studentId, weekAgo);
-            if (thisWeek >= assignmentInterviewsPerWeek) {
-                throw new BadRequestException("Du hast diese Woche schon " + assignmentInterviewsPerWeek
-                        + " Aufgaben-Gespräche gemacht. Nächste Woche kannst du wieder üben.");
-            }
         }
 
         Session.SessionBuilder sessionBuilder = Session.builder()
