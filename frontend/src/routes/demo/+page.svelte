@@ -105,7 +105,6 @@
             blocks: [
                 { type: "p", text: $t("hb.roles.intro") },
                 { type: "list", items: [
-                    { t: $t("hb.roles.superT"), d: $t("hb.roles.superD") },
                     { t: $t("hb.roles.adminT"), d: $t("hb.roles.adminD") },
                     { t: $t("hb.roles.teacherT"), d: $t("hb.roles.teacherD") },
                     { t: $t("hb.roles.studentT"), d: $t("hb.roles.studentD") },
