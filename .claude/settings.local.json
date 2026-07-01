@@ -229,7 +229,8 @@
       "Bash(./mvnw -q test -Dtest=DocxLetterTest,OfferteServiceTest)",
       "Bash(node -e \"import\\('./src/lib/i18n/translations.js'\\).then\\(m=>{const t=m.translations;for\\(const l of['de','en','fr','it']\\)console.log\\(l, ['hb.consent.resp','hb.teacher.consentP','hb.student.dossierP','join.acceptPrivacy'].every\\(k=>t[l][k]\\)?'ok':'MISSING'\\)}\\).catch\\(e=>{console.error\\(e.message\\);process.exit\\(1\\)}\\)\")",
       "Bash(./mvnw -q clean test -Dtest=SubmissionControllerTest,OfferteServiceTest,DocxLetterTest)",
-      "Bash(echo \"BE EXIT: $?\")"
+      "Bash(echo \"BE EXIT: $?\")",
+      "Bash(cd \"/Users/juliaperic/Library/Mobile Documents/com~apple~CloudDocs/praesto/praesto/frontend\" && grep -n \"classIds\\\\|classId\\\\|create\\\\|getAll\\\\|assignments\" src/routes/teacher/assignments/+page.server.js | head -20; echo \"=== backend assignment create endpoint ===\"; grep -rn \"classId\\\\|classIds\\\\|createAssignment\\\\|AssignmentCreate\\\\|@PostMapping.*assignment\" src/../../../src/main/java/ch/zhaw/praesto/controller/*.java 2>/dev/null | head; cd \"/Users/juliaperic/Library/Mobile Documents/com~apple~CloudDocs/praesto/praesto\" && grep -rn \"classId\\\\|classIds\\\\|@PostMapping\" src/main/java/ch/zhaw/praesto/controller/AssignmentController.java 2>/dev/null | head)"
     ]
   }
 }

@@ -154,6 +154,69 @@
             </ul>
         </section>
 
+        <!-- 7 -->
+        <section>
+            <h2>7. Schritt-für-Schritt: die wichtigsten Abläufe</h2>
+
+            <h3>A) Lehrperson: Klasse erstellen &amp; Schüler:innen beitreten lassen</h3>
+            <ol>
+                <li>Menü <strong>„Klassen“</strong> öffnen → <strong>„Neue Klasse“</strong> → Namen eingeben (z.B. „3a“) → speichern.</li>
+                <li>Bei der Klasse auf <strong>„Einladungslink“ / QR-Code</strong> klicken. Der QR-Code lässt sich im Unterricht am Beamer zeigen.</li>
+                <li>Die Schüler:innen scannen den QR-Code (oder öffnen den Link), erstellen ihr Konto (Name, E-Mail, Passwort) und **haken Datenschutz + AGB an**.</li>
+                <li>Sie erscheinen automatisch in der Klasse. Alternativ: bereits registrierte Schüler:innen über das <strong>Suchfeld</strong> finden und hinzufügen.</li>
+            </ol>
+
+            <h3>B) Lehrperson: Aufgabe erstellen</h3>
+            <ol>
+                <li>Menü <strong>„Aufgaben“</strong> → <strong>„Neue Aufgabe“</strong>.</li>
+                <li><strong>Titel</strong> eingeben (z.B. „Bewerbungsgespräch üben“).</li>
+                <li><strong>Klasse</strong> im Dropdown wählen (eine Klasse pro Aufgabe).</li>
+                <li><strong>Typ</strong> wählen – direkt darunter erscheint eine Erklärung, was der Typ bedeutet (KI-Interview, Dokument, Reflexion, Video, Recherche).</li>
+                <li><strong>Deadline</strong> setzen (muss in der Zukunft liegen) und optional eine <strong>Beschreibung</strong>.</li>
+                <li>Auf <strong>„Erstellen“</strong> → die Aufgabe erscheint bei allen Schüler:innen der Klasse.</li>
+            </ol>
+
+            <h3>C) Lehrperson: Einverständnis abhaken</h3>
+            <ol>
+                <li>PDF unter <strong>praesto.ch/einverstaendnis</strong> herunterladen und an die Eltern verteilen.</li>
+                <li>Unterschriebene Erklärungen einsammeln.</li>
+                <li>In der Klassenansicht bei der Schüler:in auf das <strong>📝-Symbol</strong> klicken → wird grün (📝✓). Der Zähler oben (z.B. 18/22) zeigt den Stand pro Klasse.</li>
+            </ol>
+
+            <h3>D) Schüler:in: KI-Bewerbungsgespräch führen</h3>
+            <ol>
+                <li>Menü <strong>„Training“</strong> → <strong>„Neues Gespräch starten“</strong> (1 kostenloses Gespräch pro Tag).</li>
+                <li>Die KI begrüsst dich und fragt nach dem Beruf. In ganzen Sätzen antworten und <strong>senden</strong>.</li>
+                <li>So lange üben, wie du willst. Optional den <strong>🔥 Roast-Modus</strong> einschalten für härteres Feedback.</li>
+                <li>Am Ende zeigt die KI deine <strong>Einstellungs-Chance in %</strong> mit einem konkreten Tipp.</li>
+                <li>Ist es eine Aufgabe, mit <strong>„Abgeben“</strong> einreichen – die Lehrperson sieht dann den Gesprächsverlauf.</li>
+            </ol>
+
+            <h3>E) Schüler:in: Lebenslauf erstellen</h3>
+            <ol>
+                <li>Menü <strong>„Dossier“</strong> → <strong>„Lebenslauf erstellen“</strong>.</li>
+                <li>Felder ausfüllen. Bei Listen (Schulen, Sprachen, Referenzen …) mit <strong>„+ hinzufügen“</strong> weitere Zeilen einfügen.</li>
+                <li>Optional ein <strong>Foto</strong> wählen und im 3:4-Rahmen zurechtziehen/zoomen (kein verzerrtes Bild).</li>
+                <li>Auf <strong>„Lebenslauf erstellen“</strong> → das Word-Dokument landet im Dossier zum Herunterladen.</li>
+                <li><strong>Wichtig:</strong> vor dem Abgeben selbst überarbeiten – es ist eine Vorlage.</li>
+            </ol>
+        </section>
+
+        <!-- 8 -->
+        <section>
+            <h2>8. Häufige Fragen &amp; Problembehebung</h2>
+            <ul>
+                <li><strong>Ich habe mein Passwort vergessen.</strong> → An die Lehrperson (Schüler:in) bzw. Schulleitung wenden – sie setzen es mit dem 🔑-Symbol zurück.</li>
+                <li><strong>Der „Interview starten“-Button reagiert nicht / Fehler.</strong> → Seite neu laden und erneut versuchen. Prüfe deine Internetverbindung (oben erscheint sonst ein Banner).</li>
+                <li><strong>„Du hast dein Kontingent aufgebraucht.“</strong> → Pro Tag gibt es 1 kostenloses Übungsgespräch; morgen ist es wieder da. Aufgaben-Gespräche zählen separat.</li>
+                <li><strong>Die KI antwortet auf Deutsch, obwohl ich Englisch eingestellt habe.</strong> → Neue Gespräche folgen der Sprache oben rechts; bereits gestartete Gespräche bleiben in ihrer Sprache.</li>
+                <li><strong>Das erstellte Dokument sieht nicht perfekt aus.</strong> → Lebenslauf/Bewerbungsschreiben sind Vorlagen – öffne die Word-Datei und passe sie an.</li>
+                <li><strong>Ein Schüler ist in der falschen Klasse.</strong> → In der Klassenansicht mit ✕ aus der Klasse entfernen (Konto/Daten bleiben) und in der richtigen Klasse über den Link/Suche hinzufügen.</li>
+                <li><strong>Etwas funktioniert nicht.</strong> → Über <strong>„Bug melden“</strong> beschreiben (Titel, Bereich, was passiert ist). Das hilft uns, es schnell zu beheben.</li>
+                <li><strong>Weitere Fragen?</strong> → info@praesto.ch.</li>
+            </ul>
+        </section>
+
         <p class="foot">Praesto – Julia Perić · Sandäckerstrasse 1a, 8957 Spreitenbach · info@praesto.ch · praesto.ch</p>
     </article>
 </div>
@@ -175,8 +238,9 @@
     h2 { font-size: 1.15rem; color: #2F124D; margin: 1.6rem 0 0.5rem; border-bottom: 1px solid #ece3f5; padding-bottom: 0.25rem; }
     h3 { font-size: 1rem; color: #2d2141; margin: 1rem 0 0.3rem; }
     p, li { line-height: 1.55; color: #2d2141; }
-    ul { margin: 0.3rem 0 0.6rem; padding-left: 1.2rem; }
-    li { margin-bottom: 0.25rem; }
+    ul, ol { margin: 0.3rem 0 0.7rem; padding-left: 1.3rem; }
+    li { margin-bottom: 0.3rem; }
+    ol li { padding-left: 0.15rem; }
     section { break-inside: avoid; page-break-inside: avoid; }
     .foot { margin-top: 2rem; font-size: 0.75rem; color: #9a8b9d; text-align: center; }
 

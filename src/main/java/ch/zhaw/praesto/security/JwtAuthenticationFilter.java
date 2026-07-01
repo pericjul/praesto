@@ -80,6 +80,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authentication.setDetails(
                             new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                    // Für das Request-Logging festhalten (bleibt auch nach dem Clearen
+                    // des SecurityContext am Ende der Filter-Kette erhalten).
+                    request.setAttribute("praesto.user", user.getEmail() + "/" + user.getRole());
+                    request.setAttribute("praesto.schoolId", user.getSchoolId());
                 }
             }
         }

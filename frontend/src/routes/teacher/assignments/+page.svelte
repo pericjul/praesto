@@ -393,15 +393,13 @@
                     </div>
                 {:else}
                     <div class="form-group">
-                        <label>{$t('tasks.fieldClasses')} * <span class="hint-inline">{$t('tasks.multiSelectHint')}</span></label>
-                        <div class="class-checkboxes">
+                        <label for="newClassId">{$t('tasks.fieldClass')} *</label>
+                        <select id="newClassId" name="classId" required>
+                            <option value="">{$t('tasks.choose')}</option>
                             {#each classes as c}
-                                <label class="class-checkbox">
-                                    <input type="checkbox" name="classIds" value={c.id} />
-                                    <span>{c.name}</span>
-                                </label>
+                                <option value={c.id}>{c.name}</option>
                             {/each}
-                        </div>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="type">{$t('tasks.fieldType')} *</label>
@@ -690,35 +688,6 @@
         color: var(--color-text-light, #6b647a);
     }
 
-    .class-checkboxes {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        max-height: 220px;
-        overflow-y: auto;
-        padding: 0.15rem;
-    }
-
-    .class-checkbox {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        box-sizing: border-box;
-        padding: 0.55rem 0.95rem;
-        border: 1.5px solid #e8e0f0;
-        border-radius: 999px;
-        background: #faf8fc;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.15s;
-        user-select: none;
-        max-width: 100%;
-    }
-
-    .class-checkbox span {
-        white-space: nowrap;
-    }
-
     .type-desc {
         margin: 0.5rem 0 0;
         padding: 0.6rem 0.8rem;
@@ -730,20 +699,4 @@
         line-height: 1.45;
     }
 
-    .class-checkbox:hover {
-        border-color: #c9b8e0;
-        background: #f3eefb;
-    }
-
-    .class-checkbox:has(input:checked) {
-        border-color: var(--color-primary, #2F124D);
-        background: #f0e7fa;
-        color: var(--color-primary, #2F124D);
-        font-weight: 600;
-    }
-
-    .class-checkbox input {
-        margin: 0;
-        accent-color: var(--color-primary, #2F124D);
-    }
 </style>

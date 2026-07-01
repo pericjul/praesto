@@ -115,11 +115,11 @@ export const actions = {
         const description = formData.get("description")?.toString().trim() || null;
         const durationMin = formData.get("durationMin")?.toString();
         const dueDate = formData.get("dueDate")?.toString();
-        const classIds = formData.getAll("classIds").map((c) => c.toString()).filter(Boolean);
+        const classId = formData.get("classId")?.toString();
         const type = formData.get("type")?.toString();
 
         if (!title) return { error: "Titel ist erforderlich" };
-        if (classIds.length === 0) return { error: "Bitte wähle mindestens eine Klasse aus" };
+        if (!classId) return { error: "Bitte wähle eine Klasse aus" };
         if (!type) return { error: "Bitte wähle einen Aufgabentyp aus" };
         if (!dueDate) return { error: "Deadline ist erforderlich" };
 
@@ -133,7 +133,7 @@ export const actions = {
             description,
             durationMin: durationMin ? parseInt(durationMin) : null,
             dueDate: deadlineDate.toISOString(),
-            classIds,
+            classId,
             type
         };
 
