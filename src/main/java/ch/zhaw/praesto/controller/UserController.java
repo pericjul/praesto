@@ -7,6 +7,7 @@ import ch.zhaw.praesto.model.*;
 import ch.zhaw.praesto.repository.SchoolClassRepository;
 import ch.zhaw.praesto.repository.UserRepository;
 import ch.zhaw.praesto.service.AdminService;
+import ch.zhaw.praesto.service.ConsentService;
 import ch.zhaw.praesto.service.InviteService;
 import ch.zhaw.praesto.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * User-bezogene Endpoints. Listen geben {@link UserDTO} zurück (kein passwordHash).
@@ -33,6 +35,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final SchoolClassRepository schoolClassRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ConsentService consentService;
 
     // ============================================================
     // Aktueller User
@@ -200,6 +203,46 @@ public class UserController {
         target.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(target);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Einverständnis-Status (unterschriebene Eltern-Erklärung) einer Schüler:in setzen –
+     * durch die LEHRPERSON, nur für Schüler:innen in einer eigenen Klasse.
+     */
+    @PutMapping("/teacher/students/{id}/consent")
+    public ResponseEntity<Void> setStudentConsent(@PathVariable String id,
+                                                  @RequestBody Map<String, Object> body) {
+        User current = userService.getCurrentUser();
+        if (current.getRole() != UserRole.TEACHER) {
+            throw new ForbiddenException("Nur Lehrpersonen können das.");
+        }
+        User target = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Schüler:in nicht gefunden"));
+        if (target.getRole() != UserRole.STUDENT
+                || current.getSchoolId() == null
+                || !current.getSchoolId().equals(target.getSchoolId())) {
+            throw new ForbiddenException("Keine Berechtigung");
+        }
+        boolean inOwnClass = schoolClassRepository
+                .findBySchoolIdAndTeacherId(current.getSchoolId(), current.getId())
+                .stream()
+                .anyMatch(c -> c.hasStudent(id));
+        if (!inOwnClass) {
+            throw new ForbiddenException("Diese Schüler:in ist in keiner deiner Klassen.");
+        }
+        boolean signed = body != null && Boolean.TRUE.equals(body.get("signed"));
+        consentService.setSigned(id, current.getSchoolId(), signed, current.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Schüler-IDs der eigenen Schule, für die das Einverständnis vorliegt (Lehrer-Übersicht). */
+    @GetMapping("/teacher/consent")
+    public Set<String> consentSignedIds() {
+        User current = userService.getCurrentUser();
+        if (current.getRole() != UserRole.TEACHER) {
+            throw new ForbiddenException("Nur Lehrpersonen können das.");
+        }
+        return consentService.signedStudentIds(current.getSchoolId());
     }
 
     @GetMapping("/admin/stats")

@@ -69,6 +69,8 @@
             </ul>
         </div>
 
+        <p class="hand-back">Bitte ankreuzen, vollständig ausfüllen, unterschreiben und der Klassenlehrperson abgeben.</p>
+
         <div class="fields">
             <div class="row">
                 <div class="f"><span>Name der Schülerin / des Schülers</span><div class="line"></div></div>
@@ -129,7 +131,8 @@
     .checks .ct { flex: 1; min-width: 0; }
     .box { flex: 0 0 auto; width: 1rem; height: 1rem; margin-top: 0.2rem; border: 1.5px solid #2F124D; border-radius: 3px; background: #fff; }
 
-    .fields { margin-top: 1.75rem; display: flex; flex-direction: column; gap: 1.5rem; }
+    .hand-back { margin: 1.75rem 0 0.6rem; font-size: 0.82rem; color: #6b647a; font-style: italic; }
+    .fields { margin-top: 0; display: flex; flex-direction: column; gap: 1.5rem; border: 1px solid #ece3f5; border-radius: 0.6rem; padding: 1.25rem 1.1rem; }
     .row { display: flex; gap: 1.5rem; }
     .f { flex: 1; }
     .f.short { flex: 0 0 28%; }

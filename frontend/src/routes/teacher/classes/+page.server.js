@@ -47,7 +47,16 @@ export async function load({ locals, fetch }) {
             )
         }));
 
-        return { classes: enriched };
+        // Einverständnis-Status (welche Schüler:innen haben die unterschriebene Erklärung)
+        let consentSignedIds = [];
+        try {
+            const cr = await fetch(`${API_BASE}/teacher/consent`, { headers });
+            if (cr.ok) consentSignedIds = await cr.json();
+        } catch {
+            consentSignedIds = [];
+        }
+
+        return { classes: enriched, consentSignedIds };
     } catch (err) {
         console.error("Netzwerkfehler", err);
         return { classes: [], error: "Verbindungsfehler" };
@@ -91,6 +100,31 @@ export const actions = {
         }
 
         return { success: true, action: "created" };
+    },
+
+    // Einverständnis-Status einer Schüler:in setzen (abhaken)
+    setConsent: async ({ locals, fetch, request }) => {
+        if (!locals.isAuthenticated) {
+            throw redirect(302, "/login");
+        }
+        const token = locals.jwt_token;
+        const headers = {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+        };
+        const formData = await request.formData();
+        const userId = formData.get("userId")?.toString();
+        const signed = formData.get("signed") === "true";
+        if (!userId) return { error: "Schüler:in fehlt" };
+        const res = await fetch(`${API_BASE}/teacher/students/${userId}/consent`, {
+            method: "PUT",
+            headers,
+            body: JSON.stringify({ signed })
+        });
+        if (!res.ok) {
+            return { error: "Einverständnis-Status konnte nicht gespeichert werden" };
+        }
+        return { success: true, action: "consent" };
     },
 
     // Klasse bearbeiten

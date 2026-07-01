@@ -7,6 +7,9 @@
 
     let { data, form } = $props();
 
+    // Schüler-IDs mit vorliegender, unterschriebener Einverständniserklärung
+    let signedSet = $derived(new Set(data.consentSignedIds ?? []));
+
     // Einladungslinks pro Klasse: { [classId]: { url, expiresAt, qr, copied } }
     let inviteByClass = $state({});
 
@@ -185,6 +188,12 @@
                             <span class="class-meta">
                                 {cls.students?.length || 0} {$t('tclass.students')} · {$t('tclass.createdOn')} {formatDate(cls.createdAt)}
                             </span>
+                            {#if cls.students && cls.students.length > 0}
+                                {@const signedCount = cls.students.filter((s) => signedSet.has(s.id)).length}
+                                <span class="consent-badge" class:complete={signedCount === cls.students.length}>
+                                    📝 {$t('tclass.consentLabel')}: {signedCount}/{cls.students.length}
+                                </span>
+                            {/if}
                         </div>
                         <div class="class-actions">
                             <button type="button" class="btn-icon" onclick={() => toggleExpand(cls.id)}
@@ -291,9 +300,24 @@
                             {#if cls.students && cls.students.length > 0}
                                 <ul class="students-list">
                                     {#each cls.students as student (student.id)}
+                                        {@const isSigned = signedSet.has(student.id)}
                                         <li class="student-item">
                                             <span class="student-name">{student.firstName} {student.lastName}</span>
                                             <span class="student-email">{student.email}</span>
+                                            <form method="POST" action="?/setConsent"
+                                                use:enhance={() => {
+                                                    return async ({ result }) => {
+                                                        if (result.type === 'success') await invalidateAll();
+                                                        else alert(result.data?.error || $t('tclass.consentFail'));
+                                                    };
+                                                }}>
+                                                <input type="hidden" name="userId" value={student.id} />
+                                                <input type="hidden" name="signed" value={(!isSigned).toString()} />
+                                                <button type="submit" class="btn-consent" class:on={isSigned}
+                                                    title={isSigned ? $t('tclass.consentYes') : $t('tclass.consentNo')}>
+                                                    {isSigned ? '📝✓' : '📝'}
+                                                </button>
+                                            </form>
                                             <form method="POST" action="?/resetStudentPw"
                                                 use:enhance={({ formData, cancel }) => {
                                                     const pw = prompt($t('tclass.resetPwPrompt').replace('%N%', `${student.firstName} ${student.lastName}`.trim()));
@@ -496,6 +520,41 @@
         padding: var(--space-xs);
         border-radius: var(--radius-sm);
         transition: all var(--transition-base);
+    }
+
+    .btn-consent {
+        background: #fff;
+        border: 1.5px solid #e8e0f0;
+        border-radius: 999px;
+        cursor: pointer;
+        padding: 0.25rem 0.55rem;
+        font-size: 0.85rem;
+        line-height: 1;
+        opacity: 0.6;
+        transition: all 0.15s;
+    }
+    .btn-consent:hover { border-color: #cdbce4; opacity: 1; }
+    .btn-consent.on {
+        background: #ecfdf5;
+        border-color: #6ee7b7;
+        color: #047857;
+        opacity: 1;
+    }
+
+    .consent-badge {
+        display: inline-block;
+        margin-top: 0.2rem;
+        font-size: 0.78rem;
+        color: #9a3412;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 999px;
+        padding: 0.1rem 0.55rem;
+    }
+    .consent-badge.complete {
+        color: #047857;
+        background: #ecfdf5;
+        border-color: #a7f3d0;
     }
 
     .btn-remove:hover {

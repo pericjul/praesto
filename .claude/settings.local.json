@@ -214,7 +214,10 @@
       "Bash(echo \"BE COMPILE: $?\")",
       "Bash(grep -rn 'fetch\\(`/api/\\\\|fetch\\(\"/api/\\\\|fetch\\(./api/' src/routes)",
       "Bash(sed -n '700,730p' src/routes/student/dashboard/+page.svelte)",
-      "Bash(sed -n '665,690p' src/routes/teacher/dashboard/+page.svelte)"
+      "Bash(sed -n '665,690p' src/routes/teacher/dashboard/+page.svelte)",
+      "Bash(grep -nE 'let \\\\{ data|\\\\$props|student-item|student-name|student-email|resetStudentPw|removeStudent|students-list|class-meta|cls.students' src/routes/teacher/classes/+page.svelte)",
+      "Bash(node -e \"import\\('./src/lib/i18n/messages/teacherA.js'\\).then\\(m=>{for\\(const l of['de','en','fr','it']\\)console.log\\(l,Object.keys\\(m.teacherA[l]\\).length\\)}\\).catch\\(e=>{console.error\\('ERR',e.message\\);process.exit\\(1\\)}\\)\")",
+      "Bash(./mvnw -q clean test -Dtest=UserControllerTest,SubmissionControllerTest)"
     ]
   }
 }
