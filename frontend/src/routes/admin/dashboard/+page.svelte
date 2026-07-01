@@ -39,7 +39,9 @@
     function handleCreate() {
         return async ({ result, update }) => {
             if (result.type === "success" && result.data?.invite) {
-                invites = [result.data.invite, ...invites];
+                // Das Erstell-DTO hat kein `type` -> ergänzen, damit teacherInvite es sofort findet
+                // (sonst erscheint der Link erst nach einem Neuladen).
+                invites = [{ ...result.data.invite, type: "TEACHER" }, ...invites];
             }
             await update({ reset: false });
         };
