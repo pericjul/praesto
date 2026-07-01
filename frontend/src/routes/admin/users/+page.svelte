@@ -28,11 +28,15 @@
     );
 
     function handleDeactivate(id) {
-        return async ({ result, update }) => {
-            if (result.type === "success") {
-                users = users.map((u) => (u.id === id ? { ...u, active: false } : u));
-            }
-            await update({ reset: false });
+        // Wichtig: äussere Funktion ist die enhance-Submit-Funktion, sie gibt den
+        // Nachher-Callback zurück (sonst ist `result` beim Submit undefined -> nichts passiert).
+        return () => {
+            return async ({ result, update }) => {
+                if (result.type === "success" && !result.data?.error) {
+                    users = users.map((u) => (u.id === id ? { ...u, active: false } : u));
+                }
+                await update({ reset: false });
+            };
         };
     }
 

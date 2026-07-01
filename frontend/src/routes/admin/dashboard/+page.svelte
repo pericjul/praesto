@@ -46,11 +46,15 @@
     }
 
     function handleDelete(id) {
-        return async ({ result, update }) => {
-            if (result.type === "success") {
-                invites = invites.filter((i) => i.id !== id);
-            }
-            await update({ reset: false });
+        // äussere Funktion = enhance-Submit-Funktion, innere = Nachher-Callback
+        // (sonst ist `result` beim Submit undefined und es passiert nichts).
+        return () => {
+            return async ({ result, update }) => {
+                if (result.type === "success") {
+                    invites = invites.filter((i) => i.id !== id);
+                }
+                await update({ reset: false });
+            };
         };
     }
 </script>
