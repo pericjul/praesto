@@ -115,7 +115,7 @@
 
             <h3>Aufgaben</h3>
             <ul>
-                <li><strong>„Neue Aufgabe“</strong> – Titel, Klasse(n) (Mehrfachauswahl), Typ (mit Kurz-Erklärung), Deadline, Beschreibung.</li>
+                <li><strong>„Neue Aufgabe“</strong> – Titel, Klasse (Dropdown, eine pro Aufgabe), Typ (mit Kurz-Erklärung), Deadline, Beschreibung.</li>
                 <li><strong>Bewerten &amp; Feedback</strong> – Abgaben öffnen, Feedback und optional Note geben; Textbausteine für häufiges Feedback.</li>
                 <li><strong>CSV-Export</strong> – alle Abgaben und Noten einer Aufgabe als Datei.</li>
             </ul>

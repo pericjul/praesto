@@ -2,7 +2,9 @@ spring:
   application:
     name: praesto
   ai:
-    # Azure OpenAI (Switzerland North) – Daten bleiben in der Schweiz.
+    # Azure OpenAI: KI-Funktionen laufen in der EU (Region "Sweden Central") – so ist es
+    # in der Datenschutzerklärung ausgewiesen. Region/Modell kommen aus AZURE_OPENAI_ENDPOINT/
+    # -DEPLOYMENT und MÜSSEN zur Datenschutzerklärung passen. Genutztes Modell: gpt-5-mini.
     # Defaults erlauben App-Start ohne echte Werte (KI-Aufrufe fallen dann auf Fallbacks zurück).
     azure:
       openai:
@@ -10,7 +12,7 @@ spring:
         endpoint: ${AZURE_OPENAI_ENDPOINT:https://example.openai.azure.com/}
         chat:
           options:
-            deployment-name: ${AZURE_OPENAI_DEPLOYMENT:gpt-4o-mini}
+            deployment-name: ${AZURE_OPENAI_DEPLOYMENT:gpt-5-mini}
             # temperature MUSS gesetzt sein, weil Spring AI sonst seinen Default (0.7)
             # sendet – GPT-5-/Reasoning-Modelle lehnen alles ausser 1 mit 400 ab.
             # Per AZURE_OPENAI_TEMPERATURE überschreibbar (nur für Modelle wie gpt-4o,
