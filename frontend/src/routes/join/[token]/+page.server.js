@@ -23,6 +23,9 @@ export const actions = {
 		if (!firstName || !lastName || !email || !password) {
 			return fail(400, { error: 'Bitte fülle alle Felder aus.' });
 		}
+		if (data.get('acceptTerms') !== 'on') {
+			return fail(400, { error: 'Bitte akzeptiere die Datenschutzerklärung und die AGB.' });
+		}
 		if (password.length < 8) {
 			return fail(400, { error: 'Das Passwort muss mindestens 8 Zeichen haben.' });
 		}

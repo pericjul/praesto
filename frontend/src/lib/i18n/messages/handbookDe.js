@@ -89,6 +89,29 @@ export const handbookDe = {
 		"hb.roles.demoT": "Demo-Zugang",
 		"hb.roles.demoD": "Read-only Testzugang für Schulleitungen – kann alles ansehen, aber nichts verändern.",
 
+		"hb.teacher.pwH": "Passwörter zurücksetzen",
+		"hb.teacher.pwP": "Vergisst eine Schüler:in ihr Passwort, setzen Sie es in der Klassenansicht über das 🔑-Symbol zurück – nur für Schüler:innen Ihrer eigenen Klassen.",
+		"hb.teacher.consentH": "Einverständnis der Eltern verwalten",
+		"hb.teacher.consentP": "Verteilen Sie die Einverständniserklärung (PDF unter praesto.ch/einverstaendnis), lassen Sie sie von den Eltern unterschreiben und haken Sie in der Klassenansicht pro Schüler:in ab, sobald die unterschriebene Erklärung vorliegt. Pro Klasse sehen Sie einen Zähler (z.B. 18/22).",
+
+		"hb.admin.l5t": "Passwörter & Konten",
+		"hb.admin.l5d": "Unter „Benutzer“ können Sie Passwörter von Nutzer:innen zurücksetzen und Konten bei Bedarf deaktivieren.",
+
+		"hb.student.dossierH": "Dossier: Lebenslauf & Bewerbungsschreiben",
+		"hb.student.dossierP": "Im Dossier legst du alle Bewerbungsunterlagen ab und erstellst mit wenigen Angaben einen Lebenslauf (inkl. Foto, das du passend zuschneiden kannst) und ein Bewerbungsschreiben. Wichtig: Diese Dokumente sind Vorlagen und Inspiration – überarbeite sie selbst und gib sie nicht unverändert ab.",
+		"hb.student.bugH": "Fehler melden",
+		"hb.student.bugP": "Etwas funktioniert nicht oder sieht komisch aus? Melde es über „Bug melden“. In der Testphase gibt es dafür sogar einen kleinen Wettbewerb.",
+
+		"hb.consent.title": "Einverständnis & Datenschutz",
+		"hb.consent.p1": "Da Praesto mit Daten von Jugendlichen arbeitet, braucht es das Einverständnis der Eltern bzw. Erziehungsberechtigten.",
+		"hb.consent.h1": "Ablauf",
+		"hb.consent.p2": "1. Die Lehrperson verteilt die Einverständniserklärung (PDF unter praesto.ch/einverstaendnis). 2. Die Eltern lesen sie, kreuzen an und unterschreiben. 3. Die Lehrperson sammelt die unterschriebenen Erklärungen ein und hakt sie in der Klassenansicht pro Schüler:in ab.",
+		"hb.consent.resp": "Verantwortung: Die Lehrperson bzw. die Schule ist dafür verantwortlich, dass für jede:n Schüler:in eine unterschriebene Einverständniserklärung vorliegt und aufbewahrt wird.",
+		"hb.consent.h2": "Registrierung",
+		"hb.consent.p3": "Bei der Registrierung bestätigen alle Nutzer:innen mit einem Häkchen, dass sie die Datenschutzerklärung und die AGB gelesen haben und akzeptieren.",
+		"hb.consent.h3": "Aufbewahrung der Daten",
+		"hb.consent.p4": "Konten von Schüler:innen, die sich länger als 1 Jahr nicht mehr einloggen, werden inklusive aller Daten gelöscht. Der Super-Admin behält darüber den Überblick.",
+
 		// 7 Datenschutz & Sicherheit
 		"hb.privacy.title": "Datenschutz & Sicherheit",
 		"hb.privacy.p1": "Praesto nutzt ein eigenes Login-System und keinen US-Anbieter. Jede Schule ist vollständig von den anderen getrennt – die Daten Ihrer Schüler:innen bleiben innerhalb Ihrer Schule.",

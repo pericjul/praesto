@@ -33,7 +33,8 @@
                     { t: $t("hb.admin.l1t"), d: $t("hb.admin.l1d") },
                     { t: $t("hb.admin.l2t"), d: $t("hb.admin.l2d") },
                     { t: $t("hb.admin.l3t"), d: $t("hb.admin.l3d") },
-                    { t: $t("hb.admin.l4t"), d: $t("hb.admin.l4d") }
+                    { t: $t("hb.admin.l4t"), d: $t("hb.admin.l4d") },
+                    { t: $t("hb.admin.l5t"), d: $t("hb.admin.l5d") }
                 ] },
                 { type: "tip", text: $t("hb.admin.tip") }
             ]
@@ -58,7 +59,24 @@
                 { type: "h", text: $t("hb.teacher.fbH") },
                 { type: "p", text: $t("hb.teacher.fbP") },
                 { type: "h", text: $t("hb.teacher.exportH") },
-                { type: "p", text: $t("hb.teacher.exportP") }
+                { type: "p", text: $t("hb.teacher.exportP") },
+                { type: "h", text: $t("hb.teacher.pwH") },
+                { type: "p", text: $t("hb.teacher.pwP") },
+                { type: "h", text: $t("hb.teacher.consentH") },
+                { type: "p", text: $t("hb.teacher.consentP") }
+            ]
+        },
+        {
+            id: "consent", icon: "📝", title: $t("hb.consent.title"),
+            blocks: [
+                { type: "p", text: $t("hb.consent.p1") },
+                { type: "h", text: $t("hb.consent.h1") },
+                { type: "p", text: $t("hb.consent.p2") },
+                { type: "tip", text: $t("hb.consent.resp") },
+                { type: "h", text: $t("hb.consent.h2") },
+                { type: "p", text: $t("hb.consent.p3") },
+                { type: "h", text: $t("hb.consent.h3") },
+                { type: "p", text: $t("hb.consent.p4") }
             ]
         },
         {
@@ -75,7 +93,11 @@
                 { type: "h", text: $t("hb.student.appH") },
                 { type: "p", text: $t("hb.student.appP") },
                 { type: "h", text: $t("hb.student.badgeH") },
-                { type: "p", text: $t("hb.student.badgeP") }
+                { type: "p", text: $t("hb.student.badgeP") },
+                { type: "h", text: $t("hb.student.dossierH") },
+                { type: "p", text: $t("hb.student.dossierP") },
+                { type: "h", text: $t("hb.student.bugH") },
+                { type: "p", text: $t("hb.student.bugP") }
             ]
         },
         {

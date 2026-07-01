@@ -92,6 +92,29 @@ export const handbookIt = {
 		"hb.roles.demoT": "Accesso demo",
 		"hb.roles.demoD": "Accesso di prova in sola lettura per le direzioni scolastiche – può vedere tutto, ma non modificare nulla.",
 
+		"hb.teacher.pwH": "Reimpostare le password",
+		"hb.teacher.pwP": "Se un allievo dimentica la password, reimpostala nella vista classe tramite l'icona 🔑 – solo per gli allievi delle tue classi.",
+		"hb.teacher.consentH": "Gestire il consenso dei genitori",
+		"hb.teacher.consentP": "Distribuisci il modulo di consenso (PDF su praesto.ch/einverstaendnis), fallo firmare dai genitori e spuntalo per ogni allievo nella vista classe una volta ricevuto il modulo firmato. Ogni classe mostra un contatore (es. 18/22).",
+
+		"hb.admin.l5t": "Password & account",
+		"hb.admin.l5d": "In «Utenti» puoi reimpostare le password e disattivare gli account se necessario.",
+
+		"hb.student.dossierH": "Dossier: CV & lettera di presentazione",
+		"hb.student.dossierP": "Nel dossier archivi tutti i documenti e crei un CV (con una foto che puoi ritagliare) e una lettera di presentazione da poche indicazioni. Importante: questi documenti sono modelli e fonte d'ispirazione – rielaborali tu e non consegnarli invariati.",
+		"hb.student.bugH": "Segnalare un errore",
+		"hb.student.bugP": "Qualcosa non funziona o sembra strano? Segnalalo tramite «Segnala un bug». Durante la fase di test c'è persino un piccolo concorso.",
+
+		"hb.consent.title": "Consenso & privacy",
+		"hb.consent.p1": "Poiché Praesto tratta dati di giovani, è necessario il consenso dei genitori.",
+		"hb.consent.h1": "Procedura",
+		"hb.consent.p2": "1. Il docente distribuisce il modulo di consenso (PDF su praesto.ch/einverstaendnis). 2. I genitori lo leggono, spuntano e firmano. 3. Il docente raccoglie i moduli firmati e li spunta per ogni allievo nella vista classe.",
+		"hb.consent.resp": "Responsabilità: il docente o la scuola è responsabile di garantire che per ogni allievo esista e sia conservato un modulo di consenso firmato.",
+		"hb.consent.h2": "Registrazione",
+		"hb.consent.p3": "Durante la registrazione tutti gli utenti confermano con una casella di aver letto e accettato l'informativa sulla privacy e le condizioni.",
+		"hb.consent.h3": "Conservazione dei dati",
+		"hb.consent.p4": "Gli account degli allievi inattivi da più di 1 anno vengono eliminati con tutti i loro dati. Il super-admin ne mantiene una panoramica.",
+
 		// 7 Protezione dei dati e sicurezza
 		"hb.privacy.title": "Protezione dei dati e sicurezza",
 		"hb.privacy.p1": "Praesto utilizza un proprio sistema di login e nessun fornitore statunitense. Ogni scuola è completamente separata dalle altre – i dati dei vostri allievi restano all'interno della vostra scuola.",

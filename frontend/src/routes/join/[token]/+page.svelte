@@ -73,6 +73,15 @@
                     <input id="passwordConfirm" name="passwordConfirm" type="password" required placeholder={$t('join.passwordConfirmPlaceholder')} />
                 </div>
 
+                <label class="accept">
+                    <input type="checkbox" name="acceptTerms" required />
+                    <span>{$t('join.acceptPre')}
+                        <a href="/datenschutz" target="_blank" rel="noopener">{$t('join.acceptPrivacy')}</a>
+                        {$t('join.acceptAnd')}
+                        <a href="/agb" target="_blank" rel="noopener">{$t('join.acceptAgb')}</a>
+                        {$t('join.acceptPost')}</span>
+                </label>
+
                 <button type="submit" class="btn-primary">{$t('join.submit')}</button>
             </form>
 
@@ -214,6 +223,18 @@
         text-decoration: none;
         font-weight: 600;
     }
+
+    .accept {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 0.55rem;
+        font-size: 0.85rem;
+        color: #4b4060;
+        line-height: 1.45;
+        font-weight: 400;
+    }
+    .accept input { margin-top: 0.15rem; width: 1rem; height: 1rem; flex: 0 0 auto; accent-color: #2F124D; }
+    .accept a { color: #2F124D; font-weight: 600; }
 
     .footer-text {
         margin-top: 1.5rem;

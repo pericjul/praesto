@@ -226,7 +226,8 @@
       "Bash(javac -cp target/classes:__TRACKED_VAR__ -d /tmp/dbg /tmp/dbgsrc/DebugOfferte.java)",
       "Bash(cd \"/Users/juliaperic/Library/Mobile Documents/com~apple~CloudDocs/praesto/praesto\" && sed -n '/AssertionError/,/at ch.zhaw/p' /tmp/be_offtest3.log | head -30)",
       "Bash(node -e \"import\\('./src/lib/i18n/translations.js'\\).then\\(m=>{const t=m.translations;for\\(const l of['de','en','fr','it']\\)console.log\\(l, ['clform.jobSec','clform.senderStreet','clform.companyZipCity','clform.pensum','clform.date'].every\\(k=>t[l][k]\\)?'ok':'MISSING'\\)}\\).catch\\(e=>{console.error\\(e.message\\);process.exit\\(1\\)}\\)\")",
-      "Bash(./mvnw -q test -Dtest=DocxLetterTest,OfferteServiceTest)"
+      "Bash(./mvnw -q test -Dtest=DocxLetterTest,OfferteServiceTest)",
+      "Bash(node -e \"import\\('./src/lib/i18n/translations.js'\\).then\\(m=>{const t=m.translations;for\\(const l of['de','en','fr','it']\\)console.log\\(l, ['hb.consent.resp','hb.teacher.consentP','hb.student.dossierP','join.acceptPrivacy'].every\\(k=>t[l][k]\\)?'ok':'MISSING'\\)}\\).catch\\(e=>{console.error\\(e.message\\);process.exit\\(1\\)}\\)\")"
     ]
   }
 }

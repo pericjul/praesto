@@ -117,6 +117,11 @@ export const adminAuth = {
 		"join.passwordConfirm": "Passwort bestätigen",
 		"join.passwordConfirmPlaceholder": "Passwort wiederholen",
 		"join.submit": "Registrieren & loslegen",
+		"join.acceptPre": "Ich habe die",
+		"join.acceptPrivacy": "Datenschutzerklärung",
+		"join.acceptAnd": "und die",
+		"join.acceptAgb": "AGB",
+		"join.acceptPost": "gelesen und akzeptiere sie.",
 		"join.haveAccount": "Bereits ein Konto?",
 		"join.signin": "Anmelden"
 	},
@@ -239,6 +244,11 @@ export const adminAuth = {
 		"join.passwordConfirm": "Confirm password",
 		"join.passwordConfirmPlaceholder": "Repeat password",
 		"join.submit": "Register & get started",
+		"join.acceptPre": "I have read the",
+		"join.acceptPrivacy": "Privacy Policy",
+		"join.acceptAnd": "and the",
+		"join.acceptAgb": "Terms",
+		"join.acceptPost": "and accept them.",
 		"join.haveAccount": "Already have an account?",
 		"join.signin": "Sign in"
 	},
@@ -361,6 +371,11 @@ export const adminAuth = {
 		"join.passwordConfirm": "Confirmer le mot de passe",
 		"join.passwordConfirmPlaceholder": "Répéter le mot de passe",
 		"join.submit": "S'inscrire & commencer",
+		"join.acceptPre": "J'ai lu la",
+		"join.acceptPrivacy": "politique de confidentialité",
+		"join.acceptAnd": "et les",
+		"join.acceptAgb": "CGU",
+		"join.acceptPost": "et je les accepte.",
 		"join.haveAccount": "Vous avez déjà un compte ?",
 		"join.signin": "Se connecter"
 	},
@@ -483,6 +498,11 @@ export const adminAuth = {
 		"join.passwordConfirm": "Conferma password",
 		"join.passwordConfirmPlaceholder": "Ripeti la password",
 		"join.submit": "Registrati e inizia",
+		"join.acceptPre": "Ho letto la",
+		"join.acceptPrivacy": "informativa sulla privacy",
+		"join.acceptAnd": "e le",
+		"join.acceptAgb": "condizioni",
+		"join.acceptPost": "e le accetto.",
 		"join.haveAccount": "Hai già un account?",
 		"join.signin": "Accedi"
 	}

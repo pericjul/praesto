@@ -91,6 +91,29 @@ export const handbookFr = {
 		"hb.roles.demoT": "Accès démo",
 		"hb.roles.demoD": "Accès de test en lecture seule pour les directions d'école – peut tout consulter, mais ne rien modifier.",
 
+		"hb.teacher.pwH": "Réinitialiser les mots de passe",
+		"hb.teacher.pwP": "Si un·e élève oublie son mot de passe, réinitialisez-le dans la vue de classe via l'icône 🔑 – uniquement pour les élèves de vos propres classes.",
+		"hb.teacher.consentH": "Gérer le consentement des parents",
+		"hb.teacher.consentP": "Distribuez le formulaire de consentement (PDF sur praesto.ch/einverstaendnis), faites-le signer par les parents et cochez-le par élève dans la vue de classe une fois le formulaire signé reçu. Chaque classe affiche un compteur (p.ex. 18/22).",
+
+		"hb.admin.l5t": "Mots de passe & comptes",
+		"hb.admin.l5d": "Sous « Utilisateurs », vous pouvez réinitialiser les mots de passe et désactiver des comptes si nécessaire.",
+
+		"hb.student.dossierH": "Dossier : CV & lettre de motivation",
+		"hb.student.dossierP": "Dans le dossier, tu ranges tous tes documents et crées un CV (avec une photo que tu peux recadrer) et une lettre de motivation à partir de quelques informations. Important : ces documents sont des modèles et une source d'inspiration – retravaille-les toi-même et ne les remets pas tels quels.",
+		"hb.student.bugH": "Signaler un bug",
+		"hb.student.bugP": "Quelque chose ne fonctionne pas ou a l'air bizarre ? Signale-le via « Signaler un bug ». Pendant la phase de test, il y a même un petit concours.",
+
+		"hb.consent.title": "Consentement & confidentialité",
+		"hb.consent.p1": "Comme Praesto traite des données de jeunes, le consentement des parents est nécessaire.",
+		"hb.consent.h1": "Déroulement",
+		"hb.consent.p2": "1. L'enseignant·e distribue le formulaire de consentement (PDF sur praesto.ch/einverstaendnis). 2. Les parents le lisent, cochent et signent. 3. L'enseignant·e récupère les formulaires signés et les coche par élève dans la vue de classe.",
+		"hb.consent.resp": "Responsabilité : l'enseignant·e ou l'école est responsable de s'assurer qu'un formulaire de consentement signé existe et est conservé pour chaque élève.",
+		"hb.consent.h2": "Inscription",
+		"hb.consent.p3": "Lors de l'inscription, tous les utilisateurs confirment via une case à cocher avoir lu et accepté la politique de confidentialité et les CGU.",
+		"hb.consent.h3": "Conservation des données",
+		"hb.consent.p4": "Les comptes d'élèves inactifs depuis plus d'un an sont supprimés avec toutes leurs données. Le super-admin en garde une vue d'ensemble.",
+
 		// 7 Protection des données et sécurité
 		"hb.privacy.title": "Protection des données et sécurité",
 		"hb.privacy.p1": "Praesto utilise son propre système de connexion et aucun fournisseur américain. Chaque école est entièrement séparée des autres – les données de vos élèves restent au sein de votre école.",

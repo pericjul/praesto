@@ -90,6 +90,29 @@ export const handbookEn = {
 		"hb.roles.demoT": "Demo access",
 		"hb.roles.demoD": "Read-only test access for school administrators – can view everything but change nothing.",
 
+		"hb.teacher.pwH": "Reset passwords",
+		"hb.teacher.pwP": "If a student forgets their password, reset it in the class view via the 🔑 icon – only for students in your own classes.",
+		"hb.teacher.consentH": "Manage parental consent",
+		"hb.teacher.consentP": "Hand out the consent form (PDF at praesto.ch/einverstaendnis), have parents sign it, and tick it off per student in the class view once the signed form is in. Each class shows a counter (e.g. 18/22).",
+
+		"hb.admin.l5t": "Passwords & accounts",
+		"hb.admin.l5d": "Under \"Users\" you can reset users' passwords and deactivate accounts if needed.",
+
+		"hb.student.dossierH": "Dossier: CV & cover letter",
+		"hb.student.dossierP": "In the dossier you store all your application documents and create a CV (incl. a photo you can crop to fit) and a cover letter from a few details. Important: these documents are templates and inspiration – revise them yourself and don't submit them unchanged.",
+		"hb.student.bugH": "Report a bug",
+		"hb.student.bugP": "Something not working or looking odd? Report it via \"Report a bug\". During the test phase there's even a small contest for it.",
+
+		"hb.consent.title": "Consent & privacy",
+		"hb.consent.p1": "Because Praesto works with data of young people, parental consent is required.",
+		"hb.consent.h1": "Process",
+		"hb.consent.p2": "1. The teacher hands out the consent form (PDF at praesto.ch/einverstaendnis). 2. Parents read, tick and sign it. 3. The teacher collects the signed forms and ticks them off per student in the class view.",
+		"hb.consent.resp": "Responsibility: the teacher or school is responsible for ensuring a signed consent form exists and is kept for every student.",
+		"hb.consent.h2": "Registration",
+		"hb.consent.p3": "During registration all users confirm with a checkbox that they have read and accept the privacy policy and the terms.",
+		"hb.consent.h3": "Data retention",
+		"hb.consent.p4": "Student accounts that don't log in for more than 1 year are deleted with all their data. The super admin keeps an overview.",
+
 		// 7 Privacy & security
 		"hb.privacy.title": "Privacy & security",
 		"hb.privacy.p1": "Praesto uses its own login system and no US provider. Each school is completely separated from the others – your students' data stays within your school.",
