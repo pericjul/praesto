@@ -35,7 +35,8 @@ public class BugController {
                 body.get("area"),
                 body.get("severity"),
                 body.get("steps"),
-                body.get("device"));
+                body.get("device"),
+                body.get("screenshot"));
         return ResponseEntity.ok().build();
     }
 

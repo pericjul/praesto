@@ -43,6 +43,7 @@ public class BugReportService {
             rs.getString("severity"),
             rs.getString("steps"),
             rs.getString("device"),
+            rs.getString("screenshot"),
             rs.getString("status"),
             rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toInstant() : null);
 
@@ -67,6 +68,12 @@ public class BugReportService {
                         created_at timestamp
                     )
                     """);
+            // Screenshot-Spalte nachrüsten (bestehende Tabellen ohne diese Spalte) – schema-sicher.
+            try {
+                jdbc.execute("ALTER TABLE bug_reports ADD COLUMN IF NOT EXISTS screenshot text");
+            } catch (Exception e) {
+                log.warn("Screenshot-Spalte konnte nicht ergänzt werden (evtl. schon vorhanden): {}", e.getMessage());
+            }
             log.info("bug_reports-Tabelle bereit.");
         } catch (Exception e) {
             log.error("bug_reports-Tabelle konnte nicht angelegt werden: {}", e.getMessage());
@@ -75,7 +82,7 @@ public class BugReportService {
 
     /** Bug von der aktuell eingeloggten Person anlegen. */
     public void create(User reporter, String title, String description, String area,
-                       String severity, String steps, String device) {
+                       String severity, String steps, String device, String screenshot) {
         if (title == null || title.isBlank()) {
             throw new BadRequestException("Bitte gib dem Bug einen kurzen Titel.");
         }
@@ -86,8 +93,8 @@ public class BugReportService {
         jdbc.update("""
                         INSERT INTO bug_reports
                           (id, school_id, reporter_id, reporter_name, reporter_email, reporter_role,
-                           title, description, area, severity, steps, device, status, created_at)
-                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                           title, description, area, severity, steps, device, screenshot, status, created_at)
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                         """,
                 UUID.randomUUID().toString(),
                 reporter.getSchoolId(),
@@ -101,6 +108,7 @@ public class BugReportService {
                 trim(severity, 32),
                 steps,
                 trim(device, 255),
+                cleanScreenshot(screenshot),
                 "NEW",
                 Timestamp.from(Instant.now()));
     }
@@ -119,6 +127,18 @@ public class BugReportService {
 
     public void delete(String id) {
         jdbc.update("DELETE FROM bug_reports WHERE id = ?", id);
+    }
+
+    /** Nimmt nur ein data:image-URL an und begrenzt die Grösse (Schutz vor riesigen Payloads). */
+    private static String cleanScreenshot(String s) {
+        if (s == null || s.isBlank()) {
+            return null;
+        }
+        if (!s.startsWith("data:image/")) {
+            return null;
+        }
+        // ~700 KB Base64-Obergrenze; das Frontend komprimiert bereits deutlich kleiner.
+        return s.length() > 700_000 ? null : s;
     }
 
     private static String safe(String s) {

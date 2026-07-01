@@ -235,7 +235,11 @@
       "Bash(rm -f static/favicon.svg static/images/vite.svg)",
       "Bash(ls static/*.png static/*.svg)",
       "Bash(echo \"COMPILE: $?\")",
-      "Bash(./mvnw -q test -Dtest=TestDataSeederTest)"
+      "Bash(./mvnw -q test -Dtest=TestDataSeederTest)",
+      "Bash(cat src/main/java/ch/zhaw/praesto/model/BugReport*.java)",
+      "Bash(cat src/main/java/ch/zhaw/praesto/controller/BugReport*Controller.java src/main/java/ch/zhaw/praesto/controller/Bug*Controller.java)",
+      "Bash(ls src/test/java/ch/zhaw/praesto/**/*Bug*)",
+      "Bash(find src/test -iname \"*bug*\")"
     ]
   }
 }

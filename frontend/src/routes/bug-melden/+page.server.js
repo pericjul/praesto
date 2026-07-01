@@ -17,7 +17,8 @@ export const actions = {
 			area: d.get("area") || "OTHER",
 			severity: d.get("severity") || "MEDIUM",
 			steps: d.get("steps") || "",
-			device: d.get("device") || ""
+			device: d.get("device") || "",
+			screenshot: d.get("screenshot") || ""
 		};
 		if (!payload.title || !payload.description) {
 			return fail(400, { error: true });

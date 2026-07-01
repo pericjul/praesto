@@ -21,6 +21,7 @@ public record BugReport(
         String severity,
         String steps,
         String device,
+        String screenshot,
         String status,
         Instant createdAt) {
 }

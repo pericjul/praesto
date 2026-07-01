@@ -123,6 +123,11 @@
                     <p class="desc">{b.description}</p>
                     {#if b.steps}<p class="meta"><strong>{$t('sbug.steps')}:</strong> {b.steps}</p>{/if}
                     {#if b.device}<p class="meta"><strong>{$t('sbug.device')}:</strong> {b.device}</p>{/if}
+                    {#if b.screenshot}
+                        <a class="shot-link" href={b.screenshot} target="_blank" rel="noopener" title={$t('sbug.screenshotOpen')}>
+                            <img src={b.screenshot} alt="Screenshot" />
+                        </a>
+                    {/if}
 
                     <div class="bug-foot">
                         <span class="reporter">{$t('sbug.reporter')}: <strong>{b.reporterName}</strong> · {$t('sbug.role.' + b.reporterRole) ?? b.reporterRole}</span>
@@ -187,6 +192,9 @@
     .desc { margin: 0.6rem 0 0.4rem; color: #374151; white-space: pre-wrap; line-height: 1.5; }
     .meta { margin: 0.2rem 0; font-size: 0.85rem; color: #5E4C6F; white-space: pre-wrap; }
     .meta strong { color: #2d2141; }
+    .shot-link { display: inline-block; margin: 0.5rem 0 0.2rem; }
+    .shot-link img { max-width: 260px; max-height: 200px; border-radius: 0.5rem; border: 1px solid #e0d6eb; display: block; }
+    .shot-link:hover img { border-color: #2F124D; }
     .bug-foot { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-top: 0.75rem; padding-top: 0.6rem; border-top: 1px solid #f3f0f7; flex-wrap: wrap; }
     .reporter { font-size: 0.82rem; color: #6b647a; }
     .actions { display: flex; gap: 0.5rem; align-items: center; }
