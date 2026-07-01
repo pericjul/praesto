@@ -264,6 +264,12 @@ public class UserController {
         return adminService.listSchools();
     }
 
+    /** Alle Nutzer:innen aller Schulen mit Schulname + „zuletzt eingeloggt" (Super-Admin-Übersicht). */
+    @GetMapping("/super/users/all")
+    public List<SuperUserView> allUsers() {
+        return adminService.listAllUsersForSuper();
+    }
+
     @PostMapping("/super/schools")
     public ResponseEntity<School> createSchool(@RequestBody SchoolCreateRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(adminService.createSchool(req));

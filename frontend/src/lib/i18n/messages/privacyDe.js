@@ -26,7 +26,7 @@ export const privacyDe = {
 		"dp.s6.p": "Als technische Dienstleister setzen wir Microsoft (Azure-Hosting und Azure OpenAI) ein; diese bearbeiten Daten nur in unserem Auftrag und nach unseren Weisungen. Eine Weitergabe an Dritte zu Werbe- oder Verkaufszwecken findet nicht statt. Eine Offenlegung gegenüber Behörden erfolgt nur, wenn wir gesetzlich dazu verpflichtet sind.",
 
 		"dp.s7.t": "7. Aufbewahrung & Löschung",
-		"dp.s7.p": "Wir bewahren Daten nur so lange auf, wie es für die genannten Zwecke nötig ist. Konten und zugehörige Daten können auf Wunsch gelöscht werden; die Schulleitung bzw. der Betreiber kann die Daten einer Person vollständig entfernen. Nach Abschluss der Nutzung durch eine Schule werden die Daten gelöscht.",
+		"dp.s7.p": "Wir bewahren Daten nur so lange auf, wie es für die genannten Zwecke nötig ist. Konten und zugehörige Daten können auf Wunsch gelöscht werden; die Schulleitung bzw. der Betreiber kann die Daten einer Person vollständig entfernen. Nach Abschluss der Nutzung durch eine Schule werden die Daten gelöscht. Konten von Schüler:innen, die sich länger als 1 Jahr nicht mehr eingeloggt haben, werden zudem inklusive aller Daten gelöscht.",
 
 		"dp.s8.t": "8. Datensicherheit",
 		"dp.s8.p": "Passwörter werden ausschliesslich verschlüsselt (BCrypt) gespeichert, die Anmeldung erfolgt über signierte Tokens, und die gesamte Übertragung ist per HTTPS geschützt. Jede Schule ist datenmässig vollständig von den anderen getrennt (Mandantentrennung).",
@@ -68,7 +68,7 @@ export const privacyDe = {
 		"dp.s6.p": "As technical service providers we use Microsoft (Azure hosting and Azure OpenAI); they process data only on our behalf and on our instructions. Data is not shared with third parties for advertising or sale. Disclosure to authorities only occurs where we are legally obliged to do so.",
 
 		"dp.s7.t": "7. Retention & deletion",
-		"dp.s7.p": "We keep data only as long as necessary for the stated purposes. Accounts and associated data can be deleted on request; the school management or the operator can completely remove a person's data. When a school stops using the service, the data is deleted.",
+		"dp.s7.p": "We keep data only as long as necessary for the stated purposes. Accounts and associated data can be deleted on request; the school management or the operator can completely remove a person's data. When a school stops using the service, the data is deleted. Student accounts that have not logged in for more than 1 year are also deleted with all their data.",
 
 		"dp.s8.t": "8. Data security",
 		"dp.s8.p": "Passwords are stored only in encrypted form (BCrypt), sign-in uses signed tokens, and all transmission is protected via HTTPS. Each school is fully separated from the others in terms of data (multi-tenant isolation).",
@@ -110,7 +110,7 @@ export const privacyDe = {
 		"dp.s6.p": "Comme prestataires techniques, nous utilisons Microsoft (hébergement Azure et Azure OpenAI) ; ils ne traitent les données que pour notre compte et selon nos instructions. Les données ne sont pas communiquées à des tiers à des fins publicitaires ou de vente. Une divulgation aux autorités n'a lieu que si la loi nous y oblige.",
 
 		"dp.s7.t": "7. Conservation & suppression",
-		"dp.s7.p": "Nous ne conservons les données que le temps nécessaire aux finalités indiquées. Les comptes et les données associées peuvent être supprimés sur demande ; la direction de l'école ou l'exploitant peut supprimer entièrement les données d'une personne. À la fin de l'utilisation par une école, les données sont supprimées.",
+		"dp.s7.p": "Nous ne conservons les données que le temps nécessaire aux finalités indiquées. Les comptes et les données associées peuvent être supprimés sur demande ; la direction de l'école ou l'exploitant peut supprimer entièrement les données d'une personne. À la fin de l'utilisation par une école, les données sont supprimées. Les comptes d'élèves inactifs depuis plus d'un an sont en outre supprimés avec toutes leurs données.",
 
 		"dp.s8.t": "8. Sécurité des données",
 		"dp.s8.p": "Les mots de passe sont stockés uniquement sous forme chiffrée (BCrypt), la connexion utilise des jetons signés et toute la transmission est protégée par HTTPS. Chaque école est entièrement séparée des autres au niveau des données (séparation des locataires).",
@@ -152,7 +152,7 @@ export const privacyDe = {
 		"dp.s6.p": "Come fornitori tecnici utilizziamo Microsoft (hosting Azure e Azure OpenAI); trattano i dati solo per nostro conto e secondo le nostre istruzioni. I dati non vengono comunicati a terzi a scopi pubblicitari o di vendita. La divulgazione alle autorità avviene solo se siamo legalmente obbligati.",
 
 		"dp.s7.t": "7. Conservazione & cancellazione",
-		"dp.s7.p": "Conserviamo i dati solo per il tempo necessario alle finalità indicate. Gli account e i dati associati possono essere cancellati su richiesta; la direzione della scuola o il gestore può rimuovere completamente i dati di una persona. Al termine dell'utilizzo da parte di una scuola, i dati vengono cancellati.",
+		"dp.s7.p": "Conserviamo i dati solo per il tempo necessario alle finalità indicate. Gli account e i dati associati possono essere cancellati su richiesta; la direzione della scuola o il gestore può rimuovere completamente i dati di una persona. Al termine dell'utilizzo da parte di una scuola, i dati vengono cancellati. Gli account degli allievi inattivi da più di 1 anno vengono inoltre eliminati con tutti i loro dati.",
 
 		"dp.s8.t": "8. Sicurezza dei dati",
 		"dp.s8.p": "Le password sono conservate solo in forma cifrata (BCrypt), l'accesso utilizza token firmati e tutta la trasmissione è protetta tramite HTTPS. Ogni scuola è completamente separata dalle altre a livello di dati (separazione multi-tenant).",

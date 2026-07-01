@@ -137,6 +137,32 @@ public class AdminService {
                 .toList();
     }
 
+    /** Alle Nutzer:innen aller Schulen mit Schulname + „zuletzt eingeloggt" (Super-Admin-Übersicht). */
+    public List<SuperUserView> listAllUsersForSuper() {
+        requireRole(UserRole.SUPER_ADMIN);
+        Map<String, String> schoolNames = schoolRepository.findAll().stream()
+                .collect(Collectors.toMap(School::getId, School::getName, (a, b) -> a));
+        return userRepository.findAll().stream()
+                .map(u -> new SuperUserView(
+                        u.getId(),
+                        ((safe(u.getFirstName()) + " " + safe(u.getLastName())).trim()),
+                        u.getEmail(),
+                        u.getRole() != null ? u.getRole().name() : null,
+                        u.getSchoolId(),
+                        u.getSchoolId() != null ? schoolNames.getOrDefault(u.getSchoolId(), "—") : "—",
+                        u.isActive(),
+                        u.getLastLoginAt(),
+                        u.getCreatedAt()))
+                .sorted(Comparator
+                        .comparing((SuperUserView v) -> v.schoolName() == null ? "" : v.schoolName())
+                        .thenComparing(v -> v.name() == null ? "" : v.name()))
+                .toList();
+    }
+
+    private static String safe(String s) {
+        return s == null ? "" : s;
+    }
+
     public School createSchool(SchoolCreateRequest req) {
         requireRole(UserRole.SUPER_ADMIN);
         if (req.name() == null || req.name().isBlank()) {

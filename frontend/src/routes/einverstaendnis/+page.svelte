@@ -48,15 +48,20 @@
         <strong>EU</strong> (Azure OpenAI, Region Schweden) übermittelt. Es findet keine Weitergabe
         zu Werbezwecken statt.</p>
 
-        <h2>3. Ihre Rechte</h2>
-        <p>Sie können die Einwilligung jederzeit ohne Angabe von Gründen widerrufen und Auskunft,
-        Berichtigung oder Löschung der Daten verlangen – über die Schule oder direkt unter
-        <strong>info@praesto.ch</strong>. Massgebend sind die
-        <a href="https://praesto.ch/datenschutz">Datenschutzerklärung</a> und die
-        <a href="https://praesto.ch/agb">AGB</a> von Praesto (auch unter
-        praesto.ch/datenschutz bzw. praesto.ch/agb abrufbar).</p>
+        <h2>3. Aufbewahrung &amp; Löschung</h2>
+        <p>Die Daten werden nur so lange aufbewahrt, wie sie für die Nutzung gebraucht werden.
+        Konten von Schüler:innen, die sich <strong>länger als 1 Jahr</strong> nicht mehr eingeloggt
+        haben, werden inklusive aller Inhalte <strong>gelöscht</strong>. Sie können die
+        Einwilligung zudem jederzeit ohne Angabe von Gründen widerrufen und Auskunft, Berichtigung
+        oder Löschung der Daten verlangen – über die Schule oder direkt unter
+        <strong>info@praesto.ch</strong>.</p>
 
-        <h2>4. Einwilligung</h2>
+        <h2>4. Rechtliches</h2>
+        <p>Massgebend sind die <a href="https://praesto.ch/datenschutz">Datenschutzerklärung</a> und die
+        <a href="https://praesto.ch/agb">AGB</a> von Praesto (auch unter praesto.ch/datenschutz bzw.
+        praesto.ch/agb abrufbar).</p>
+
+        <h2>5. Einwilligung</h2>
         <div class="consent">
             <p>Als erziehungsberechtigte Person bestätige ich mit meiner Unterschrift:</p>
             <ul class="checks">

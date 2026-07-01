@@ -27,6 +27,7 @@ import { calendarUi } from "./messages/calendarUi.js";
 import { bugs } from "./messages/bugs.js";
 import { badgeNames } from "./messages/badgeNames.js";
 import { agb } from "./messages/agb.js";
+import { superUsers } from "./messages/superUsers.js";
 import { help } from "./messages/help.js";
 
 export const LANGUAGES = [
@@ -802,5 +803,6 @@ export const translations = deepMerge([
 	bugs,
 	help,
 	badgeNames,
-	agb
+	agb,
+	superUsers
 ]);
