@@ -486,9 +486,10 @@ public class SessionService {
             case "en" -> "Englisch";
             case "fr" -> "Französisch";
             case "it" -> "Italienisch";
-            default -> null;   // de -> nichts anhängen
+            default -> "Deutsch";   // de (und Fallback) -> explizit Deutsch erzwingen
         };
-        return name == null ? "" : "\n\nWICHTIG: Antworte ausschliesslich auf " + name + ".";
+        return "\n\nWICHTIG: Antworte ausschliesslich auf " + name
+                + ". Verwende KEINE andere Sprache, mische keine Sprachen, keine Übersetzung.";
     }
 
     /**
