@@ -60,3 +60,13 @@ export async function handle({ event, resolve }) {
 
     return resolve(event);
 }
+
+// Zentrales Logging unerwarteter Fehler (SSR/Load/Actions). Dem Nutzer wird nur eine
+// generische Meldung gezeigt; die Details landen im Server-Log (Azure) mit Kontext.
+// Anknüpfpunkt für ein späteres Error-Monitoring (z.B. Sentry).
+export function handleError({ error, event, status }) {
+    if (status !== 404) {
+        console.error(`[SSR-Fehler] ${event.request.method} ${event.url.pathname}:`, error);
+    }
+    return { message: "Es ist ein unerwarteter Fehler aufgetreten. Bitte lade die Seite neu." };
+}

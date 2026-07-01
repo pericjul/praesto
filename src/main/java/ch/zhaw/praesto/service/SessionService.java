@@ -428,10 +428,10 @@ public class SessionService {
                 startPrompt = systemPrompt + "\n\nBegrüsse kurz und frag mit EINER Frage, ob der Schüler üben will oder eine Frage hat. Nicht mehr." + langSuffix();
             }
             
-            return chatClient
+            return AiTimeout.call(() -> chatClient
                     .prompt(startPrompt)
                     .call()
-                    .content();
+                    .content(), 25);
         } catch (Exception e) {
             if (isAssignment) {
                 return "Hey! Schön, dass du üben willst. Für welchen Beruf möchtest du dich vorbereiten?";
@@ -459,9 +459,9 @@ public class SessionService {
             }
 
             Prompt prompt = new Prompt(chatMessages);
-            return chatClient.prompt(prompt).call().content();
+            return AiTimeout.call(() -> chatClient.prompt(prompt).call().content(), 25);
         } catch (Exception e) {
-            log.error("KI-Fehler: {}", e.getMessage());
+            log.error("KI-Fehler/Timeout: {}", e.getMessage());
             return "Entschuldigung, es gab einen technischen Fehler. Kannst du das bitte nochmal versuchen?";
         }
     }
@@ -743,10 +743,10 @@ public class SessionService {
             return;   // ohne Antworten des Schülers gibt es nichts zu bewerten
         }
         try {
-            String result = chatClient
+            String result = AiTimeout.call(() -> chatClient
                     .prompt(SCORE_PROMPT + langSuffix() + "\n\nGespräch:\n" + buildTranscript(session.getMessages()))
                     .call()
-                    .content();
+                    .content(), 25);
             parseScore(session, result);
         } catch (Exception e) {
             log.warn("Bewertung fehlgeschlagen: {}", e.getMessage());

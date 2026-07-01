@@ -1,6 +1,7 @@
 package ch.zhaw.praesto.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -18,6 +19,10 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    /** Nur zur Diagnose (Pilot) den Fehlertyp mitgeben. In Produktion: false. */
+    @Value("${praesto.expose-errors:false}")
+    private boolean exposeErrors;
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<String> handleBadRequest(BadRequestException e) {
@@ -51,17 +56,19 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Auffangnetz: alles Unerwartete wird mit vollem Stacktrace geloggt. In der
-     * Pilotphase wird zusätzlich der Fehlertyp + Kurzmeldung mitgegeben, damit
-     * der/die Betreiber:in die Ursache direkt sieht (Stacktrace bleibt nur im Log).
+     * Auffangnetz: alles Unerwartete wird mit vollem Stacktrace geloggt. Standardmässig
+     * bekommt der/die Nutzer:in nur eine generische Meldung (kein Information-Disclosure).
+     * Nur wenn {@code praesto.expose-errors=true} gesetzt ist (Diagnose/Pilot), wird der
+     * Fehlertyp mitgegeben. In Produktion auf {@code false} lassen.
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleUnexpected(Exception e) {
         log.error("Unerwarteter Fehler", e);
-        String detail = e.getClass().getSimpleName()
-                + (e.getMessage() != null ? ": " + e.getMessage() : "");
-        return new ResponseEntity<>(
-                "Es ist ein unerwarteter Fehler aufgetreten. (" + detail + ")",
-                HttpStatus.INTERNAL_SERVER_ERROR);
+        String body = "Es ist ein unerwarteter Fehler aufgetreten. Bitte versuche es später erneut.";
+        if (exposeErrors) {
+            body += " (" + e.getClass().getSimpleName()
+                    + (e.getMessage() != null ? ": " + e.getMessage() : "") + ")";
+        }
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

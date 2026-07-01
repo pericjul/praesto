@@ -17,6 +17,20 @@
     setLocale(event.currentTarget.value);
   }
 
+  // Online/Offline-Anzeige: freundlicher Banner statt stiller Fehler
+  let online = $state(true);
+  $effect(() => {
+    online = navigator.onLine;
+    const on = () => (online = true);
+    const off = () => (online = false);
+    window.addEventListener("online", on);
+    window.addEventListener("offline", off);
+    return () => {
+      window.removeEventListener("online", on);
+      window.removeEventListener("offline", off);
+    };
+  });
+
   let user = $derived(data?.user ?? {});
   let isAuthenticated = $derived(data?.isAuthenticated ?? false);
   let isDemo = $derived(data?.isDemo ?? false);
@@ -120,6 +134,9 @@
 </script>
 
 <div class="app-root">
+  {#if !online}
+    <div class="offline-banner" role="status">📡 {$t('common.offline')}</div>
+  {/if}
   <header class="app-header">
     <div class="app-header-left">
       <a class="brand" href={homeHref}>
@@ -223,6 +240,20 @@
 </div>
 
 <style>
+  .offline-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2000;
+    background: #b45309;
+    color: #fff;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 1rem;
+  }
+
   .app-header {
     position: fixed;
     top: 0;

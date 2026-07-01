@@ -212,10 +212,10 @@ public class GeneratorService {
 
     private String callAi(String prompt, java.util.function.Supplier<String> fallback) {
         try {
-            String result = chatClient.prompt(prompt).call().content();
+            String result = AiTimeout.call(() -> chatClient.prompt(prompt).call().content(), 30);
             return (result != null && !result.isBlank()) ? result : fallback.get();
         } catch (Exception e) {
-            log.warn("KI-Generierung fehlgeschlagen, nutze Fallback: {}", e.getMessage());
+            log.warn("KI-Generierung fehlgeschlagen/Timeout, nutze Fallback: {}", e.getMessage());
             return fallback.get();
         }
     }
