@@ -1,179 +1,73 @@
 <script>
-    // Druck-/PDF-fertige Einverständniserklärung für Eltern. Bewusst auf Deutsch
-    // (Dokument zum Ausdrucken/Unterschreiben), nicht app-mehrsprachig.
-    function print() {
-        window.print();
-    }
+    // Fertige Einverständniserklärung als PDF (von der Betreiberin gestaltet).
+    // Liegt unter /static und wird hier direkt zum Download angeboten.
+    const PDF = "/einverstaendnis-praesto.pdf";
 </script>
 
 <svelte:head>
     <title>Einverständniserklärung – Praesto</title>
 </svelte:head>
 
-<div class="doc-bg">
-    <div class="actions no-print">
-        <button class="btn" onclick={print}>📄 Als PDF speichern / drucken</button>
-        <a class="back" href="/teacher/dashboard">← Zurück</a>
+<div class="wrap">
+    <a class="back" href="/teacher/dashboard">← Zurück</a>
+
+    <div class="card">
+        <div class="logo">Praesto</div>
+        <div class="sub">KI-Bewerbungscoach für die Lehrstellensuche</div>
+
+        <h1>Einverständniserklärung der Eltern</h1>
+        <p class="lead">
+            Zum Ausdrucken und Unterschreiben. Bitte an die Eltern verteilen, unterschrieben
+            zurückgeben lassen und im Klassen-Bereich abhaken, wer die Erklärung abgegeben hat.
+        </p>
+
+        <a class="btn" href={PDF} download="Einverstaendniserklaerung_Praesto.pdf">📄 Als PDF herunterladen</a>
+        <a class="btn-ghost" href={PDF} target="_blank" rel="noopener">In neuem Tab ansehen</a>
+
+        <p class="note">Enthält die Einwilligung zur Nutzung sowie die Bestätigung von Datenschutzerklärung und AGB.</p>
     </div>
-
-    <article class="sheet">
-        <header class="doc-head">
-            <div>
-                <div class="logo">Praesto</div>
-                <div class="sub">KI-Bewerbungscoach für die Lehrstellensuche</div>
-            </div>
-            <div class="op">
-                Praesto – Julia Perić<br />
-                Sandäckerstrasse 1a, 8957 Spreitenbach<br />
-                info@praesto.ch · praesto.ch
-            </div>
-        </header>
-
-        <h1>Einverständniserklärung der Erziehungsberechtigten</h1>
-        <p class="lead">zur Nutzung der Lernplattform Praesto im Rahmen des Berufswahlunterrichts</p>
-
-        <p>Die Schule setzt im Berufswahlunterricht die Lernplattform <strong>Praesto</strong> ein.
-        Die Schüler:innen üben damit Bewerbungsgespräche mit einer KI und erstellen
-        Bewerbungsunterlagen (Lebenslauf, Bewerbungsschreiben). Die Nutzung ist freiwillig.</p>
-
-        <h2>1. Welche Daten bearbeitet werden</h2>
-        <ul>
-            <li><strong>Konto-Daten:</strong> Vor- und Nachname, E-Mail, verschlüsseltes Passwort, Klasse/Schule.</li>
-            <li><strong>Inhalte:</strong> Übungsgespräche, Aufgaben-Abgaben, Notizen und hochgeladene Dokumente.</li>
-        </ul>
-
-        <h2>2. Wo die Daten liegen</h2>
-        <p>Anwendung und Datenbank werden in der <strong>Schweiz</strong> betrieben (Microsoft Azure,
-        Region Switzerland North). Für die KI-Funktionen werden Eingaben an einen KI-Dienst in der
-        <strong>EU</strong> (Azure OpenAI, Region Schweden) übermittelt. Es findet keine Weitergabe
-        zu Werbezwecken statt.</p>
-
-        <h2>3. Aufbewahrung &amp; Löschung</h2>
-        <p>Die Daten werden nur so lange aufbewahrt, wie sie für die Nutzung gebraucht werden.
-        Konten von Schüler:innen, die sich <strong>länger als 1 Jahr</strong> nicht mehr eingeloggt
-        haben, werden inklusive aller Inhalte <strong>gelöscht</strong>. Sie können die
-        Einwilligung zudem jederzeit ohne Angabe von Gründen widerrufen und Auskunft, Berichtigung
-        oder Löschung der Daten verlangen – über die Schule oder direkt unter
-        <strong>info@praesto.ch</strong>.</p>
-
-        <h2>4. Rechtliches</h2>
-        <p>Massgebend sind die <a href="https://praesto.ch/datenschutz">Datenschutzerklärung</a> und die
-        <a href="https://praesto.ch/agb">AGB</a> von Praesto (auch unter praesto.ch/datenschutz bzw.
-        praesto.ch/agb abrufbar).</p>
-
-        <h2>5. Einwilligung</h2>
-        <div class="consent">
-            <p>Als erziehungsberechtigte Person bestätige ich mit meiner Unterschrift:</p>
-            <ul class="checks">
-                <li><span class="box"></span><span class="ct">Ich habe die <strong>Datenschutzerklärung</strong> (praesto.ch/datenschutz)
-                    und die <strong>AGB</strong> (praesto.ch/agb) gelesen und bin damit einverstanden.</span></li>
-                <li><span class="box"></span><span class="ct">Ich willige ein, dass mein Kind Praesto im Rahmen des Unterrichts nutzt
-                    und die dafür notwendigen Personendaten gemäss Datenschutzerklärung bearbeitet werden.</span></li>
-                <li><span class="box"></span><span class="ct">Mir ist bekannt, dass die Nutzung freiwillig ist und ich diese
-                    Einwilligung jederzeit widerrufen und die Löschung der Daten verlangen kann.</span></li>
-            </ul>
-        </div>
-
-        <p class="hand-back">Bitte ankreuzen, vollständig ausfüllen, unterschreiben und der Klassenlehrperson abgeben.</p>
-
-        <div class="fields">
-            <div class="row">
-                <div class="f"><span>Name der Schülerin / des Schülers</span><div class="line"></div></div>
-                <div class="f short"><span>Klasse</span><div class="line"></div></div>
-            </div>
-            <div class="row">
-                <div class="f"><span>Schule</span><div class="line"></div></div>
-                <div class="f short"><span>Geburtsdatum Kind</span><div class="line"></div></div>
-            </div>
-            <div class="row">
-                <div class="f"><span>Name Erziehungsberechtigte:r</span><div class="line"></div></div>
-            </div>
-            <div class="row">
-                <div class="f short"><span>Ort, Datum</span><div class="line"></div></div>
-                <div class="f"><span>Unterschrift Erziehungsberechtigte:r</span><div class="line"></div></div>
-            </div>
-        </div>
-
-        <p class="foot">Praesto – Julia Perić · Sandäckerstrasse 1a, 8957 Spreitenbach · info@praesto.ch · praesto.ch</p>
-    </article>
 </div>
 
 <style>
-    /* Heller, neutraler Hintergrund -> das weisse Blatt wirkt wie ein echtes Dokument */
-    .doc-bg { background: #eceaf1; min-height: 100%; padding: 1.5rem 1rem 3rem; }
-    .actions { display: flex; align-items: center; gap: 1rem; margin: 0 auto 1.25rem; max-width: 820px; }
-    .btn { background: #2F124D; color: #fff; border: none; border-radius: 999px; padding: 0.7rem 1.4rem; font-weight: 700; cursor: pointer; }
-    .back { color: #4b4060; text-decoration: none; }
-
-    /* Das eigentliche weisse Dokument */
-    .sheet {
-        max-width: 820px;
-        margin: 0 auto;
+    .wrap { max-width: 640px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    .back { color: #6b647a; text-decoration: none; font-size: 0.9rem; }
+    .card {
+        margin-top: 1rem;
         background: #fff;
-        color: #1f1830;
-        border-radius: 6px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-        padding: 3rem 3.25rem;
-        box-sizing: border-box;
+        border: 1px solid #e8e0f0;
+        border-radius: 1rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+        padding: 2.25rem 2rem;
+        text-align: center;
     }
-
-    .doc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; border-bottom: 3px solid #2F124D; padding-bottom: 0.85rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
     .logo { font-size: 1.6rem; font-weight: 800; color: #2F124D; letter-spacing: -0.01em; }
-    .sub { font-size: 0.85rem; color: #6b647a; }
-    .op { font-size: 0.8rem; color: #4b4060; text-align: right; line-height: 1.5; }
-
-    h1 { font-size: 1.45rem; color: #2F124D; margin: 0 0 0.25rem; }
-    .lead { margin: 0 0 1.25rem; color: #6b647a; font-size: 0.95rem; }
-    h2 { font-size: 1.02rem; color: #2d2141; margin: 1.4rem 0 0.4rem; }
-    p, li { line-height: 1.6; color: #2d2141; }
-    a { color: #2F124D; }
-    ul { margin: 0.3rem 0; padding-left: 1.2rem; }
-
-    .consent { background: #faf7fc; border: 1px solid #ece3f5; border-radius: 0.6rem; padding: 0.9rem 1.1rem; margin-top: 0.5rem; }
-    .consent p { margin: 0 0 0.5rem; font-weight: 600; }
-    .checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.55rem; }
-    .checks li { display: flex; gap: 0.6rem; align-items: flex-start; line-height: 1.5; }
-    .checks .ct { flex: 1; min-width: 0; }
-    .box { flex: 0 0 auto; width: 1rem; height: 1rem; margin-top: 0.2rem; border: 1.5px solid #2F124D; border-radius: 3px; background: #fff; }
-
-    .hand-back { margin: 1.75rem 0 0.6rem; font-size: 0.82rem; color: #6b647a; font-style: italic; }
-    .fields { margin-top: 0; display: flex; flex-direction: column; gap: 1.5rem; border: 1px solid #ece3f5; border-radius: 0.6rem; padding: 1.25rem 1.1rem; }
-    .row { display: flex; gap: 1.5rem; }
-    .f { flex: 1; }
-    .f.short { flex: 0 0 28%; }
-    .f span { font-size: 0.78rem; color: #6b647a; }
-    .line { border-bottom: 1px solid #2d2141; height: 1.7rem; }
-
-    .foot { margin-top: 2rem; font-size: 0.75rem; color: #9a8b9d; text-align: center; }
-
-    @media (max-width: 640px) {
-        .sheet { padding: 1.75rem 1.25rem; }
-        .row { flex-direction: column; gap: 0.9rem; }
-        .f.short { flex: 0 0 auto; }
+    .sub { font-size: 0.85rem; color: #6b647a; margin-bottom: 1.5rem; }
+    h1 { font-size: 1.35rem; color: #2F124D; margin: 0 0 0.6rem; }
+    .lead { color: #4b4060; line-height: 1.55; margin: 0 auto 1.5rem; max-width: 46ch; }
+    .btn {
+        display: inline-block;
+        background: #2F124D;
+        color: #fff;
+        border: none;
+        border-radius: 999px;
+        padding: 0.85rem 1.8rem;
+        font-weight: 700;
+        font-size: 1rem;
+        text-decoration: none;
+        cursor: pointer;
     }
-
-    @media print {
-        @page { size: A4 portrait; margin: 14mm; }
-        :global(.app-header), :global(.app-footer), :global(.demo-bar), :global(.demo-toast) { display: none !important; }
-        :global(.app-main) { padding: 0 !important; }
-        .no-print { display: none !important; }
-        /* Reines weisses Blatt, alles auf EINE A4-Seite verdichtet */
-        :global(html), :global(body), :global(.app-main) { height: auto !important; min-height: 0 !important; }
-        .doc-bg { background: #fff; padding: 0; min-height: 0; }
-        .sheet { padding: 0; max-width: 100%; box-shadow: none; border-radius: 0; font-size: 10.5pt; color: #000; }
-        .sheet, .sheet * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-        .doc-head { padding-bottom: 0.5rem; margin-bottom: 0.85rem; }
-        .logo { font-size: 1.4rem; }
-        h1 { font-size: 1.2rem; }
-        .lead { margin: 0 0 0.7rem; }
-        h2 { font-size: 0.98rem; margin: 0.7rem 0 0.2rem; }
-        p, li { line-height: 1.36; }
-        ul { margin: 0.15rem 0; }
-        .consent { padding: 0.55rem 0.8rem; }
-        .checks { gap: 0.35rem; }
-        .fields { margin-top: 1rem; gap: 1rem; }
-        .line { height: 1.4rem; }
-        .foot { margin-top: 1.1rem; }
-        .consent, .fields, .row { break-inside: avoid; page-break-inside: avoid; }
+    .btn:hover { background: #41205f; }
+    .btn-ghost {
+        display: inline-block;
+        margin-left: 0.6rem;
+        color: #2F124D;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.92rem;
+        padding: 0.85rem 0.5rem;
+    }
+    .note { margin-top: 1.5rem; font-size: 0.82rem; color: #9a8b9d; }
+    @media (max-width: 480px) {
+        .btn-ghost { display: block; margin: 0.75rem 0 0; }
     }
 </style>

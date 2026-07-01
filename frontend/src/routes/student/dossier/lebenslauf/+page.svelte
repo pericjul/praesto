@@ -2,15 +2,20 @@
     import { enhance } from "$app/forms";
     import { t } from "$lib/i18n";
     import RepeaterField from "$lib/components/RepeaterField.svelte";
+    import PhotoCropper from "$lib/components/PhotoCropper.svelte";
 
     let { data, form } = $props();
 
     let generating = $state(false);
+    let croppedPhoto = $state(null); // zugeschnittenes Foto (Blob) aus dem Cropper
     let prefillFirst = $derived(data.user?.firstName ?? "");
     let prefillLast = $derived(data.user?.lastName ?? "");
 
-    function handle() {
+    function handle({ formData }) {
         generating = true;
+        // Zugeschnittenes Foto (3:4) statt der Roh-Datei mitschicken (vor dem Absenden)
+        formData.delete("photo");
+        if (croppedPhoto) formData.set("photo", croppedPhoto, "foto.jpg");
         return async ({ update }) => {
             await update();
             generating = false;
@@ -44,7 +49,10 @@
             <label><span>{$t("cvform.hometown")} <em>({$t("cvform.optional")})</em></span><input name="hometown" /></label>
             <label><span>{$t("cvform.nationality")} <em>({$t("cvform.optional")})</em></span><input name="nationality" /></label>
         </div>
-        <label class="photo-field"><span>{$t("cvform.photo")} <em>({$t("cvform.photoHint")})</em></span><input name="photo" type="file" accept="image/png,image/jpeg" /></label>
+        <div class="photo-field">
+            <span class="photo-label">{$t("cvform.photo")} <em>({$t("cvform.photoHint")})</em></span>
+            <PhotoCropper onchange={(blob) => (croppedPhoto = blob)} />
+        </div>
 
         <h2>{$t("cvform.sec.family")} <em class="opt">({$t("cvform.optional")})</em></h2>
         <RepeaterField name="parents" label={$t("cvform.parents")} hint={"(" + $t("cvform.perPerson") + ")"} placeholder={$t("cvform.ph.parents")} addLabel={$t("cvform.parentsAdd")} />
@@ -87,6 +95,9 @@
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
     label { display: grid; gap: 0.3rem; }
     label span { font-size: 0.85rem; font-weight: 600; color: #2d2141; }
+    .photo-field { display: grid; gap: 0.4rem; }
+    .photo-label { font-size: 0.85rem; font-weight: 600; color: #2d2141; }
+    .photo-label em { color: #9a8baf; font-weight: 400; font-style: normal; }
     label em { color: #9a8baf; font-weight: 400; font-style: normal; }
     input, textarea { border: 1px solid #e8e0f0; border-radius: 0.6rem; padding: 0.6rem 0.75rem; font: inherit; width: 100%; box-sizing: border-box; }
     input:focus, textarea:focus { outline: 2px solid #2F124D; outline-offset: 1px; }

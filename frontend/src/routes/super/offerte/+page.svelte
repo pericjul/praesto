@@ -1,30 +1,21 @@
 <script>
-    // Offerten-Generator (nur Super-Admin). Felder ausfüllen → druckbare Offerte,
-    // die als PDF gespeichert/gesendet werden kann. Preise pro Anfrage frei eintragbar.
-    let school = $state("");
-    let contact = $state("");
-    let address = $state("");
-    let offerNr = $state("");
-    let date = $state("");
-    let validUntil = $state("");
-    let items = $state([
-        { desc: "Praesto – Lizenz pro Schuljahr (inkl. KI-Bewerbungstraining, Dossier, Lehrer-Cockpit)", price: "" }
-    ]);
-    let notes = $state("Hosting & Datenhaltung in der Schweiz. Support per E-Mail inbegriffen. Preise in CHF, exkl. allfälliger MwSt. Es gelten die AGB und die Datenschutzerklärung von Praesto (praesto.ch/agb, praesto.ch/datenschutz).");
+    // Offerten-Generator (nur Super-Admin). Felder ausfüllen -> Formular wird an den
+    // Download-Endpoint geschickt, der die Word-Vorlage befüllt und als .docx liefert.
+    let total1 = $state("");
+    let total2 = $state("");
+    let total3 = $state("");
 
-    let total = $derived(items.reduce((s, i) => s + (parseFloat(i.price) || 0), 0));
-
-    function addItem() {
-        items = [...items, { desc: "", price: "" }];
+    function num(s) {
+        if (!s) return 0;
+        const c = String(s).replace(/[^0-9.,]/g, "").replace(",", ".");
+        const v = parseFloat(c);
+        return isNaN(v) ? 0 : v;
     }
-    function removeItem(idx) {
-        items = items.filter((_, i) => i !== idx);
-    }
+    let subtotal = $derived(num(total1) + num(total2) + num(total3));
+    let mwst = $derived(Math.round(subtotal * 0.081 * 100) / 100);
+    let gesamt = $derived(subtotal + mwst);
     function fmt(n) {
         return (Number(n) || 0).toLocaleString("de-CH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-    function print() {
-        window.print();
     }
 </script>
 
@@ -33,151 +24,93 @@
 </svelte:head>
 
 <div class="wrap">
-    <!-- Eingabe -->
-    <section class="form no-print">
-        <div class="form-head">
-            <h1>📄 Offerte erstellen</h1>
-            <button class="btn" onclick={print}>Als PDF speichern / drucken</button>
-        </div>
-        <p class="hint">Felder ausfüllen – die Vorschau rechts/unten wird zur fertigen Offerte. Preise frei eintragbar (je nach Anfrage).</p>
+    <div class="head">
+        <h1>📄 Offerte erstellen</h1>
+        <a class="back" href="/super/dashboard">← Zurück</a>
+    </div>
+    <p class="hint">Felder ausfüllen und herunterladen – daraus wird eine fertig formatierte Word-Offerte
+        (aus der Vorlage). Beträge frei eintragbar; Zwischentotal, MwSt. (8.1 %) und Gesamtbetrag werden berechnet.</p>
 
+    <form method="POST" action="/super/offerte/download" class="form">
+        <h2>Empfänger</h2>
         <div class="grid">
-            <label><span>Schule</span><input bind:value={school} placeholder="Sekundarschule Muster" /></label>
-            <label><span>Ansprechperson</span><input bind:value={contact} placeholder="Frau/Herr …" /></label>
-            <label><span>Adresse der Schule</span><input bind:value={address} placeholder="Strasse, PLZ Ort" /></label>
-            <label><span>Offert-Nr.</span><input bind:value={offerNr} placeholder="2026-001" /></label>
-            <label><span>Datum</span><input type="date" bind:value={date} /></label>
-            <label><span>Gültig bis</span><input type="date" bind:value={validUntil} /></label>
+            <label><span>Schule</span><input name="schuleName" placeholder="Sekundarschule Muster" /></label>
+            <label><span>Ansprechperson</span><input name="ansprechperson" placeholder="Frau/Herr …" /></label>
+            <label><span>Strasse</span><input name="strasse" placeholder="Musterstrasse 1" /></label>
+            <label><span>PLZ</span><input name="plz" placeholder="8000" /></label>
+            <label><span>Ort</span><input name="ort" placeholder="Zürich" /></label>
         </div>
 
-        <h3>Positionen</h3>
-        {#each items as item, idx}
-            <div class="item-row">
-                <input class="desc" bind:value={item.desc} placeholder="Beschreibung" />
-                <input class="price" type="number" step="0.05" bind:value={item.price} placeholder="CHF" />
-                <button class="rm" type="button" onclick={() => removeItem(idx)} aria-label="Entfernen">✕</button>
-            </div>
-        {/each}
-        <button class="btn-ghost" type="button" onclick={addItem}>+ Position</button>
-
-        <label class="notes-label"><span>Bemerkungen / Konditionen</span><textarea bind:value={notes} rows="3"></textarea></label>
-    </section>
-
-    <!-- Druckbare Offerte -->
-    <section class="sheet">
-        <header class="doc-head">
-            <div>
-                <div class="logo">Praesto</div>
-                <div class="sub">KI-Bewerbungscoach für die Lehrstellensuche</div>
-            </div>
-            <div class="op">
-                Praesto – Julia Perić<br />
-                Sandäckerstrasse 1a, 8957 Spreitenbach<br />
-                info@praesto.ch · praesto.ch
-            </div>
-        </header>
-
-        <div class="meta">
-            <div class="recipient">
-                {#if school}<strong>{school}</strong><br />{/if}
-                {#if contact}{contact}<br />{/if}
-                {#if address}{address}{/if}
-            </div>
-            <div class="meta-right">
-                {#if offerNr}<div>Offerte Nr. {offerNr}</div>{/if}
-                {#if date}<div>Datum: {date}</div>{/if}
-                {#if validUntil}<div>Gültig bis: {validUntil}</div>{/if}
-            </div>
+        <h2>Offerte</h2>
+        <div class="grid">
+            <label><span>Offerten-Nr.</span><input name="offertenNr" placeholder="2026-001" /></label>
+            <label><span>Datum</span><input name="datum" placeholder="01.07.2026" /></label>
+            <label><span>Gültig bis</span><input name="gueltigBis" placeholder="31.08.2026" /></label>
+            <label><span>Schuljahr</span><input name="schuljahr" placeholder="2026/2027" /></label>
+            <label><span>Laufzeit</span><input name="laufzeit" placeholder="1 Schuljahr" /></label>
         </div>
 
-        <h1 class="doc-title">Offerte</h1>
+        <h2>Positionen</h2>
+        <div class="grid3">
+            <label><span>Menge</span><input name="menge" value="1" /></label>
+            <label><span>Einheit</span><input name="einheit" value="Schuljahr" /></label>
+            <label><span>Preis / Einheit (CHF)</span><input name="preis" placeholder="1200" /></label>
+        </div>
+        <div class="pos">
+            <label class="desc"><span>Position 1</span><input name="position1" placeholder="Praesto – Lizenz pro Schuljahr (inkl. KI-Training, Dossier, Lehrer-Cockpit)" /></label>
+            <label class="amt"><span>Total (CHF)</span><input name="total1" bind:value={total1} placeholder="1200" /></label>
+        </div>
+        <div class="pos">
+            <label class="desc"><span>Position 2 <em>(optional)</em></span><input name="position2" /></label>
+            <label class="amt"><span>Total (CHF)</span><input name="total2" bind:value={total2} /></label>
+        </div>
+        <div class="pos">
+            <label class="desc"><span>Position 3 <em>(optional)</em></span><input name="position3" /></label>
+            <label class="amt"><span>Total (CHF)</span><input name="total3" bind:value={total3} /></label>
+        </div>
 
-        <table class="positions">
-            <thead>
-                <tr><th>Beschreibung</th><th class="amount">Betrag (CHF)</th></tr>
-            </thead>
-            <tbody>
-                {#each items as item}
-                    <tr><td>{item.desc || "—"}</td><td class="amount">{item.price ? fmt(item.price) : "—"}</td></tr>
-                {/each}
-            </tbody>
-            <tfoot>
-                <tr><td class="total-label">Total</td><td class="amount total">CHF {fmt(total)}</td></tr>
-            </tfoot>
-        </table>
+        <div class="totals">
+            <div><span>Zwischentotal (exkl. MwSt.)</span><strong>CHF {fmt(subtotal)}</strong></div>
+            <div><span>MwSt. 8.1 %</span><strong>CHF {fmt(mwst)}</strong></div>
+            <div class="grand"><span>Gesamtbetrag (inkl. MwSt.)</span><strong>CHF {fmt(gesamt)}</strong></div>
+        </div>
 
-        {#if notes}<p class="notes">{notes}</p>{/if}
-
-        <p class="thanks">Wir freuen uns auf eine Zusammenarbeit. Bei Fragen: info@praesto.ch.</p>
-        <p class="foot">Praesto – Julia Perić · Sandäckerstrasse 1a, 8957 Spreitenbach · info@praesto.ch</p>
-    </section>
+        <button type="submit" class="btn">📥 Offerte als Word herunterladen</button>
+    </form>
 </div>
 
 <style>
-    .wrap { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 3rem; color: #1f1830; }
+    .wrap { max-width: 820px; margin: 0 auto; padding: 1.5rem 1rem 3rem; color: #1f1830; }
+    .head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .head h1 { margin: 0; font-size: 1.5rem; color: #2F124D; }
+    .back { color: #6b647a; text-decoration: none; }
+    .hint { color: #6b647a; font-size: 0.9rem; margin: 0.4rem 0 1.5rem; }
 
-    /* Eingabe */
-    .form { background: #fff; border: 1px solid #e8e0f0; border-radius: 1rem; padding: 1.25rem; margin-bottom: 1.75rem; }
-    .form-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
-    .form-head h1 { margin: 0; font-size: 1.4rem; color: #2F124D; }
-    .hint { color: #6b647a; font-size: 0.88rem; margin: 0.4rem 0 1rem; }
+    .form { background: #fff; border: 1px solid #e8e0f0; border-radius: 1rem; padding: 1.5rem; }
+    h2 { margin: 1.25rem 0 0.6rem; color: #2d2141; font-size: 1rem; border-bottom: 2px solid #ece3f5; padding-bottom: 0.3rem; }
+    h2:first-of-type { margin-top: 0; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
     label { display: grid; gap: 0.25rem; }
     label span { font-size: 0.8rem; font-weight: 600; color: #2d2141; }
-    input, textarea { border: 1px solid #e8e0f0; border-radius: 0.5rem; padding: 0.55rem 0.7rem; font: inherit; width: 100%; box-sizing: border-box; }
-    h3 { margin: 1.1rem 0 0.5rem; color: #2d2141; font-size: 1rem; }
-    .item-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
-    .item-row .desc { flex: 1; }
-    .item-row .price { width: 120px; flex-shrink: 0; }
-    .rm { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 0.5rem; width: 38px; flex-shrink: 0; cursor: pointer; }
-    .btn { background: #2F124D; color: #fff; border: none; border-radius: 999px; padding: 0.6rem 1.2rem; font-weight: 700; cursor: pointer; }
-    .btn-ghost { background: #faf8fc; border: 1px solid #e8e0f0; border-radius: 0.5rem; padding: 0.45rem 0.9rem; cursor: pointer; margin-top: 0.25rem; }
-    .notes-label { margin-top: 1rem; }
-    @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+    label em { color: #9a8baf; font-weight: 400; font-style: normal; }
+    input { border: 1px solid #e8e0f0; border-radius: 0.5rem; padding: 0.55rem 0.7rem; font: inherit; width: 100%; box-sizing: border-box; }
+    input:focus { outline: 2px solid #2F124D; outline-offset: 1px; }
 
-    /* Druckbare Offerte */
-    .sheet { background: #fff; border: 1px solid #ece3f5; border-radius: 1rem; padding: 2rem; }
-    .doc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; border-bottom: 3px solid #2F124D; padding-bottom: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
-    .logo { font-size: 1.6rem; font-weight: 800; color: #2F124D; }
-    .sub { font-size: 0.85rem; color: #6b647a; }
-    .op { font-size: 0.8rem; color: #4b4060; text-align: right; line-height: 1.5; }
-    .meta { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
-    .recipient { line-height: 1.55; }
-    .meta-right { font-size: 0.85rem; color: #4b4060; text-align: right; line-height: 1.6; }
-    .doc-title { font-size: 1.5rem; color: #2F124D; margin: 0 0 1rem; }
-    .positions { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
-    .positions th, .positions td { text-align: left; padding: 0.6rem 0.5rem; border-bottom: 1px solid #ece3f5; vertical-align: top; }
-    .positions .amount { text-align: right; white-space: nowrap; }
-    .positions tfoot td { border-top: 2px solid #2F124D; border-bottom: none; font-weight: 700; padding-top: 0.7rem; }
-    .total { color: #2F124D; font-size: 1.1rem; }
-    .notes { background: #faf7fc; border: 1px solid #ece3f5; border-radius: 0.6rem; padding: 0.8rem 1rem; color: #2d2141; line-height: 1.55; }
-    .thanks { color: #2d2141; margin-top: 1rem; }
-    .foot { margin-top: 1.5rem; font-size: 0.75rem; color: #9a8b9d; text-align: center; }
+    .pos { display: flex; gap: 0.75rem; margin-bottom: 0.6rem; }
+    .pos .desc { flex: 1; }
+    .pos .amt { flex: 0 0 130px; }
 
-    @media print {
-        @page { size: A4 portrait; margin: 15mm; }
-        /* Verhindert eine leere 2. Seite durch Mindesthöhen des App-Layouts */
-        :global(html), :global(body), :global(.app-main), :global(#app), :global(.app-shell) {
-            height: auto !important;
-            min-height: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        :global(.app-header), :global(.app-footer), :global(.demo-bar), :global(.demo-toast) { display: none !important; }
-        .no-print { display: none !important; }
-        .wrap { padding: 0; margin: 0; max-width: 100%; }
-        /* Reines weisses Blatt, kompakt auf EINE Seite */
-        .sheet { border: none; border-radius: 0; padding: 0; font-size: 10.5pt; color: #000; }
-        .sheet, .sheet * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-        .doc-head { padding-bottom: 0.5rem; margin-bottom: 0.85rem; }
-        .logo { font-size: 1.35rem; }
-        .meta { margin-bottom: 0.85rem; }
-        .doc-title { font-size: 1.25rem; margin: 0 0 0.7rem; }
-        .positions th, .positions td { padding: 0.45rem 0.4rem; }
-        .notes { padding: 0.55rem 0.8rem; background: #faf7fc !important; }
-        .thanks { margin-top: 0.7rem; }
-        .foot { margin-top: 1rem; }
-        /* Nicht über den Seitenrand umbrechen */
-        .doc-head, .meta, .positions, .notes { break-inside: avoid; page-break-inside: avoid; }
+    .totals { margin-top: 1.25rem; border-top: 2px solid #ece3f5; padding-top: 0.85rem; display: flex; flex-direction: column; gap: 0.3rem; }
+    .totals div { display: flex; justify-content: space-between; color: #4b4060; }
+    .totals .grand { font-size: 1.1rem; color: #2F124D; margin-top: 0.25rem; padding-top: 0.4rem; border-top: 1px solid #ece3f5; }
+
+    .btn { margin-top: 1.5rem; background: #2F124D; color: #fff; border: none; border-radius: 999px; padding: 0.85rem 1.8rem; font-weight: 700; font-size: 1rem; cursor: pointer; }
+    .btn:hover { background: #41205f; }
+
+    @media (max-width: 600px) {
+        .grid, .grid3 { grid-template-columns: 1fr; }
+        .pos { flex-direction: column; }
+        .pos .amt { flex: 1; }
     }
 </style>
