@@ -50,11 +50,9 @@ public class AiQuotaService {
     }
 
     public AiQuotaStatus status(String userId, AiFeature feature) {
-        // Freies Üben ist eine TAGES-Quota: 1 pro Tag, füllt sich täglich auf.
+        // Freies Üben ist UNBEGRENZT (nur je 15 Min pro Chat). limit/remaining = -1 = unbegrenzt.
         if (feature == AiFeature.PRACTICE_INTERVIEW) {
-            int usedToday = practiceUsedToday(userId);
-            return new AiQuotaStatus(feature.name(), practicePerDay, usedToday,
-                    Math.max(0, practicePerDay - usedToday));
+            return new AiQuotaStatus(feature.name(), -1, practiceUsedToday(userId), -1);
         }
         int used = aiUsageRepository.findByUserIdAndFeature(userId, feature)
                 .map(AiUsage::getUsedTotal)

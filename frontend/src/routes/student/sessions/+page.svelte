@@ -7,9 +7,6 @@
     // Reaktive sessions Liste (kann lokal geändert werden)
     let sessions = $state(data.sessions ?? []);
 
-    // KI-Kontingent freies Üben (Lehrer-Aufgaben zählen nicht dazu)
-    let practiceQuota = $derived(data.quota?.PRACTICE_INTERVIEW ?? null);
-    let practiceLeft = $derived(practiceQuota ? practiceQuota.remaining : null);
 
     // Loading States
     let closingSessionId = $state(null);
@@ -96,7 +93,7 @@
                 <input type="checkbox" name="roast" />
                 <span>🔥 {$t('ssess.roastMode')}</span>
             </label>
-            <button type="submit" class="btn btn-primary" disabled={practiceLeft === 0 || starting}>
+            <button type="submit" class="btn btn-primary" disabled={starting}>
                 {#if starting}<span class="btn-spinner" aria-hidden="true"></span> {$t('ssess.starting')}{:else}{$t('ssess.newSession')}{/if}
             </button>
         </form>
@@ -112,15 +109,7 @@
         </div>
     {/if}
 
-    {#if practiceQuota}
-        <p class="quota-note" class:quota-empty={practiceLeft === 0}>
-            {#if practiceLeft === 0}
-                🔒 {$t('ssess.quotaEmpty')}
-            {:else}
-                🎯 {$t('ssess.quotaLeft').replace('%N%', practiceLeft).replace('%T%', practiceQuota.limit)}
-            {/if}
-        </p>
-    {/if}
+    <p class="quota-note">🎯 {$t('ssess.practiceHint')}</p>
 
     {#if form?.error}
         <div class="alert alert-danger">{form.error}</div>

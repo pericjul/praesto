@@ -270,13 +270,9 @@ public class SessionService {
         // Roast nur beim freien Üben – bei Aufgaben immer der seriöse Modus.
         boolean roastEffective = roast && !isAssignment;
 
-        // Freies Üben: max. 1 pro Tag (füllt sich täglich auf). Aufgaben sind zusätzlich.
+        // Freies Üben: UNBEGRENZT viele Gespräche pro Tag. Begrenzt wird nur die Dauer
+        // pro Chat (15 Min, siehe targetDurationMin). Aufgaben-Gespräche sind separat.
         if (!isAssignment) {
-            if (aiQuotaService.practiceUsedToday(studentId) >= aiQuotaService.practicePerDay()) {
-                throw new BadRequestException(
-                        "Du hast heute schon geübt. Morgen steht dir wieder ein freies Übungsgespräch zur Verfügung. "
-                                + "Aufgaben deiner Lehrperson kannst du jederzeit machen.");
-            }
             // Kumulativen Übungszähler hochzählen (für das Lehrer-Cockpit, überlebt Chat-Löschen).
             aiQuotaService.recordUse(studentId, userService.getCurrentSchoolId(), AiFeature.PRACTICE_INTERVIEW);
         } else {

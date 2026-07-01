@@ -65,7 +65,7 @@
                 <li><strong>🔥 Roast-Modus</strong> (Schalter) – die KI ist ehrlicher/härter. In Aufgaben ist er gesperrt.</li>
                 <li><strong>Nachricht senden</strong> – deine Antwort abschicken.</li>
                 <li><strong>Bewertung („Hiring chance“)</strong> – am Ende schätzt die KI deine Einstellungs-Chance in % mit einem Tipp.</li>
-                <li><strong>Kontingent:</strong> 1 kostenloses Übungsgespräch pro Tag, das sich täglich erneuert. Gespräche zu Aufgaben zählen separat.</li>
+                <li><strong>Übungsgespräche:</strong> So viele du willst – jeder Chat dauert 15 Minuten. Gespräche zu Aufgaben zählen separat.</li>
             </ul>
 
             <h3>Aufgaben</h3>
@@ -185,7 +185,7 @@
 
             <h3>D) Schüler:in: KI-Bewerbungsgespräch führen</h3>
             <ol>
-                <li>Menü <strong>„Training“</strong> → <strong>„Neues Gespräch starten“</strong> (1 kostenloses Gespräch pro Tag).</li>
+                <li>Menü <strong>„Training“</strong> → <strong>„Neues Gespräch starten“</strong> (so oft du willst, je 15 Minuten).</li>
                 <li>Die KI begrüsst dich und fragt nach dem Beruf. In ganzen Sätzen antworten und <strong>senden</strong>.</li>
                 <li>So lange üben, wie du willst. Optional den <strong>🔥 Roast-Modus</strong> einschalten für härteres Feedback.</li>
                 <li>Am Ende zeigt die KI deine <strong>Einstellungs-Chance in %</strong> mit einem konkreten Tipp.</li>
@@ -208,7 +208,7 @@
             <ul>
                 <li><strong>Ich habe mein Passwort vergessen.</strong> → An die Lehrperson (Schüler:in) bzw. Schulleitung wenden – sie setzen es mit dem 🔑-Symbol zurück.</li>
                 <li><strong>Der „Interview starten“-Button reagiert nicht / Fehler.</strong> → Seite neu laden und erneut versuchen. Prüfe deine Internetverbindung (oben erscheint sonst ein Banner).</li>
-                <li><strong>„Du hast dein Kontingent aufgebraucht.“</strong> → Pro Tag gibt es 1 kostenloses Übungsgespräch; morgen ist es wieder da. Aufgaben-Gespräche zählen separat.</li>
+                <li><strong>Wie oft kann ich üben?</strong> → Übungsgespräche kannst du so oft starten, wie du willst – jeder Chat dauert 15 Minuten. Nur die Dokument-Generatoren (Lebenslauf, Bewerbungsschreiben) haben ein festes Kontingent.</li>
                 <li><strong>Die KI antwortet auf Deutsch, obwohl ich Englisch eingestellt habe.</strong> → Neue Gespräche folgen der Sprache oben rechts; bereits gestartete Gespräche bleiben in ihrer Sprache.</li>
                 <li><strong>Das erstellte Dokument sieht nicht perfekt aus.</strong> → Lebenslauf/Bewerbungsschreiben sind Vorlagen – öffne die Word-Datei und passe sie an.</li>
                 <li><strong>Ein Schüler ist in der falschen Klasse.</strong> → In der Klassenansicht mit ✕ aus der Klasse entfernen (Konto/Daten bleiben) und in der richtigen Klasse über den Link/Suche hinzufügen.</li>

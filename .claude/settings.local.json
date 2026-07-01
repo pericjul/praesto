@@ -239,7 +239,8 @@
       "Bash(cat src/main/java/ch/zhaw/praesto/model/BugReport*.java)",
       "Bash(cat src/main/java/ch/zhaw/praesto/controller/BugReport*Controller.java src/main/java/ch/zhaw/praesto/controller/Bug*Controller.java)",
       "Bash(ls src/test/java/ch/zhaw/praesto/**/*Bug*)",
-      "Bash(find src/test -iname \"*bug*\")"
+      "Bash(find src/test -iname \"*bug*\")",
+      "Bash(./mvnw -q test -Dtest='SessionServiceTest,SessionControllerTest')"
     ]
   }
 }
