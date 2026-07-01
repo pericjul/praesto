@@ -36,7 +36,6 @@
                 <li><strong>Schüler:in</strong> – übt Bewerbungsgespräche mit der KI, löst Aufgaben und erstellt Bewerbungsunterlagen.</li>
                 <li><strong>Lehrperson</strong> – erstellt Klassen, vergibt und bewertet Aufgaben, gibt Feedback und verwaltet das Einverständnis.</li>
                 <li><strong>Schulleitung (Admin)</strong> – verwaltet die ganze Schule: lädt Lehrpersonen ein, sieht alle Nutzer:innen, setzt Passwörter zurück.</li>
-                <li><strong>Super-Admin (Betreiber)</strong> – verwaltet alle Schulen, erstellt Offerten, sieht Kennzahlen und Fehlermeldungen.</li>
                 <li><strong>Demo</strong> – read-only Testzugang: alles ansehen, nichts verändern.</li>
             </ul>
         </section>
@@ -145,20 +144,7 @@
 
         <!-- 6 -->
         <section>
-            <h2>6. Für den Super-Admin (Betreiber)</h2>
-            <ul>
-                <li><strong>Schulen</strong> – neue Schule anlegen und Schulleitungs-Einladung erstellen.</li>
-                <li><strong>🔒 Schule sperren / 🔓 entsperren</strong> – z.B. bei ausstehender Zahlung: der Login wird für die Schule blockiert, die Daten bleiben erhalten.</li>
-                <li><strong>Nutzerübersicht</strong> – alle Nutzer:innen aller Schulen mit Schulname und „zuletzt aktiv“; Filter nach Schule/Rolle; Markierung von Schüler:innen, die seit &gt; 1 Jahr inaktiv sind.</li>
-                <li><strong>Daten exportieren / löschen</strong> – Auskunfts- und Löschrecht pro Person.</li>
-                <li><strong>Offerte erstellen</strong> – Felder ausfüllen, Positionen dynamisch mit „+“ hinzufügen; Zwischentotal, MwSt. (8.1 %) und Gesamtbetrag werden berechnet; Download als Word.</li>
-                <li><strong>Bug-Meldungen</strong> – alle Meldungen mit Status; <strong>Logs</strong> – technische Protokolle.</li>
-            </ul>
-        </section>
-
-        <!-- 7 -->
-        <section>
-            <h2>7. Einverständnis &amp; Datenschutz</h2>
+            <h2>6. Einverständnis &amp; Datenschutz</h2>
             <ul>
                 <li><strong>Ablauf:</strong> Die Lehrperson verteilt die Einverständniserklärung (PDF unter praesto.ch/einverstaendnis), lässt sie von den Eltern unterschreiben und hakt sie pro Schüler:in in der Klassenansicht ab.</li>
                 <li><strong>Verantwortung:</strong> Die Lehrperson bzw. die Schule ist dafür verantwortlich, dass für jede:n Schüler:in eine unterschriebene Erklärung vorliegt und aufbewahrt wird.</li>
