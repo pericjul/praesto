@@ -54,11 +54,14 @@
         };
     }
 
-    function handleDelete(id) {
+    // Muss die SUBMIT-Funktion sein (bekommt das Submit-Event) und gibt den
+    // Nach-Submit-Callback zurück. Vorher wurde der Callback direkt übergeben ->
+    // beim Absenden war `result` undefined -> Fehler -> Löschen startete nie.
+    function handleDelete() {
         return async ({ result, update }) => {
-            if (result.type === "success") await invalidateAll();
             deleteConfirmId = null;
-            await update({ reset: false });
+            if (result.type === "success") await invalidateAll();
+            else await update({ reset: false });
         };
     }
 </script>
@@ -129,7 +132,7 @@
                             <div class="doc-actions">
                                 <a class="btn-dl" href={`/files/${doc.fileUrl}`} download>{$t('dossier.download')}</a>
                                 {#if deleteConfirmId === doc.id}
-                                    <form method="POST" action="?/delete" use:enhance={handleDelete(doc.id)} class="inline">
+                                    <form method="POST" action="?/delete" use:enhance={handleDelete} class="inline">
                                         <input type="hidden" name="id" value={doc.id} />
                                         <button type="submit" class="btn-del-yes">{$t('dossier.confirmDelete')}</button>
                                     </form>
