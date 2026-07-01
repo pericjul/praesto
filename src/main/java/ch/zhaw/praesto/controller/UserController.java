@@ -129,6 +129,12 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/admin/users/{id}/reactivate")
+    public ResponseEntity<Void> reactivate(@PathVariable String id) {
+        adminService.reactivateUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
     /**
      * Passwort eines Users zurücksetzen (für "Passwort vergessen"). Die Schulleitung
      * darf nur User der EIGENEN Schule zurücksetzen und keine Super-Admins; der

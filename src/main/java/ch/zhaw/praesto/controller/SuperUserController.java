@@ -30,6 +30,12 @@ public class SuperUserController {
         return superUserService.exportUserData(id);
     }
 
+    @PutMapping("/{id}/active")
+    public ResponseEntity<Void> setActive(@PathVariable String id, @RequestBody Map<String, Boolean> body) {
+        superUserService.setActive(id, Boolean.TRUE.equals(body.get("active")));
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
         superUserService.deleteUserData(id);

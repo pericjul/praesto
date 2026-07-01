@@ -40,6 +40,19 @@ export const actions = {
 		return { success: true };
 	},
 
+	reactivate: async ({ request, locals, fetch }) => {
+		const data = await request.formData();
+		const id = data.get("id");
+		const res = await fetch(`${API_BASE}/admin/users/${id}/reactivate`, {
+			method: "PUT",
+			headers: apiHeaders(locals.jwt_token)
+		});
+		if (!res.ok) {
+			return { error: "Benutzer konnte nicht reaktiviert werden." };
+		}
+		return { success: true };
+	},
+
 	resetPassword: async ({ request, locals, fetch }) => {
 		const data = await request.formData();
 		const id = data.get("id");

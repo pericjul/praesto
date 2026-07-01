@@ -40,6 +40,17 @@
         };
     }
 
+    function handleReactivate(id) {
+        return () => {
+            return async ({ result, update }) => {
+                if (result.type === "success" && !result.data?.error) {
+                    users = users.map((u) => (u.id === id ? { ...u, active: true } : u));
+                }
+                await update({ reset: false });
+            };
+        };
+    }
+
     // ----- Passwort zurücksetzen -----
     let resetUser = $state(null);   // { id, name } oder null
     let resetPw = $state("");
@@ -135,6 +146,12 @@
                                 <button class="btn-danger" type="submit">{$t('ausers.deactivate')}</button>
                             </form>
                         {/if}
+                        {#if !data.isDemo && !u.active}
+                            <form method="POST" action="?/reactivate" use:enhance={handleReactivate(u.id)}>
+                                <input type="hidden" name="id" value={u.id} />
+                                <button class="btn-reactivate" type="submit">{$t('ausers.reactivate')}</button>
+                            </form>
+                        {/if}
                     </td>
                 </tr>
             {:else}
@@ -196,6 +213,8 @@
     .status.inactive { background: #fef2f2; color: #dc2626; }
     .actions-cell { text-align: right; display: flex; gap: 0.4rem; justify-content: flex-end; align-items: center; flex-wrap: wrap; }
     .btn-danger { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 0.5rem; padding: 0.35rem 0.7rem; cursor: pointer; }
+    .btn-reactivate { background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; border-radius: 0.5rem; padding: 0.35rem 0.7rem; cursor: pointer; white-space: nowrap; }
+    .btn-reactivate:hover { background: #dcfce7; }
     .btn-reset { background: #f5f0fb; border: 1px solid #e0d2f0; color: #5b2a86; border-radius: 0.5rem; padding: 0.35rem 0.7rem; cursor: pointer; white-space: nowrap; }
     .btn-reset:hover { background: #ede0fa; }
 

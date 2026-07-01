@@ -33,5 +33,38 @@ export const actions = {
 			return { error: true };
 		}
 		return { deleted: true, id };
+	},
+
+	setActive: async ({ request, locals, fetch }) => {
+		const data = await request.formData();
+		const id = data.get("id");
+		const active = data.get("active") === "true";
+		const res = await fetch(`${API_BASE}/super/users/${id}/active`, {
+			method: "PUT",
+			headers: apiHeaders(locals.jwt_token),
+			body: JSON.stringify({ active })
+		});
+		if (!res.ok) {
+			return { error: true };
+		}
+		return { activeChanged: true, id, active };
+	},
+
+	resetPassword: async ({ request, locals, fetch }) => {
+		const data = await request.formData();
+		const id = data.get("id");
+		const newPassword = data.get("newPassword");
+		if (!newPassword || String(newPassword).length < 8) {
+			return { error: true, resetFailed: true };
+		}
+		const res = await fetch(`${API_BASE}/admin/users/${id}/reset-password`, {
+			method: "PUT",
+			headers: apiHeaders(locals.jwt_token),
+			body: JSON.stringify({ newPassword })
+		});
+		if (!res.ok) {
+			return { error: true, resetFailed: true };
+		}
+		return { resetDone: true };
 	}
 };

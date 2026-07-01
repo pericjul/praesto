@@ -123,6 +123,22 @@ public class SuperUserService {
         log.info("Alle Daten von Benutzer {} ({}) gelöscht", userId, user.getEmail());
     }
 
+    /**
+     * Aktiviert/deaktiviert eine beliebige Person (schulübergreifend). Deaktivierte
+     * Accounts können sich nicht mehr einloggen; die Daten bleiben erhalten.
+     */
+    public void setActive(String userId, boolean active) {
+        requireSuper();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Benutzer nicht gefunden"));
+        if (user.getRole() == UserRole.SUPER_ADMIN) {
+            throw new ForbiddenException("Ein SUPER_ADMIN kann nicht deaktiviert werden");
+        }
+        user.setActive(active);
+        userRepository.save(user);
+        log.info("Benutzer {} ({}) {}", userId, user.getEmail(), active ? "aktiviert" : "deaktiviert");
+    }
+
     // ============================================================
 
     private boolean matches(User u, String query) {

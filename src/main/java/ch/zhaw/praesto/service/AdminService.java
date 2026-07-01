@@ -116,13 +116,21 @@ public class AdminService {
     }
 
     public void deactivateUser(String userId) {
+        setUserActiveAsSchoolAdmin(userId, false);
+    }
+
+    public void reactivateUser(String userId) {
+        setUserActiveAsSchoolAdmin(userId, true);
+    }
+
+    private void setUserActiveAsSchoolAdmin(String userId, boolean active) {
         requireRole(UserRole.SCHOOL_ADMIN);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User nicht gefunden"));
         if (!userService.getCurrentSchoolId().equals(user.getSchoolId())) {
             throw new ForbiddenException("Keine Berechtigung");
         }
-        user.setActive(false);
+        user.setActive(active);
         userRepository.save(user);
     }
 
