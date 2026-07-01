@@ -35,6 +35,15 @@
     <h1>{$t('help.title')}</h1>
     <p class="intro">{$t('help.intro')}</p>
 
+    <a class="guide-card" href="/hilfe/anleitung">
+        <span class="guide-icon">📘</span>
+        <span class="guide-text">
+            <strong>{$t('help.guideTitle')}</strong>
+            <span>{$t('help.guideDesc')}</span>
+        </span>
+        <span class="guide-arrow">→</span>
+    </a>
+
     <h2>{$t('help.faqTitle')}</h2>
     <div class="faq">
         {#each faq as item}
@@ -66,7 +75,15 @@
 <style>
     .help { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem 3rem; }
     h1 { margin: 0 0 0.5rem; color: var(--color-primary, #2F124D); font-size: clamp(1.6rem, 3vw, 2.1rem); }
-    .intro { color: #5E4C6F; line-height: 1.6; margin: 0 0 1.75rem; }
+    .intro { color: #5E4C6F; line-height: 1.6; margin: 0 0 1.5rem; }
+
+    .guide-card { display: flex; align-items: center; gap: 1rem; text-decoration: none; background: #f3eefa; border: 1px solid #e3d6f3; border-radius: 1rem; padding: 1rem 1.25rem; margin: 0 0 2rem; transition: background 0.15s; }
+    .guide-card:hover { background: #ece1f7; }
+    .guide-icon { font-size: 1.8rem; }
+    .guide-text { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; }
+    .guide-text strong { color: #2F124D; font-size: 1.05rem; }
+    .guide-text span { color: #6b647a; font-size: 0.9rem; }
+    .guide-arrow { color: #2F124D; font-size: 1.3rem; font-weight: 700; }
     h2 { color: #2d2141; font-size: 1.15rem; margin: 1.75rem 0 0.75rem; }
     .form-intro { color: #6b647a; font-size: 0.9rem; margin: 0 0 0.9rem; }
 

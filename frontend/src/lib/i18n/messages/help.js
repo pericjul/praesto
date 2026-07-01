@@ -4,6 +4,8 @@ export const help = {
 	de: {
 		"help.nav": "Hilfe",
 		"help.title": "Hilfe & Support",
+		"help.guideTitle": "Ausführliche Anleitung (PDF)",
+		"help.guideDesc": "Alle Rollen, Funktionen und Schaltflächen im Detail – zum Ansehen oder als PDF herunterladen.",
 		"help.intro": "Hier findest du Antworten auf häufige Fragen. Ist deine Frage nicht dabei? Schreib uns unten – wir helfen gerne.",
 		"help.faqTitle": "Häufige Fragen",
 		"help.q1": "Wie übe ich ein Bewerbungsgespräch?",
@@ -41,6 +43,8 @@ export const help = {
 	en: {
 		"help.nav": "Help",
 		"help.title": "Help & support",
+		"help.guideTitle": "Detailed guide (PDF)",
+		"help.guideDesc": "All roles, functions and buttons in detail – view or download as a PDF.",
 		"help.intro": "Find answers to common questions here. Question not listed? Write to us below – happy to help.",
 		"help.faqTitle": "Frequently asked questions",
 		"help.q1": "How do I practice a job interview?",
