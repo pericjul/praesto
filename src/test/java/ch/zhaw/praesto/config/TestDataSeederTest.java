@@ -13,7 +13,7 @@ import org.springframework.test.context.TestPropertySource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@TestPropertySource(properties = "praesto.seed-test-data=true")
+@TestPropertySource(properties = "SEED_TEST_DATA=true")
 class TestDataSeederTest {
 
     @Autowired SchoolRepository schools;

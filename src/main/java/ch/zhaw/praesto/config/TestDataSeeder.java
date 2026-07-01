@@ -44,7 +44,8 @@ public class TestDataSeeder implements CommandLineRunner {
     private final ApplicationRepository applicationRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${praesto.seed-test-data:false}")
+    // Akzeptiert die Azure-Umgebungsvariable SEED_TEST_DATA (true/false) direkt.
+    @Value("${SEED_TEST_DATA:false}")
     private boolean seedTestData;
 
     @Override
