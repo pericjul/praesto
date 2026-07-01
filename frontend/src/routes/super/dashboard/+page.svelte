@@ -9,10 +9,18 @@
     let lastInvite = $state(null);
     let copied = $state(false);
 
+    let search = $state("");
+
     let totalUsers = $derived((data.schools ?? []).reduce((sum, s) => sum + (s.userCount ?? 0), 0));
     let activeSchools = $derived((data.schools ?? []).filter((s) => s.active).length);
     let sortedSchools = $derived(
-        [...(data.schools ?? [])].sort((a, b) => (b.userCount ?? 0) - (a.userCount ?? 0))
+        [...(data.schools ?? [])]
+            .filter((s) => {
+                const q = search.trim().toLowerCase();
+                if (!q) return true;
+                return `${s.name ?? ""} ${s.city ?? ""} ${s.canton ?? ""}`.toLowerCase().includes(q);
+            })
+            .sort((a, b) => (b.userCount ?? 0) - (a.userCount ?? 0))
     );
 
     function inviteUrl(token) {
@@ -97,6 +105,15 @@
         </div>
     {/if}
 
+    {#if data.schools && data.schools.length > 0}
+        <div class="school-search">
+            <input type="search" bind:value={search} placeholder={$t('sadmin.searchPlaceholder')} />
+            {#if search.trim()}
+                <span class="search-count">{sortedSchools.length} / {data.schools.length}</span>
+            {/if}
+        </div>
+    {/if}
+
     <div class="schools">
         {#each sortedSchools as school (school.id)}
             <article class="card school">
@@ -107,6 +124,7 @@
                 <p class="school-meta">{school.city ?? "–"}{school.canton ? `, ${school.canton}` : ""}</p>
                 <p class="school-count">👥 {school.userCount} {$t('sadmin.userCountSuffix')}</p>
                 <div class="school-actions">
+                    <a class="btn-secondary" href={`/super/schools/${school.id}/export`} download>⬇️ {$t('sadmin.exportCsv')}</a>
                     <form method="POST" action="?/createAdminInvite" use:enhance={handleInvite}>
                         <input type="hidden" name="schoolId" value={school.id} />
                         <button class="btn-secondary" type="submit">{$t('sadmin.createAdminLink')}</button>
@@ -128,7 +146,7 @@
                 </div>
             </article>
         {:else}
-            <p class="empty">{$t('sadmin.empty')}</p>
+            <p class="empty">{search.trim() ? $t('sadmin.noSearchResults') : $t('sadmin.empty')}</p>
         {/each}
     </div>
 </div>
@@ -150,7 +168,13 @@
     input { padding: 0.6rem 0.8rem; border: 1px solid #e8e0f0; border-radius: 0.5rem; background: #faf8fc; }
 
     .btn-primary { background: #2F124D; color: #fff; border: none; border-radius: 0.5rem; padding: 0.55rem 1.1rem; font-weight: 600; cursor: pointer; }
-    .btn-secondary { background: transparent; border: 1px solid #2F124D; color: #2F124D; border-radius: 0.5rem; padding: 0.45rem 0.9rem; font-weight: 600; cursor: pointer; }
+    .btn-secondary { display: inline-block; background: transparent; border: 1px solid #2F124D; color: #2F124D; border-radius: 0.5rem; padding: 0.45rem 0.9rem; font-weight: 600; cursor: pointer; text-decoration: none; font: inherit; }
+    a.btn-secondary:hover { background: #f5f0fb; }
+
+    .school-search { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; }
+    .school-search input { flex: 1; padding: 0.6rem 0.85rem; border: 1px solid #e8e0f0; border-radius: 0.6rem; background: #faf8fc; font: inherit; }
+    .school-search input:focus { outline: 2px solid #2F124D; outline-offset: 1px; background: #fff; }
+    .search-count { font-size: 0.85rem; color: #6b647a; white-space: nowrap; }
     .btn-ghost { background: #faf8fc; border: 1px solid #e8e0f0; border-radius: 0.5rem; padding: 0.4rem 0.8rem; cursor: pointer; }
     .school-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.25rem; }
     .btn-ghost.lock { color: #b91c1c; border-color: #fecaca; }

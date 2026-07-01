@@ -270,6 +270,16 @@ public class UserController {
         return adminService.listAllUsersForSuper();
     }
 
+    /** Kompletter CSV-Export aller Nutzer:innen einer Schule (nur Super-Admin). */
+    @GetMapping(value = "/super/schools/{id}/export.csv", produces = "text/csv; charset=UTF-8")
+    public ResponseEntity<String> exportSchoolCsv(@PathVariable String id) {
+        String csv = adminService.exportSchoolCsv(id);
+        String safeName = adminService.schoolName(id).replaceAll("[^a-zA-Z0-9-_]+", "_");
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"praesto-" + safeName + ".csv\"")
+                .body(csv);
+    }
+
     @PostMapping("/super/schools")
     public ResponseEntity<School> createSchool(@RequestBody SchoolCreateRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(adminService.createSchool(req));

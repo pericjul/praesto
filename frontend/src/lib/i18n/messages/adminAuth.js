@@ -81,6 +81,9 @@ export const adminAuth = {
 		"sadmin.totalUsers": "Nutzer:innen gesamt",
 		"sadmin.createAdminLink": "Schulleiter-Link erstellen",
 		"sadmin.empty": "Noch keine Schulen. Erstelle die erste Schule.",
+		"sadmin.searchPlaceholder": "🔍 Schule suchen (Name, Ort, Kanton)…",
+		"sadmin.noSearchResults": "Keine Schule gefunden.",
+		"sadmin.exportCsv": "CSV",
 
 		// signup (signup.)
 		"signup.headTitle": "Registrieren – Praesto",
@@ -208,6 +211,9 @@ export const adminAuth = {
 		"sadmin.totalUsers": "Users total",
 		"sadmin.createAdminLink": "Create leadership link",
 		"sadmin.empty": "No schools yet. Create the first school.",
+		"sadmin.searchPlaceholder": "🔍 Search school (name, city, canton)…",
+		"sadmin.noSearchResults": "No school found.",
+		"sadmin.exportCsv": "CSV",
 
 		// signup (signup.)
 		"signup.headTitle": "Register – Praesto",
@@ -335,6 +341,9 @@ export const adminAuth = {
 		"sadmin.totalUsers": "Utilisateurs au total",
 		"sadmin.createAdminLink": "Créer un lien de direction",
 		"sadmin.empty": "Aucune école pour l'instant. Créez la première école.",
+		"sadmin.searchPlaceholder": "🔍 Rechercher une école (nom, ville, canton)…",
+		"sadmin.noSearchResults": "Aucune école trouvée.",
+		"sadmin.exportCsv": "CSV",
 
 		// signup (signup.)
 		"signup.headTitle": "Inscription – Praesto",
@@ -462,6 +471,9 @@ export const adminAuth = {
 		"sadmin.totalUsers": "Utenti totali",
 		"sadmin.createAdminLink": "Crea link direzione",
 		"sadmin.empty": "Ancora nessuna scuola. Crea la prima scuola.",
+		"sadmin.searchPlaceholder": "🔍 Cerca scuola (nome, città, cantone)…",
+		"sadmin.noSearchResults": "Nessuna scuola trovata.",
+		"sadmin.exportCsv": "CSV",
 
 		// signup (signup.)
 		"signup.headTitle": "Registrazione – Praesto",

@@ -163,6 +163,73 @@ public class AdminService {
         return s == null ? "" : s;
     }
 
+    private static final java.time.format.DateTimeFormatter CSV_DATE =
+            java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
+                    .withZone(java.time.ZoneId.of("Europe/Zurich"));
+
+    /**
+     * Vollständiger CSV-Export einer Schule: alle Nutzer:innen mit Rolle, Kontakt,
+     * Status, Login-/Erstellungsdatum, Klasse(n) und (bei Schüler:innen) Nutzungszahlen.
+     * Semikolon-getrennt + UTF-8-BOM, damit Excel (CH) Umlaute korrekt öffnet.
+     */
+    public String exportSchoolCsv(String schoolId) {
+        requireRole(UserRole.SUPER_ADMIN);
+        School school = schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new NotFoundException("Schule nicht gefunden"));
+
+        // studentId -> Klassennamen
+        Map<String, java.util.List<String>> classesByStudent = new java.util.HashMap<>();
+        for (SchoolClass c : schoolClassRepository.findBySchoolId(schoolId)) {
+            if (c.getStudentIds() == null) continue;
+            for (String sid : c.getStudentIds()) {
+                classesByStudent.computeIfAbsent(sid, k -> new java.util.ArrayList<>()).add(safe(c.getName()));
+            }
+        }
+
+        java.util.List<User> users = userRepository.findBySchoolId(schoolId).stream()
+                .sorted(Comparator
+                        .comparing((User u) -> u.getRole() != null ? u.getRole().name() : "")
+                        .thenComparing(u -> safe(u.getLastName())))
+                .toList();
+
+        StringBuilder sb = new StringBuilder("﻿");
+        sb.append(String.join(";", "Rolle", "Vorname", "Nachname", "E-Mail", "Aktiv",
+                "Zuletzt eingeloggt", "Erstellt am", "Klasse(n)", "Übungsgespräche", "Abgaben")).append("\r\n");
+
+        for (User u : users) {
+            boolean student = u.getRole() == UserRole.STUDENT;
+            String klassen = String.join(", ", classesByStudent.getOrDefault(u.getId(), java.util.List.of()));
+            long gespraeche = student ? sessionRepository.findByStudentId(u.getId()).size() : 0;
+            long abgaben = student ? submissionRepository.countByStudentEmail(u.getEmail()) : 0;
+            sb.append(String.join(";",
+                    csv(u.getRole() != null ? u.getRole().name() : ""),
+                    csv(safe(u.getFirstName())),
+                    csv(safe(u.getLastName())),
+                    csv(u.getEmail()),
+                    csv(u.isActive() ? "ja" : "nein"),
+                    csv(u.getLastLoginAt() != null ? CSV_DATE.format(u.getLastLoginAt()) : "nie"),
+                    csv(u.getCreatedAt() != null ? CSV_DATE.format(u.getCreatedAt()) : ""),
+                    csv(klassen),
+                    csv(student ? String.valueOf(gespraeche) : ""),
+                    csv(student ? String.valueOf(abgaben) : "")
+            )).append("\r\n");
+        }
+        return sb.toString();
+    }
+
+    /** Name der Schule (für den Dateinamen des CSV-Exports). */
+    public String schoolName(String schoolId) {
+        requireRole(UserRole.SUPER_ADMIN);
+        return schoolRepository.findById(schoolId).map(School::getName).orElse("schule");
+    }
+
+    /** CSV-Feld escapen: Anführungszeichen verdoppeln, in Quotes setzen, Zeilenumbrüche entfernen. */
+    private static String csv(String s) {
+        if (s == null) return "";
+        String clean = s.replace("\r", " ").replace("\n", " ");
+        return "\"" + clean.replace("\"", "\"\"") + "\"";
+    }
+
     public School createSchool(SchoolCreateRequest req) {
         requireRole(UserRole.SUPER_ADMIN);
         if (req.name() == null || req.name().isBlank()) {
