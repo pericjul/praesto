@@ -22,7 +22,7 @@ export const agb = {
 		"agb.s5.p": "Wir bemühen uns um eine möglichst hohe Verfügbarkeit, können aber keinen unterbrechungsfreien Betrieb garantieren. Wartungsarbeiten, Störungen oder Begrenzungen von Drittanbietern (z.B. KI-Dienst) können zu vorübergehenden Einschränkungen führen.",
 
 		"agb.s6.t": "6. Preise, Zahlung & Sperrung",
-		"agb.s6.p": "Preise und Zahlungsbedingungen richten sich nach der jeweiligen Offerte bzw. Vereinbarung mit der Schule. Bei ausbleibender Zahlung kann der Zugang der betreffenden Schule vorübergehend gesperrt werden; die Daten bleiben dabei erhalten und werden nicht gelöscht.",
+		"agb.s6.p": "Preise und Zahlungsbedingungen richten sich nach der jeweiligen Offerte bzw. Vereinbarung mit der Schule; die Lizenz wird in der Regel pro Schüler:in und Laufzeit berechnet. Das Lizenzentgelt ist für die gesamte vereinbarte Laufzeit im Voraus geschuldet. Bei ausbleibender Zahlung kann der Zugang der betreffenden Schule vorübergehend gesperrt werden; die Daten bleiben dabei erhalten und werden nicht gelöscht.",
 
 		"agb.s7.t": "7. Datenschutz",
 		"agb.s7.p": "Die Bearbeitung von Personendaten ist in der Datenschutzerklärung beschrieben. Es gilt das Schweizer Datenschutzgesetz (revDSG).",
@@ -30,8 +30,8 @@ export const agb = {
 		"agb.s8.t": "8. Haftung",
 		"agb.s8.p": "Der Betreiber haftet nur für Schäden, die auf grobe Fahrlässigkeit oder Absicht zurückzuführen sind, soweit gesetzlich zulässig. Eine Haftung für indirekte Schäden, Datenverlust oder Folgeschäden ist – im gesetzlich zulässigen Rahmen – ausgeschlossen.",
 
-		"agb.s9.t": "9. Vertragsdauer & Kündigung",
-		"agb.s9.p": "Dauer und Kündigung richten sich nach der Vereinbarung mit der Schule. Nach Vertragsende werden die Daten der Schule gelöscht.",
+		"agb.s9.t": "9. Vertragsdauer, Verlängerung & Kündigung",
+		"agb.s9.p": "Praesto wird der Schule als zeitlich befristete Lizenz für die vereinbarte Laufzeit – in der Regel ein Schuljahr – überlassen. Die Lizenz verlängert sich nicht automatisch, sondern endet mit Ablauf der vereinbarten Laufzeit. Eine ordentliche Kündigung während der laufenden Laufzeit ist nicht vorgesehen; die Schule behält die Lizenz für die gesamte bezahlte Laufzeit, unabhängig vom tatsächlichen Nutzungsumfang. Bereits bezahlte Lizenzentgelte werden nicht zurückerstattet. Eine Fortsetzung erfolgt ausschliesslich durch eine neue Vereinbarung für eine weitere Laufzeit. Nach Ablauf der Laufzeit endet der Zugang und die Daten der Schule werden gelöscht. Das Recht beider Parteien zur ausserordentlichen Kündigung aus wichtigem Grund bleibt vorbehalten.",
 
 		"agb.s10.t": "10. Änderungen & anwendbares Recht",
 		"agb.s10.p": "Diese AGB können angepasst werden; massgebend ist die jeweils veröffentlichte Fassung. Es gilt Schweizer Recht. Gerichtsstand ist – soweit gesetzlich zulässig – der Sitz des Betreibers. Bei Fragen: info@praesto.ch."
@@ -58,7 +58,7 @@ export const agb = {
 		"agb.s5.p": "We strive for high availability but cannot guarantee uninterrupted operation. Maintenance, faults or third-party limits (e.g. the AI service) may cause temporary restrictions.",
 
 		"agb.s6.t": "6. Prices, payment & suspension",
-		"agb.s6.p": "Prices and payment terms follow the respective offer or agreement with the school. In case of non-payment, the relevant school's access may be temporarily suspended; the data is retained and not deleted.",
+		"agb.s6.p": "Prices and payment terms follow the respective offer or agreement with the school; the licence is usually calculated per student and per term. The licence fee is due in advance for the entire agreed term. In case of non-payment, the relevant school's access may be temporarily suspended; the data is retained and not deleted.",
 
 		"agb.s7.t": "7. Data protection",
 		"agb.s7.p": "The processing of personal data is described in the privacy policy. Swiss data protection law (revFADP) applies.",
@@ -66,8 +66,8 @@ export const agb = {
 		"agb.s8.t": "8. Liability",
 		"agb.s8.p": "The operator is liable only for damages caused by gross negligence or intent, to the extent permitted by law. Liability for indirect damages, data loss or consequential damages is excluded within the limits of the law.",
 
-		"agb.s9.t": "9. Term & termination",
-		"agb.s9.p": "Term and termination follow the agreement with the school. After the contract ends, the school's data is deleted.",
+		"agb.s9.t": "9. Term, renewal & termination",
+		"agb.s9.p": "Praesto is provided to the school as a time-limited licence for the agreed term – typically one school year. The licence does not renew automatically and ends when the agreed term expires. Ordinary termination during the running term is not provided for; the school keeps the licence for the entire paid term, regardless of actual usage. Licence fees already paid are non-refundable. Continuation is only by a new agreement for a further term. After the term expires, access ends and the school's data is deleted. Each party's right to extraordinary termination for good cause remains reserved.",
 
 		"agb.s10.t": "10. Changes & applicable law",
 		"agb.s10.p": "These terms may be amended; the version published at the time applies. Swiss law applies. Place of jurisdiction is – to the extent permitted by law – the operator's registered seat. Questions: info@praesto.ch."
