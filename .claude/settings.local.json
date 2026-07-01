@@ -242,7 +242,8 @@
       "Bash(find src/test -iname \"*bug*\")",
       "Bash(./mvnw -q test -Dtest='SessionServiceTest,SessionControllerTest')",
       "Bash(./mvnw -q test -Dtest='*Admin*,*SuperUser*,*UserController*')",
-      "Bash(./mvnw -q test -Dtest='UserServiceTest')"
+      "Bash(./mvnw -q test -Dtest='UserServiceTest')",
+      "Bash(curl -s -m 15 \"https://api.github.com/repos/pericjul/praesto/actions/runs?per_page=3\")"
     ]
   }
 }
