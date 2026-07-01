@@ -290,6 +290,100 @@ public class DocxService {
     }
 
     // ============================================================
+    // Bewerbungsschreiben – klassisches CH-Brieflayout
+    // ============================================================
+
+    /**
+     * Erzeugt ein sauber formatiertes Bewerbungsschreiben: Absender rechts,
+     * Empfänger links, Ort/Datum, fetter Betreff, Anrede, KI-Text, Gruss + Name.
+     * Leere Blöcke werden weggelassen.
+     */
+    public String writeLetter(String fileBaseName,
+                              String senderName, String senderStreet, String senderZipCity,
+                              String phone, String email,
+                              String company, String contactPerson,
+                              String companyStreet, String companyZipCity,
+                              String placeDate, String subject, String salutation,
+                              String body, String closingName) {
+        try (XWPFDocument doc = new XWPFDocument()) {
+            // Absender rechtsbündig
+            line(doc, senderName, ParagraphAlignment.RIGHT, false, 11);
+            line(doc, senderStreet, ParagraphAlignment.RIGHT, false, 11);
+            line(doc, senderZipCity, ParagraphAlignment.RIGHT, false, 11);
+            line(doc, phone, ParagraphAlignment.RIGHT, false, 11);
+            line(doc, email, ParagraphAlignment.RIGHT, false, 11);
+
+            spacer(doc);
+
+            // Empfänger links
+            line(doc, company, ParagraphAlignment.LEFT, false, 11);
+            line(doc, contactPerson, ParagraphAlignment.LEFT, false, 11);
+            line(doc, companyStreet, ParagraphAlignment.LEFT, false, 11);
+            line(doc, companyZipCity, ParagraphAlignment.LEFT, false, 11);
+
+            spacer(doc);
+
+            // Ort, Datum rechtsbündig
+            line(doc, placeDate, ParagraphAlignment.RIGHT, false, 11);
+
+            spacer(doc);
+
+            // Betreff fett
+            line(doc, subject, ParagraphAlignment.LEFT, true, 11);
+
+            spacer(doc);
+
+            // Anrede
+            line(doc, salutation, ParagraphAlignment.LEFT, false, 11);
+
+            spacer(doc);
+
+            // Brieftext (Absätze durch Leerzeile getrennt)
+            if (body != null) {
+                for (String para : body.trim().split("\\n\\s*\\n")) {
+                    String t = para.strip().replaceAll("\\s*\\n\\s*", " ");
+                    if (!t.isEmpty()) {
+                        XWPFParagraph p = doc.createParagraph();
+                        p.setSpacingAfter(180);
+                        XWPFRun r = p.createRun();
+                        r.setFontFamily(FONT);
+                        r.setFontSize(11);
+                        r.setText(t);
+                    }
+                }
+            }
+
+            spacer(doc);
+
+            // Gruss + Name (mit Platz für Unterschrift)
+            line(doc, "Freundliche Grüsse", ParagraphAlignment.LEFT, false, 11);
+            spacer(doc);
+            line(doc, closingName, ParagraphAlignment.LEFT, false, 11);
+
+            return save(doc, fileBaseName);
+        } catch (Exception e) {
+            throw new RuntimeException("Bewerbungsschreiben konnte nicht erstellt werden: " + e.getMessage(), e);
+        }
+    }
+
+    /** Eine Zeile schreiben (leer -> übersprungen). */
+    private void line(XWPFDocument doc, String text, ParagraphAlignment align, boolean bold, int sizePt) {
+        if (text == null || text.isBlank()) return;
+        XWPFParagraph p = doc.createParagraph();
+        p.setAlignment(align);
+        p.setSpacingAfter(0);
+        XWPFRun r = p.createRun();
+        r.setFontFamily(FONT);
+        r.setFontSize(sizePt);
+        r.setBold(bold);
+        r.setText(text.trim());
+    }
+
+    private void spacer(XWPFDocument doc) {
+        doc.createParagraph();
+    }
+
+    // ============================================================
     // Speichern
     // ============================================================
 

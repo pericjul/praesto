@@ -1,24 +1,36 @@
 package ch.zhaw.praesto.model;
 
 /**
- * Eingaben fürs Bewerbungsschreiben. Die KI wandelt diese Angaben in einen
- * sauberen CH-Brief um. Leere Felder werden weggelassen / nie erfunden.
+ * Eingaben fürs Bewerbungsschreiben. Die KI formuliert daraus den Brieftext; das
+ * Layout (Absender, Empfänger, Betreff, Anrede, Gruss) wird strukturiert erzeugt.
+ * Fast alles ist optional – leere Felder werden weggelassen, nie erfunden.
  */
 public record CoverLetterRequest(
+        // Absender (Schüler:in)
         String fullName,
-        String senderAddress,
-        String phone,                // Absender-Telefon (Briefkopf)
-        String email,                // Absender-E-Mail (Briefkopf)
-        String city,                 // Ort für die Datumszeile
+        String senderStreet,       // Strasse Nr.
+        String senderZipCity,      // PLZ Ort
+        String phone,
+        String email,
+
+        // Empfänger (Firma) – Adresse optional
         String companyName,
-        String companyAddress,
-        String contactPerson,        // Ansprechperson (Anrede + Name), z.B. "Frau Muster"
-        String targetJob,            // Beruf (EFZ/EBA)
-        String applicationSource,    // wo gefunden (yousty, Inserat, Website …)
-        String startDate,            // Lehrbeginn
-        String whyCompany,           // warum genau diese Firma
-        String strengths,            // Stärken (idealerweise mit Beispiel)
-        String schnupperExperience,  // Schnupperlehre + was gefallen hat
-        String availability,         // optional: Verfügbarkeit für Vorstellungsgespräch / Schnuppertage
+        String contactPerson,      // Ansprechperson (falls bekannt)
+        String companyStreet,      // Strasse der Firma (optional)
+        String companyZipCity,     // PLZ Ort der Firma (optional)
+
+        // Meta
+        String place,              // Ort für die Datumszeile
+        String letterDate,         // Datum (z.B. 01.07.2026); leer -> heute
+        String targetJob,          // Beruf/Lehrstelle (für Betreff + Text)
+        String pensum,             // optional, z.B. "80%"
+        String applicationSource,  // wo gefunden (yousty, Inserat, Website …)
+        String startDate,          // möglicher Lehrbeginn
+
+        // Inhalt (Stichworte für die KI)
+        String whyCompany,
+        String strengths,
+        String schnupperExperience,
+        String availability,
         String extra) {
 }

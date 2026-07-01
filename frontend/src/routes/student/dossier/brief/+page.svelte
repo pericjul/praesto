@@ -40,18 +40,26 @@
             <h2>{$t('clform.you')}</h2>
             <div class="grid">
                 <label><span>{$t('clform.fullName')} *</span><input name="fullName" value={prefillName} required /></label>
-                <label><span>{$t('clform.senderAddress')}</span><input name="senderAddress" placeholder={$t('clform.ph.senderAddress')} /></label>
-                <label><span>{$t('clform.phone')}</span><input name="phone" placeholder="079 123 45 67" /></label>
                 <label><span>{$t('clform.email')}</span><input name="email" type="email" value={data.user?.email ?? ""} /></label>
-                <label><span>{$t('clform.city')}</span><input name="city" placeholder={$t('clform.ph.city')} /></label>
+                <label><span>{$t('clform.senderStreet')}</span><input name="senderStreet" placeholder="Musterstrasse 1" /></label>
+                <label><span>{$t('clform.senderZipCity')}</span><input name="senderZipCity" placeholder="8000 Zürich" /></label>
+                <label><span>{$t('clform.phone')}</span><input name="phone" placeholder="079 123 45 67" /></label>
+            </div>
+
+            <h2>{$t('clform.jobSec')}</h2>
+            <div class="grid">
                 <label><span>{$t('clform.targetJob')} *</span><input name="targetJob" placeholder={$t('clform.ph.targetJob')} required /></label>
+                <label><span>{$t('clform.pensum')} <em>({$t('clform.optional')})</em></span><input name="pensum" placeholder="z.B. 100%" /></label>
+                <label><span>{$t('clform.city')}</span><input name="place" placeholder={$t('clform.ph.city')} /></label>
+                <label><span>{$t('clform.date')} <em>({$t('clform.optional')})</em></span><input name="letterDate" placeholder="01.07.2026" /></label>
             </div>
 
             <h2>{$t('clform.companySec')}</h2>
             <div class="grid">
                 <label><span>{$t('clform.companyName')} *</span><input name="companyName" required /></label>
                 <label><span>{$t('clform.contactPerson')} <em>({$t('clform.ifKnown')})</em></span><input name="contactPerson" placeholder={$t('clform.ph.contactPerson')} /></label>
-                <label><span>{$t('clform.companyAddress')}</span><input name="companyAddress" /></label>
+                <label><span>{$t('clform.companyStreet')} <em>({$t('clform.optional')})</em></span><input name="companyStreet" placeholder="Firmenstrasse 5" /></label>
+                <label><span>{$t('clform.companyZipCity')} <em>({$t('clform.optional')})</em></span><input name="companyZipCity" placeholder="8000 Zürich" /></label>
                 <label><span>{$t('clform.source')} <em>({$t('clform.sourceHint')})</em></span><input name="applicationSource" placeholder={$t('clform.ph.source')} /></label>
                 <label><span>{$t('clform.startDate')}</span><input name="startDate" placeholder={$t('clform.ph.startDate')} /></label>
             </div>

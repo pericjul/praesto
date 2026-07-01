@@ -22,24 +22,22 @@ import org.springframework.stereotype.Service;
 public class GeneratorService {
 
     private static final String LETTER_PROMPT = """
-            Du bist Bewerbungscoach für Schweizer Lehrstellen. Schreibe ein einseitiges, überzeugendes
-            Bewerbungsschreiben (Motivationsbrief) auf Deutsch für eine:n 14–18-Jährige:n.
+            Du bist Bewerbungscoach für Schweizer Lehrstellen. Schreibe NUR den Fliesstext (Hauptteil)
+            eines überzeugenden Bewerbungsschreibens auf Deutsch für eine:n 14–18-Jährige:n.
 
-            REGELN:
-            - Schweizer Rechtschreibung: "ss" statt "ß".
-            - Seriös, aber jugendlich-authentisch; keine Floskeln, keine Übertreibungen.
-            - Erfinde NICHTS dazu. Nutze NUR die gelieferten Angaben. Fehlt ein Feld, lass es weg.
-            - Stärken NICHT aneinanderreihen, sondern mit dem gelieferten Beispiel belegen.
+            SEHR WICHTIG:
+            - Gib AUSSCHLIESSLICH die Text-Absätze zurück – KEINE Adresse, KEIN Datum, KEINEN Betreff,
+              KEINE Anrede, KEINEN Gruss und KEINEN Namen (das wird separat gesetzt).
+            - 3 bis 4 kurze Absätze, jeweils durch EINE Leerzeile getrennt.
+            - Schweizer Rechtschreibung ("ss" statt "ß"). Seriös, aber jugendlich-authentisch, keine Floskeln,
+              keine Übertreibungen. Natürlich und flüssig formuliert.
+            - Erfinde NICHTS dazu; nutze nur die gelieferten Angaben. Fehlt etwas, lass es weg.
 
-            STRUKTUR (genau diese Reihenfolge, gib NUR den Brieftext zurück):
-            1. Empfänger: Firmenname + (falls vorhanden) Ansprechperson + Firmen-Adresse.
-            2. Ort und Datum (falls Ort fehlt, weglassen).
-            3. Betreff (eigene Zeile): "Bewerbung als <Beruf>".
-            4. Anrede: mit Ansprechperson ("Sehr geehrte Frau …/Sehr geehrter Herr …"), sonst "Sehr geehrte Damen und Herren".
-            5. Einleitung: Bezug zur Lehrstelle + wo gefunden + warum Interesse.
-            6. Hauptteil: warum dieser Beruf, Bezug zur Firma, eine Stärke MIT konkretem Beispiel, Schnuppererfahrung (was gefiel).
-            7. Schluss: Wunsch nach einem Vorstellungsgespräch.
-            8. "Freundliche Grüsse" + Name.
+            AUFBAU:
+            1. Einstieg: Bezug zur Stelle/Lehrstelle, wo gefunden, warum sie dich anspricht.
+            2. Warum genau diese Firma.
+            3. Eine Stärke MIT konkretem Beispiel und die Schnuppererfahrung (was dir gefiel).
+            4. Abschluss: Wunsch nach einem persönlichen Gespräch, ggf. Verfügbarkeit / möglicher Beginn.
             """;
 
     private final ChatClient chatClient;
@@ -136,10 +134,31 @@ public class GeneratorService {
         String userId = userService.getUserId();
         String schoolId = userService.getCurrentSchoolId();
 
+        String name = notBlank(req.fullName()) ? req.fullName().trim() : userService.getUserName();
+        String job = notBlank(req.targetJob()) ? req.targetJob().trim() : "eine Lehrstelle";
+        String subject = "Bewerbung als " + job + (notBlank(req.pensum()) ? " " + req.pensum().trim() : "");
+
+        String salutation;
+        if (notBlank(req.contactPerson())) {
+            salutation = "Sehr geehrte:r " + req.contactPerson().trim();
+        } else if (notBlank(req.companyName())) {
+            salutation = "Sehr geehrtes Team der " + req.companyName().trim();
+        } else {
+            salutation = "Sehr geehrte Damen und Herren";
+        }
+
+        String place = notBlank(req.place()) ? req.place().trim() : cityOnly(req.senderZipCity());
+        String date = notBlank(req.letterDate()) ? req.letterDate().trim()
+                : java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+        String placeDate = notBlank(place) ? place + ", " + date : date;
+
         String body = callAi(LETTER_PROMPT + "\n\nAngaben:\n" + letterFacts(req), () -> letterFallback(req));
 
         String company = notBlank(req.companyName()) ? req.companyName().trim() : "Firma";
-        String stored = docxService.writeStructured("Bewerbung_" + company, null, null, body);
+        String stored = docxService.writeLetter("Bewerbung_" + company,
+                name, req.senderStreet(), req.senderZipCity(), req.phone(), req.email(),
+                req.companyName(), req.contactPerson(), req.companyStreet(), req.companyZipCity(),
+                placeDate, subject, salutation, body, name);
 
         aiQuotaService.consume(userId, schoolId, AiFeature.COVER_LETTER);
         return DocumentDTO.from(documentService.saveGenerated(
@@ -147,19 +166,21 @@ public class GeneratorService {
                 "Bewerbung " + company, stored, "Bewerbungsschreiben.docx"));
     }
 
+    /** Ort aus "PLZ Ort" extrahieren (führende Zahl entfernen). */
+    private String cityOnly(String zipCity) {
+        if (!notBlank(zipCity)) return "";
+        return zipCity.trim().replaceFirst("^\\d+\\s*", "").trim();
+    }
+
+    /** Angaben für die KI (nur der Brieftext, keine Adresse/Anrede). */
     private String letterFacts(CoverLetterRequest r) {
         StringBuilder sb = new StringBuilder();
         add(sb, "Name", r.fullName());
-        add(sb, "Eigene Adresse", r.senderAddress());
-        add(sb, "Telefon", r.phone());
-        add(sb, "E-Mail", r.email());
-        add(sb, "Ort (für Datum)", r.city());
         add(sb, "Firma", r.companyName());
-        add(sb, "Firmen-Adresse", r.companyAddress());
-        add(sb, "Ansprechperson", r.contactPerson());
-        add(sb, "Beruf/Lehrstelle", r.targetJob());
+        add(sb, "Beruf/Stelle/Lehrstelle", r.targetJob());
+        add(sb, "Pensum", r.pensum());
         add(sb, "Wo gefunden (Quelle)", r.applicationSource());
-        add(sb, "Möglicher Lehrbeginn", r.startDate());
+        add(sb, "Möglicher Beginn", r.startDate());
         add(sb, "Warum diese Firma", r.whyCompany());
         add(sb, "Stärken (mit Beispiel)", r.strengths());
         add(sb, "Schnuppererfahrung (was gefiel)", r.schnupperExperience());
@@ -168,24 +189,20 @@ public class GeneratorService {
         return sb.toString();
     }
 
-    /** Einfaches Bewerbungsschreiben direkt aus den Angaben (falls keine KI verfügbar). */
+    /** Einfacher Brieftext (nur Absätze), falls keine KI verfügbar. */
     private String letterFallback(CoverLetterRequest r) {
-        String name = notBlank(r.fullName()) ? r.fullName().trim() : "";
         String job = notBlank(r.targetJob()) ? r.targetJob().trim() : "eine Lehrstelle";
         StringBuilder sb = new StringBuilder();
-        if (notBlank(r.companyName())) sb.append(r.companyName().trim()).append("\n");
-        if (notBlank(r.contactPerson())) sb.append(r.contactPerson().trim()).append("\n");
-        if (notBlank(r.companyAddress())) sb.append(r.companyAddress().trim()).append("\n");
-        sb.append("\nBetreff: Bewerbung als ").append(job).append("\n\n");
-        sb.append(notBlank(r.contactPerson()) ? "Sehr geehrte:r " + r.contactPerson().trim() + "\n\n"
-                : "Sehr geehrte Damen und Herren\n\n");
-        sb.append("Mit grossem Interesse bewerbe ich mich um eine Lehrstelle als ").append(job).append(".");
+        sb.append("Mit grossem Interesse bewerbe ich mich um die Stelle als ").append(job);
+        if (notBlank(r.applicationSource())) sb.append(", die ich auf ").append(r.applicationSource().trim()).append(" gefunden habe");
+        sb.append(".");
         if (notBlank(r.whyCompany())) sb.append(" ").append(r.whyCompany().trim());
         sb.append("\n\n");
-        if (notBlank(r.strengths())) sb.append("Zu meinen Stärken zählen: ").append(r.strengths().trim()).append(".\n\n");
-        if (notBlank(r.schnupperExperience())) sb.append(r.schnupperExperience().trim()).append("\n\n");
-        sb.append("Über eine Einladung zu einem Vorstellungsgespräch freue ich mich sehr.\n\n");
-        sb.append("Freundliche Grüsse\n").append(name).append("\n");
+        if (notBlank(r.strengths())) sb.append("Zu meinen Stärken zählen: ").append(r.strengths().trim()).append(". ");
+        if (notBlank(r.schnupperExperience())) sb.append(r.schnupperExperience().trim());
+        sb.append("\n\n");
+        sb.append("Über die Möglichkeit, mich in einem persönlichen Gespräch vorzustellen, freue ich mich sehr.");
+        if (notBlank(r.availability())) sb.append(" Verfügbar bin ich ").append(r.availability().trim()).append(".");
         return sb.toString();
     }
 
