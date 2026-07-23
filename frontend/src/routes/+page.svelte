@@ -50,6 +50,20 @@
 
 <svelte:head>
     <title>Praesto – {$t('landing.heroTitle')}</title>
+    <meta name="description" content={$t('landing.heroSubtitle')} />
+    <link rel="canonical" href="https://praesto.ch/" />
+    <!-- Link-Vorschau (Google, WhatsApp, Social) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Praesto" />
+    <meta property="og:title" content={`Praesto – ${$t('landing.heroTitle')}`} />
+    <meta property="og:description" content={$t('landing.heroSubtitle')} />
+    <meta property="og:url" content="https://praesto.ch/" />
+    <meta property="og:image" content="https://praesto.ch/icon-512.png" />
+    <meta property="og:locale" content="de_CH" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={`Praesto – ${$t('landing.heroTitle')}`} />
+    <meta name="twitter:description" content={$t('landing.heroSubtitle')} />
+    <meta name="twitter:image" content="https://praesto.ch/icon-512.png" />
 </svelte:head>
 
 <div class="landing">
