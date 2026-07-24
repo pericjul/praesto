@@ -172,10 +172,14 @@ public class GeneratorService {
         return zipCity.trim().replaceFirst("^\\d+\\s*", "").trim();
     }
 
-    /** Angaben für die KI (nur der Brieftext, keine Adresse/Anrede). */
+    /**
+     * Angaben für die KI – DATENMINIMIERUNG: bewusst OHNE identifizierende Personendaten
+     * (kein Name, keine Adresse, kein Telefon, keine E-Mail). Diese setzt ausschliesslich der
+     * Code ins Brieflayout. Die KI erhält nur den sachlichen Inhalt (Firma, Stelle, Motivation,
+     * Stärken) und kann eine gestohlene Anfrage daher keiner konkreten Person zuordnen.
+     */
     private String letterFacts(CoverLetterRequest r) {
         StringBuilder sb = new StringBuilder();
-        add(sb, "Name", r.fullName());
         add(sb, "Firma", r.companyName());
         add(sb, "Beruf/Stelle/Lehrstelle", r.targetJob());
         add(sb, "Pensum", r.pensum());
