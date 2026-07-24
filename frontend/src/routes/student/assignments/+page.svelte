@@ -9,30 +9,24 @@
     let myClass = $derived(data?.myClass ?? null);
     let error = $derived(data?.error ?? null);
 
-    // Sortierte Assignments: Offene zuerst (nach Deadline), dann erledigte
-    let sortedAssignments = $derived(() => {
-        const open = [];
-        const done = [];
-        
-        for (const a of assignments) {
-            if (submissions.some(s => s.assignmentId === a.id)) {
-                done.push(a);
-            } else {
-                open.push(a);
-            }
-        }
-        
-        // Offene nach Deadline sortieren (dringendste zuerst)
-        open.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-        // Erledigte nach Abgabedatum sortieren (neueste zuerst)
-        done.sort((a, b) => {
-            const subA = submissions.find(s => s.assignmentId === a.id);
-            const subB = submissions.find(s => s.assignmentId === b.id);
-            return new Date(subB?.submittedAt) - new Date(subA?.submittedAt);
-        });
-        
-        return [...open, ...done];
-    });
+    // Offene Aufgaben (noch nicht abgegeben) – dringendste zuerst
+    let openList = $derived(
+        assignments
+            .filter(a => !submissions.some(s => s.assignmentId === a.id))
+            .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+    );
+    // Erledigte Aufgaben – neueste Abgabe zuerst
+    let doneList = $derived(
+        assignments
+            .filter(a => submissions.some(s => s.assignmentId === a.id))
+            .sort((a, b) => {
+                const subA = submissions.find(s => s.assignmentId === a.id);
+                const subB = submissions.find(s => s.assignmentId === b.id);
+                return new Date(subB?.submittedAt) - new Date(subA?.submittedAt);
+            })
+    );
+    // Wie viele offene sind überfällig? (für die Kopfzeile)
+    let overdueCount = $derived(openList.filter(a => getDeadlineStatus(a.dueDate) === "overdue").length);
 
     let assignmentTypes = $derived({
         AI_INTERVIEW: { label: $t("stasks.typeInterview"), action: $t("stasks.actionInterview"), color: "var(--color-primary)" },
@@ -156,74 +150,93 @@
             </div>
         </div>
 
-        <div class="assignments-list">
-            {#each sortedAssignments() as assignment}
-                {@const typeInfo = getTypeInfo(assignment.type)}
-                {@const deadlineStatus = getDeadlineStatus(assignment.dueDate)}
-                {@const submission = getSubmissionForAssignment(assignment.id)}
-                {@const submitted = !!submission}
-                
-                <a href="/student/assignments/{assignment.id}" class="assignment-card" class:overdue={deadlineStatus === "overdue" && !submitted} class:submitted={submitted}>
-                    <div class="assignment-content">
-                        <div class="assignment-header">
-                            <span class="type-badge" style="--type-color: {typeInfo.color}">
-                                {typeInfo.label}
-                            </span>
-                            {#if submitted}
-                                <span class="badge badge-success">✓ {formatSubmissionStatus(submission.status)}</span>
-                            {:else}
-                                <span class="badge badge-primary">{formatStatus(assignment.status)}</span>
-                            {/if}
-                        </div>
-                        
-                        <h3 class="assignment-title">{assignment.title}</h3>
-                        
-                        {#if assignment.description}
-                            <p class="assignment-desc">{assignment.description}</p>
-                        {/if}
-                        
-                        <div class="assignment-meta">
-                            {#if submitted}
-                                <span class="meta-item text-success">{$t("stasks.submittedAt")} {formatDateTime(submission.submittedAt)}</span>
-                                {#if submission.teacherFeedback}
-                                    <span class="meta-item has-feedback">{$t("stasks.feedbackReceived")}</span>
-                                {/if}
-                            {:else}
-                                <span class="meta-item" class:text-warning={deadlineStatus === "soon"} class:text-danger={deadlineStatus === "overdue"}>
-                                    {$t("stasks.deadline")} {formatDate(assignment.dueDate)}
-                                    {#if deadlineStatus === "overdue"}
-                                        <span class="deadline-label danger">{$t("stasks.overdue")}</span>
-                                    {:else if deadlineStatus === "soon"}
-                                        <span class="deadline-label warning">{$t("stasks.dueSoon")}</span>
-                                    {/if}
-                                </span>
-                            {/if}
-                            {#if assignment.durationMin}
-                                <span class="meta-item">⏱️ ca. {assignment.durationMin} {$t("stasks.approxMin")}</span>
-                            {/if}
-                        </div>
+        {#snippet card(assignment)}
+            {@const typeInfo = getTypeInfo(assignment.type)}
+            {@const deadlineStatus = getDeadlineStatus(assignment.dueDate)}
+            {@const submission = getSubmissionForAssignment(assignment.id)}
+            {@const submitted = !!submission}
 
-                        {#if submission?.teacherFeedback}
-                            <div class="feedback-box">
-                                <strong>{$t("stasks.feedbackLabel")}</strong>
-                                <p>{submission.teacherFeedback}</p>
-                                {#if submission.grade != null}
-                                    <span class="grade-badge">{$t("stasks.grade")} {submission.grade}</span>
-                                {/if}
-                            </div>
-                        {/if}
-                    </div>
-                    
-                    <div class="assignment-action">
+            <a href="/student/assignments/{assignment.id}" class="assignment-card" class:overdue={deadlineStatus === "overdue" && !submitted} class:submitted={submitted}>
+                <div class="assignment-content">
+                    <div class="assignment-header">
+                        <span class="type-badge" style="--type-color: {typeInfo.color}">
+                            {typeInfo.label}
+                        </span>
                         {#if submitted}
-                            <span class="view-hint">{$t("stasks.viewDetails")}</span>
+                            <span class="badge badge-success">✓ {formatSubmissionStatus(submission.status)}</span>
                         {:else}
-                            <span class="btn btn-primary">{typeInfo.action}</span>
+                            <span class="badge badge-primary">{formatStatus(assignment.status)}</span>
                         {/if}
                     </div>
-                </a>
-            {/each}
-        </div>
+
+                    <h3 class="assignment-title">{assignment.title}</h3>
+
+                    {#if assignment.description}
+                        <p class="assignment-desc">{assignment.description}</p>
+                    {/if}
+
+                    <div class="assignment-meta">
+                        {#if submitted}
+                            <span class="meta-item text-success">{$t("stasks.submittedAt")} {formatDateTime(submission.submittedAt)}</span>
+                            {#if submission.teacherFeedback}
+                                <span class="meta-item has-feedback">{$t("stasks.feedbackReceived")}</span>
+                            {/if}
+                        {:else}
+                            <span class="meta-item" class:text-warning={deadlineStatus === "soon"} class:text-danger={deadlineStatus === "overdue"}>
+                                {$t("stasks.deadline")} {formatDate(assignment.dueDate)}
+                                {#if deadlineStatus === "overdue"}
+                                    <span class="deadline-label danger">{$t("stasks.overdue")}</span>
+                                {:else if deadlineStatus === "soon"}
+                                    <span class="deadline-label warning">{$t("stasks.dueSoon")}</span>
+                                {/if}
+                            </span>
+                        {/if}
+                        {#if assignment.durationMin}
+                            <span class="meta-item">⏱️ ca. {assignment.durationMin} {$t("stasks.approxMin")}</span>
+                        {/if}
+                    </div>
+
+                    {#if submission?.teacherFeedback}
+                        <div class="feedback-box">
+                            <strong>{$t("stasks.feedbackLabel")}</strong>
+                            <p>{submission.teacherFeedback}</p>
+                            {#if submission.grade != null}
+                                <span class="grade-badge">{$t("stasks.grade")} {submission.grade}</span>
+                            {/if}
+                        </div>
+                    {/if}
+                </div>
+
+                <div class="assignment-action">
+                    {#if submitted}
+                        <span class="view-hint">{$t("stasks.viewDetails")}</span>
+                    {:else}
+                        <span class="btn btn-primary">{typeInfo.action}</span>
+                    {/if}
+                </div>
+            </a>
+        {/snippet}
+
+        <!-- Gruppe: Zu erledigen -->
+        {#if openList.length > 0}
+            <h2 class="group-head">
+                📌 {$t("stasks.sectionTodo")} <span class="group-count">{openList.length}</span>
+                {#if overdueCount > 0}<span class="group-overdue">· {overdueCount} {$t("stasks.overdue")}</span>{/if}
+            </h2>
+            <div class="assignments-list">
+                {#each openList as assignment (assignment.id)}{@render card(assignment)}{/each}
+            </div>
+        {:else}
+            <div class="all-done">🎉 {$t("stasks.allDone")}</div>
+        {/if}
+
+        <!-- Gruppe: Erledigt -->
+        {#if doneList.length > 0}
+            <h2 class="group-head done">✅ {$t("stasks.sectionDone")} <span class="group-count">{doneList.length}</span></h2>
+            <div class="assignments-list">
+                {#each doneList as assignment (assignment.id)}{@render card(assignment)}{/each}
+            </div>
+        {/if}
     {/if}
 </div>
 
@@ -237,6 +250,24 @@
 
     .alert-warning p {
         margin: var(--space-xs) 0 0;
+    }
+
+    .group-head {
+        display: flex; align-items: center; gap: 0.5rem;
+        font-size: 1.05rem; font-weight: 700; color: #2F124D;
+        margin: 1.75rem 0 0.85rem;
+    }
+    .group-head.done { color: #6b647a; margin-top: 2rem; }
+    .group-count {
+        background: #f0e7fa; color: #2F124D; font-size: 0.8rem; font-weight: 700;
+        border-radius: 999px; padding: 0.05rem 0.55rem;
+    }
+    .group-head.done .group-count { background: #eef0f2; color: #6b647a; }
+    .group-overdue { color: #dc2626; font-size: 0.85rem; font-weight: 600; }
+    .all-done {
+        background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534;
+        border-radius: 1rem; padding: 1.25rem; text-align: center; font-weight: 600;
+        margin: 1.5rem 0;
     }
 
     .assignments-list {

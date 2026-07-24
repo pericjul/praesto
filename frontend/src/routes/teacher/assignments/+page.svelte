@@ -19,6 +19,10 @@
     let filterStatus = $state("all");
     let sortBy = $state("deadline");
     let visibleCount = $state(20);
+    let showFilters = $state(false);
+    let activeFilterCount = $derived(
+        (searchQuery ? 1 : 0) + (filterClass !== "all" ? 1 : 0) + (filterType !== "all" ? 1 : 0)
+    );
 
     let assignmentTypes = $derived([
         { value: "AI_INTERVIEW", label: $t('tasks.typeInterview'), hasDuration: true },
@@ -181,9 +185,13 @@
         <button class="pill" class:active={filterStatus === "closed"} onclick={() => { filterStatus = "closed"; visibleCount = 20; }}>
             ✓ {$t('tasks.filterClosed')}
         </button>
+        <button class="pill pill-filter" class:active={showFilters} onclick={() => (showFilters = !showFilters)}>
+            🔍 {$t('tasks.filterMore')}{#if activeFilterCount > 0} ({activeFilterCount}){/if}
+        </button>
     </div>
 
-    <!-- Search & Filters -->
+    <!-- Search & Filters (einklappbar) -->
+    {#if showFilters}
     <div class="filter-bar">
         <div class="filter-group search-wrapper">
             <span class="search-icon">🔍</span>
@@ -213,6 +221,7 @@
             <option value="class">{$t('tasks.sortClass')}</option>
         </select>
     </div>
+    {/if}
 
     {#if searchQuery || filterClass !== "all" || filterType !== "all"}
         <div class="results-info">
@@ -272,6 +281,9 @@
                                 <div class="submission-stats">
                                     <span class="submission-count">{assignment.submissionCount} / {assignment.totalStudents}</span>
                                     <span class="submission-label">{$t('tasks.submitted')}</span>
+                                </div>
+                                <div class="progress-track" title="{assignment.totalStudents > 0 ? Math.round(100 * assignment.submissionCount / assignment.totalStudents) : 0}%">
+                                    <div class="progress-fill" class:full={assignment.isComplete} style="width: {assignment.totalStudents > 0 ? Math.round(100 * assignment.submissionCount / assignment.totalStudents) : 0}%"></div>
                                 </div>
                                 <div class="review-stats">
                                     {#if assignment.submissionCount === 0}
@@ -585,6 +597,14 @@
         align-items: baseline;
         gap: 0.35rem;
     }
+
+    .progress-track {
+        height: 6px; background: #ece7f3; border-radius: 999px;
+        overflow: hidden; margin: 0.35rem 0; max-width: 130px;
+    }
+    .progress-fill { height: 100%; background: #6b4a9c; border-radius: 999px; transition: width 0.3s; }
+    .progress-fill.full { background: #16a34a; }
+    .pill-filter { margin-left: auto; }
 
     .submission-count {
         font-size: 1.1rem;
