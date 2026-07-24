@@ -484,8 +484,8 @@
     }
 
     .class-badge {
-        background: #e0f2fe;
-        color: #0369a1;
+        background: #f1eff4;
+        color: #5f5670;
         padding: 0.3rem 0.75rem;
         border-radius: 999px;
         font-size: 0.78rem;
@@ -536,23 +536,12 @@
     .stat-card {
         background: #fff;
         border: 1px solid #ece3f5;
-        border-radius: 1rem;
+        border-radius: 0.9rem;
         padding: 1.1rem 1rem;
         text-align: center;
-        box-shadow: 0 2px 10px rgba(47, 18, 77, 0.05);
-        position: relative;
-        overflow: hidden;
     }
-    .stat-card::before {
-        content: "";
-        position: absolute; top: 0; left: 0; right: 0; height: 3px;
-        background: var(--color-primary, #2F124D);
-        opacity: 0.6;
-    }
-    .stat-card.highlight { background: #fff8f1; border-color: #fcd9b6; }
-    .stat-card.highlight::before { background: #e8590c; opacity: 1; }
-    .stat-card.success { background: #f1fbf4; border-color: #bbf0cb; }
-    .stat-card.success::before { background: #16a34a; opacity: 1; }
+    /* Ruhige Palette: nur "zu bewerten" bekommt eine dezente Signalfarbe. */
+    .stat-card.highlight { border-color: #fcd9b6; }
 
     .stat-value {
         display: block;
@@ -564,10 +553,6 @@
 
     .stat-card.highlight .stat-value {
         color: #c2410c;
-    }
-
-    .stat-card.success .stat-value {
-        color: #16a34a;
     }
 
     .stat-label {
@@ -606,27 +591,7 @@
         border-color: #2f124d;
     }
 
-    .filter-btn.filter-warning {
-        border-color: #fcd34d;
-        color: #92400e;
-    }
-
-    .filter-btn.filter-warning.active {
-        background: #f59e0b;
-        border-color: #f59e0b;
-        color: white;
-    }
-
-    .filter-btn.filter-success {
-        border-color: #bbf7d0;
-        color: #166534;
-    }
-
-    .filter-btn.filter-success.active {
-        background: #16a34a;
-        border-color: #16a34a;
-        color: white;
-    }
+    /* Ruhige Palette: alle Filter neutral, aktiv = ein einheitliches Lila. */
 
     /* Submissions Grid */
     .submissions-grid {
@@ -651,7 +616,7 @@
     }
 
     .submission-card.reviewed {
-        border-left: 4px solid #16a34a;
+        border-left-color: #d9d1e6;
     }
 
     .sub-header {
@@ -750,11 +715,12 @@
         font-weight: 500;
     }
 
+    /* "Bewertet" ruhig-neutral (kein Signal nötig) … */
     .badge-success {
-        background: #dcfce7;
-        color: #166534;
+        background: #f1eff4;
+        color: #5f5670;
     }
-
+    /* … nur "offen/zu bewerten" behält die eine Signalfarbe (Amber). */
     .badge-warning {
         background: #fef3c7;
         color: #92400e;
@@ -769,15 +735,15 @@
     .feedback-preview {
         margin-top: 1rem;
         padding: 0.75rem;
-        background: #f0fdf4;
+        background: #faf8fc;
         border-radius: 0.5rem;
-        border: 1px solid #bbf7d0;
+        border: 1px solid #ece3f5;
     }
 
     .feedback-preview strong {
         display: block;
         font-size: 0.75rem;
-        color: #166534;
+        color: #5f5670;
         margin-bottom: 0.25rem;
     }
 
