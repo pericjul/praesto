@@ -215,6 +215,9 @@
             </div>
         {/if}
 
+        <!-- Datenschutz-Hinweis: keine sensiblen Daten nötig, Fragen dürfen abgelehnt werden -->
+        <div class="privacy-note">🔒 {$t('common.aiChatNotice')}</div>
+
         {#if form?.error}
             <div class="alert alert-danger">
                 {form.error}
@@ -301,6 +304,7 @@
                     </button>
                 </form>
                 <p class="hint">{$t('schat.hint')}</p>
+                <p class="hint hint-privacy">🔒 {$t('common.noPersonalData')}</p>
             </div>
         {:else}
             <div class="closed-notice">
@@ -703,6 +707,18 @@
         margin: 0.5rem 0 0;
         font-size: 0.75rem;
         color: #8E7F9A;
+    }
+    .hint-privacy { margin-top: 0.2rem; color: #7c6a92; }
+
+    .privacy-note {
+        margin: 0.75rem 1rem 0;
+        padding: 0.55rem 0.85rem;
+        background: #f5f0fb;
+        border: 1px solid #e0d2f0;
+        border-radius: 0.6rem;
+        color: #5b2a86;
+        font-size: 0.82rem;
+        line-height: 1.45;
     }
 
     /* Closed Notice */

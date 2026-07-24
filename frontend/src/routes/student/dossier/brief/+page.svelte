@@ -65,6 +65,7 @@
             </div>
 
             <h2>{$t('clform.contentSec')}</h2>
+            <p class="ai-privacy-hint">🔒 {$t('common.noPersonalData')}</p>
             <label><span>{$t('clform.whyCompany')}</span><textarea name="whyCompany" rows="2"></textarea></label>
             <label><span>{$t('clform.strengths')} <em>({$t('clform.strengthsHint')})</em></span><textarea name="strengths" rows="2" placeholder={$t('clform.ph.strengths')}></textarea></label>
             <label><span>{$t('clform.schnupper')} <em>({$t('clform.schnupperHint')})</em></span><textarea name="schnupperExperience" rows="2"></textarea></label>
@@ -93,6 +94,7 @@
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
     label { display: grid; gap: 0.3rem; }
     label span { font-size: 0.85rem; font-weight: 600; color: #2d2141; }
+    .ai-privacy-hint { margin: -0.25rem 0 0.5rem; font-size: 0.8rem; color: #7c6a92; }
     input, textarea { border: 1px solid #e8e0f0; border-radius: 0.6rem; padding: 0.6rem 0.75rem; font: inherit; }
     input:focus, textarea:focus { outline: 2px solid #2F124D; outline-offset: 1px; }
 

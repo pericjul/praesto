@@ -144,6 +144,7 @@
             <label>
                 <span>{$t('bug.fDesc')}</span>
                 <textarea name="description" rows="4" required placeholder={$t('bug.fDescPh')}></textarea>
+                <small class="field-privacy">🔒 {$t('common.noPersonalData')}</small>
             </label>
 
             <label>
@@ -241,6 +242,7 @@
     }
     .shot-remove:hover { background: #fef2f2; border-color: #fecaca; }
     .shot-err { font-size: 0.82rem; color: #b91c1c; }
+    .field-privacy { color: #7c6a92; font-size: 0.78rem; }
 
     .done { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 1rem; padding: 1.5rem; text-align: center; }
     .done p { margin: 0 0 1rem; color: #166534; font-weight: 600; }
