@@ -7,6 +7,7 @@
         { t: $t("dp.s3.t"), p: $t("dp.s3.p") },
         { t: $t("dp.s4.t"), p: $t("dp.s4.p") },
         { t: $t("dp.s5.t"), p: $t("dp.s5.p") },
+        { t: $t("dp.sAI.t"), p: $t("dp.sAI.p") },
         { t: $t("dp.s6.t"), p: $t("dp.s6.p") },
         { t: $t("dp.s7.t"), p: $t("dp.s7.p") },
         { t: $t("dp.s8.t"), p: $t("dp.s8.p") },
@@ -16,7 +17,7 @@
         { t: $t("dp.s12.t"), p: $t("dp.s12.p") }
     ]);
 
-    let lastUpdated = "30.06.2026";
+    let lastUpdated = "24.07.2026";
 </script>
 
 <svelte:head>
@@ -31,7 +32,9 @@
     {#each sections as section}
         <section class="block">
             <h2>{section.t}</h2>
-            <p>{section.p}</p>
+            {#each section.p.split('\n\n') as para}
+                <p>{para}</p>
+            {/each}
         </section>
     {/each}
 

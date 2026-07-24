@@ -248,7 +248,9 @@
       "Bash(curl -s -m 15 https://praesto.ch)",
       "Bash(curl -s -m 15 https://praesto.ch/robots.txt)",
       "Bash(echo \"FRONTEND: $?\")",
-      "Bash(./mvnw -q test -Dtest='*Cockpit*,*TeacherInsights*' -Dsurefire.failIfNoSpecifiedTests=false)"
+      "Bash(./mvnw -q test -Dtest='*Cockpit*,*TeacherInsights*' -Dsurefire.failIfNoSpecifiedTests=false)",
+      "Bash(perl -i -pe 's/\\\\.t\": \"12\\\\. /.t\": \"13. /g; s/\\\\.t\": \"11\\\\. /.t\": \"12. /g; s/\\\\.t\": \"10\\\\. /.t\": \"11. /g; s/\\\\.t\": \"9\\\\. /.t\": \"10. /g; s/\\\\.t\": \"8\\\\. /.t\": \"9. /g; s/\\\\.t\": \"7\\\\. /.t\": \"8. /g; s/\\\\.t\": \"6\\\\. /.t\": \"7. /g;' frontend/src/lib/i18n/messages/privacyDe.js)",
+      "Bash(node -e \"import\\('./src/lib/i18n/messages/privacyDe.js'\\).then\\(m=>console.log\\('privacyDe keys DE:', Object.keys\\(m.privacyDe.de\\).filter\\(k=>k.includes\\('sAI'\\)\\), '| EN:', Object.keys\\(m.privacyDe.en\\).filter\\(k=>k.includes\\('sAI'\\)\\), '| FR:', Object.keys\\(m.privacyDe.fr\\).filter\\(k=>k.includes\\('sAI'\\)\\), '| IT:', Object.keys\\(m.privacyDe.it\\).filter\\(k=>k.includes\\('sAI'\\)\\)\\)\\).catch\\(e=>{console.error\\('FEHLER',e.message\\);process.exit\\(1\\)}\\)\")"
     ]
   }
 }
