@@ -217,7 +217,7 @@
             </ul>
         </section>
 
-        <p class="foot">Praesto – Julia Perić · Sandäckerstrasse 1a, 8957 Spreitenbach · info@praesto.ch · praesto.ch</p>
+        <p class="foot">Praesto – Julia Perić · info@praesto.ch · praesto.ch</p>
     </article>
 </div>
 
