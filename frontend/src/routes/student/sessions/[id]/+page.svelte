@@ -27,6 +27,7 @@
     
     // Assignment-Info
     let isAssignment = $derived(!!session?.assignmentId);
+    let isStrict = $derived(!isAssignment && session?.roast === true);
     let assignmentTitle = $derived(session?.assignmentTitle ?? "");
     let targetDurationMin = $derived(session?.targetDurationMin ?? 0);
     let targetDurationSec = $derived(targetDurationMin * 60);
@@ -146,12 +147,17 @@
 <div class="chat-wrapper">
     <div class="chat-page">
         <!-- Header -->
-        <header class="chat-header">
+        <header class="chat-header" class:strict-mode={isStrict}>
             <a href={isAssignment ? "/student/assignments" : "/student/sessions"} class="back-link">{$t('schat.back')}</a>
             <div class="header-content">
-                <h1>🤖 {isAssignment ? assignmentTitle : $t('schat.titleTraining')}</h1>
+                <h1>
+                    {isStrict ? "🎓" : "🤖"} {isAssignment ? assignmentTitle : (isStrict ? $t('schat.titleStrict') : $t('schat.titleTraining'))}
+                    {#if isStrict}<span class="strict-badge">⚡ {$t('schat.strictBadge')}</span>{/if}
+                </h1>
                 {#if isAssignment}
                     <p>{$t('schat.assignmentFromTeacher')}</p>
+                {:else if isStrict}
+                    <p class="strict-sub">{$t('schat.strictSubtitle')}</p>
                 {:else}
                     <p>{$t('schat.trainingSubtitle')}</p>
                 {/if}
@@ -381,6 +387,18 @@
         border-radius: 1rem 1rem 0 0;
         flex-shrink: 0;
     }
+    /* Strenger Modus: klar anderer, ernster Look */
+    .chat-header.strict-mode {
+        background: linear-gradient(135deg, #3a1220, #7a1f2b);
+        border-bottom: 3px solid #ef4444;
+    }
+    .strict-badge {
+        display: inline-block; margin-left: 0.5rem; vertical-align: middle;
+        background: #ef4444; color: #fff; font-size: 0.7rem; font-weight: 700;
+        padding: 0.15rem 0.6rem; border-radius: 999px; white-space: nowrap;
+        text-transform: uppercase; letter-spacing: 0.03em;
+    }
+    .strict-sub { color: #fecaca !important; }
 
     .back-link {
         color: rgba(255,255,255,0.85);

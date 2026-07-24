@@ -41,6 +41,9 @@ export const studentMedia = {
 		"schat.assignmentFromTeacher": "Aufgabe von deiner Lehrperson",
 		"schat.trainingSubtitle":
 			"Übe Vorstellungsgespräche mit deinem persönlichen KI-Coach",
+		"schat.titleStrict": "Strenges Bewerbungstraining",
+		"schat.strictBadge": "Strenger Modus",
+		"schat.strictSubtitle": "Achtung: strenge Prüfungsperson – sie fordert dich hart und akzeptiert keine Floskeln.",
 		"schat.submit": "✓ Abgeben",
 		"schat.end": "Beenden",
 		"schat.ending": "Wird beendet …",
@@ -114,6 +117,9 @@ export const studentMedia = {
 		"schat.assignmentFromTeacher": "Assignment from your teacher",
 		"schat.trainingSubtitle":
 			"Practise job interviews with your personal AI coach",
+		"schat.titleStrict": "Strict interview training",
+		"schat.strictBadge": "Strict mode",
+		"schat.strictSubtitle": "Heads up: a tough examiner – it pushes you hard and accepts no empty phrases.",
 		"schat.submit": "✓ Submit",
 		"schat.end": "End",
 		"schat.ending": "Ending …",
@@ -187,6 +193,9 @@ export const studentMedia = {
 		"schat.assignmentFromTeacher": "Devoir de ton enseignant·e",
 		"schat.trainingSubtitle":
 			"Entraîne-toi aux entretiens d'embauche avec ton coach IA personnel",
+		"schat.titleStrict": "Entraînement strict",
+		"schat.strictBadge": "Mode strict",
+		"schat.strictSubtitle": "Attention : examinateur sévère – il te pousse et n'accepte aucune formule creuse.",
 		"schat.submit": "✓ Rendre",
 		"schat.end": "Clôturer",
 		"schat.ending": "Clôture …",
@@ -261,6 +270,9 @@ export const studentMedia = {
 		"schat.assignmentFromTeacher": "Compito del tuo insegnante",
 		"schat.trainingSubtitle":
 			"Esercitati nei colloqui di lavoro con il tuo coach IA personale",
+		"schat.titleStrict": "Allenamento severo",
+		"schat.strictBadge": "Modalità severa",
+		"schat.strictSubtitle": "Attenzione: esaminatore severo – ti mette sotto pressione e non accetta frasi fatte.",
 		"schat.submit": "✓ Consegna",
 		"schat.end": "Chiudi",
 		"schat.ending": "Chiusura …",
