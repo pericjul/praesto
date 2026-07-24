@@ -22,7 +22,13 @@ export const teacherInsights = {
 		"cockpit.never": "noch nie",
 		"cockpit.reason.NEVER_PRACTICED": "hat noch nie geübt",
 		"cockpit.reason.LOW_SCORE": "Chance noch unter 30%",
-		"cockpit.reason.INACTIVE": "seit über 14 Tagen inaktiv"
+		"cockpit.reason.INACTIVE": "seit über 14 Tagen inaktiv",
+		"cockpit.reason.BARELY_PRACTICED": "erst 1× geübt",
+		"cockpit.reason.DECLINING": "Chance sinkt zuletzt",
+		"cockpit.reason.MISSING_ASSIGNMENT": "Aufgabe(n) nicht abgegeben",
+		"cockpit.filterAll": "Alle",
+		"cockpit.filterAttention": "Aufmerksamkeit",
+		"cockpit.filterEmpty": "Keine Schüler:innen mit diesem Kriterium."
 	},
 	en: {
 		"nav.cockpit": "Cockpit",
@@ -46,7 +52,13 @@ export const teacherInsights = {
 		"cockpit.never": "never",
 		"cockpit.reason.NEVER_PRACTICED": "has never practised",
 		"cockpit.reason.LOW_SCORE": "chance still below 30%",
-		"cockpit.reason.INACTIVE": "inactive for over 14 days"
+		"cockpit.reason.INACTIVE": "inactive for over 14 days",
+		"cockpit.reason.BARELY_PRACTICED": "practised only once",
+		"cockpit.reason.DECLINING": "score dropping lately",
+		"cockpit.reason.MISSING_ASSIGNMENT": "assignment(s) not submitted",
+		"cockpit.filterAll": "All",
+		"cockpit.filterAttention": "Attention",
+		"cockpit.filterEmpty": "No students match this criterion."
 	},
 	fr: {
 		"nav.cockpit": "Cockpit",
@@ -70,7 +82,13 @@ export const teacherInsights = {
 		"cockpit.never": "jamais",
 		"cockpit.reason.NEVER_PRACTICED": "ne s'est jamais entraîné",
 		"cockpit.reason.LOW_SCORE": "chance encore sous 30%",
-		"cockpit.reason.INACTIVE": "inactif depuis plus de 14 jours"
+		"cockpit.reason.INACTIVE": "inactif depuis plus de 14 jours",
+		"cockpit.reason.BARELY_PRACTICED": "n'a exercé qu'une fois",
+		"cockpit.reason.DECLINING": "score en baisse récemment",
+		"cockpit.reason.MISSING_ASSIGNMENT": "devoir(s) non rendu(s)",
+		"cockpit.filterAll": "Tous",
+		"cockpit.filterAttention": "Attention",
+		"cockpit.filterEmpty": "Aucun élève ne correspond à ce critère."
 	},
 	it: {
 		"nav.cockpit": "Cockpit",
@@ -94,6 +112,12 @@ export const teacherInsights = {
 		"cockpit.never": "mai",
 		"cockpit.reason.NEVER_PRACTICED": "non si è mai allenato",
 		"cockpit.reason.LOW_SCORE": "chance ancora sotto il 30%",
-		"cockpit.reason.INACTIVE": "inattivo da oltre 14 giorni"
+		"cockpit.reason.INACTIVE": "inattivo da oltre 14 giorni",
+		"cockpit.reason.BARELY_PRACTICED": "esercitato solo 1 volta",
+		"cockpit.reason.DECLINING": "punteggio in calo di recente",
+		"cockpit.reason.MISSING_ASSIGNMENT": "compito/i non consegnato/i",
+		"cockpit.filterAll": "Tutti",
+		"cockpit.filterAttention": "Attenzione",
+		"cockpit.filterEmpty": "Nessun allievo corrisponde a questo criterio."
 	}
 };

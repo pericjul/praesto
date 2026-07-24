@@ -10,6 +10,30 @@
     let challenge = $derived(data.challenge);
     let selectedId = $derived(data.selectedId);
 
+    // Filter "wer braucht Aufmerksamkeit": ALL | ATTENTION | <reasonCode>
+    let filter = $state("ALL");
+    // Reihenfolge der Kriterien in der Filterleiste
+    const REASON_ORDER = ["MISSING_ASSIGNMENT", "BARELY_PRACTICED", "DECLINING", "LOW_SCORE", "INACTIVE", "NEVER_PRACTICED"];
+
+    // Beim Klassenwechsel Filter zurücksetzen
+    $effect(() => { selectedId; filter = "ALL"; });
+
+    let reasonCounts = $derived.by(() => {
+        const m = {};
+        for (const s of cockpit?.students ?? []) {
+            for (const r of s.reasons ?? []) m[r] = (m[r] ?? 0) + 1;
+        }
+        return m;
+    });
+    let activeReasons = $derived(REASON_ORDER.filter((r) => (reasonCounts[r] ?? 0) > 0));
+
+    let filteredStudents = $derived.by(() => {
+        const all = cockpit?.students ?? [];
+        if (filter === "ALL") return all;
+        if (filter === "ATTENTION") return all.filter((s) => s.needsAttention);
+        return all.filter((s) => (s.reasons ?? []).includes(filter));
+    });
+
     function refresh() {
         return async ({ result, update }) => {
             if (result.type === "success") await invalidateAll();
@@ -21,7 +45,10 @@
         return {
             NEVER_PRACTICED: $t("cockpit.reason.NEVER_PRACTICED"),
             LOW_SCORE: $t("cockpit.reason.LOW_SCORE"),
-            INACTIVE: $t("cockpit.reason.INACTIVE")
+            INACTIVE: $t("cockpit.reason.INACTIVE"),
+            BARELY_PRACTICED: $t("cockpit.reason.BARELY_PRACTICED"),
+            DECLINING: $t("cockpit.reason.DECLINING"),
+            MISSING_ASSIGNMENT: $t("cockpit.reason.MISSING_ASSIGNMENT")
         }[code] ?? code;
     }
 
@@ -107,6 +134,23 @@
                 {/if}
             </section>
 
+            <!-- Filter: wer braucht Aufmerksamkeit -->
+            <div class="filter-bar">
+                <button type="button" class="fchip" class:on={filter === 'ALL'} onclick={() => (filter = 'ALL')}>
+                    {$t('cockpit.filterAll')} <span class="fc">{cockpit.students.length}</span>
+                </button>
+                {#if cockpit.needAttentionCount > 0}
+                    <button type="button" class="fchip attention" class:on={filter === 'ATTENTION'} onclick={() => (filter = 'ATTENTION')}>
+                        ⚠️ {$t('cockpit.filterAttention')} <span class="fc">{cockpit.needAttentionCount}</span>
+                    </button>
+                {/if}
+                {#each activeReasons as r}
+                    <button type="button" class="fchip" class:on={filter === r} onclick={() => (filter = r)}>
+                        {reasonText(r)} <span class="fc">{reasonCounts[r]}</span>
+                    </button>
+                {/each}
+            </div>
+
             <!-- Schüler-Tabelle -->
             <div class="table-wrap">
                 <table>
@@ -121,7 +165,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {#each cockpit.students as s (s.studentId)}
+                        {#each filteredStudents as s (s.studentId)}
                             <tr class:row-attention={s.needsAttention}>
                                 <td class="name">{s.name}</td>
                                 <td>{s.sessionCount}</td>
@@ -136,6 +180,8 @@
                                     {/if}
                                 </td>
                             </tr>
+                        {:else}
+                            <tr><td colspan="6" class="filter-empty">{$t('cockpit.filterEmpty')}</td></tr>
                         {/each}
                     </tbody>
                 </table>
@@ -183,6 +229,15 @@
 
     .flag { color: #b45309; font-size: 0.82rem; }
     .ok { color: #16a34a; font-size: 0.85rem; }
+
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.85rem; }
+    .fchip { display: inline-flex; align-items: center; gap: 0.4rem; background: #f3f0f7; border: 1px solid #e8e0f0; color: #2d2141; border-radius: 999px; padding: 0.35rem 0.8rem; font-size: 0.85rem; cursor: pointer; }
+    .fchip:hover { background: #ece3f5; }
+    .fchip.on { background: #2F124D; color: #fff; border-color: #2F124D; }
+    .fchip.attention { border-color: #fcd34d; background: #fffbeb; color: #b45309; }
+    .fchip.attention.on { background: #b45309; color: #fff; border-color: #b45309; }
+    .fchip .fc { font-weight: 700; opacity: 0.85; }
+    .filter-empty { text-align: center; color: #9a8b9d; padding: 1.25rem; }
 
     /* Klassen-Challenge */
     .challenge-panel { background: #fff; border: 1px solid #e8e0f0; border-radius: 1rem; padding: 1.1rem 1.25rem; margin-bottom: 1.25rem; }

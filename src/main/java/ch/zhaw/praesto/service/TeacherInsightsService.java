@@ -4,6 +4,7 @@ import ch.zhaw.praesto.exception.ForbiddenException;
 import ch.zhaw.praesto.exception.NotFoundException;
 import ch.zhaw.praesto.model.*;
 import ch.zhaw.praesto.repository.AiUsageRepository;
+import ch.zhaw.praesto.repository.AssignmentRepository;
 import ch.zhaw.praesto.repository.SchoolClassRepository;
 import ch.zhaw.praesto.repository.SessionRepository;
 import ch.zhaw.praesto.repository.SubmissionRepository;
@@ -27,12 +28,15 @@ public class TeacherInsightsService {
 
     private static final int LOW_SCORE_THRESHOLD = 30;
     private static final long INACTIVE_DAYS = 14;
+    private static final int BARELY_MAX_PRACTICES = 1;   // 0-1 Gespräche = "kaum geübt"
+    private static final int DECLINE_DROP = 10;          // Punkte-Abfall = "Verschlechterung"
 
     private final SchoolClassRepository schoolClassRepository;
     private final SessionRepository sessionRepository;
     private final SubmissionRepository submissionRepository;
     private final UserRepository userRepository;
     private final AiUsageRepository aiUsageRepository;
+    private final AssignmentRepository assignmentRepository;
     private final UserService userService;
 
     public ClassCockpitDTO getClassCockpit(String classId) {
@@ -47,7 +51,13 @@ public class TeacherInsightsService {
             throw new ForbiddenException("Keine Berechtigung für diese Klasse");
         }
 
-        Instant inactiveCutoff = Instant.now().minus(INACTIVE_DAYS, ChronoUnit.DAYS);
+        Instant now = Instant.now();
+        Instant inactiveCutoff = now.minus(INACTIVE_DAYS, ChronoUnit.DAYS);
+
+        // Überfällige Aufgaben dieser Klasse (Fälligkeit vorbei) – für "nicht abgegeben".
+        List<Assignment> overdueAssignments = assignmentRepository.findByClassId(classId).stream()
+                .filter(a -> a.getDueDate() != null && a.getDueDate().isBefore(now))
+                .toList();
 
         List<ClassCockpitDTO.Student> students = new ArrayList<>();
         List<ClassCockpitDTO.Guidance> guidance = new ArrayList<>();
@@ -97,16 +107,48 @@ public class TeacherInsightsService {
                 scoreCount++;
             }
 
+            // Scores in zeitlicher Reihenfolge (für "Verschlechterung")
+            List<Integer> scoresChrono = sessions.stream()
+                    .filter(s -> s.getScore() != null)
+                    .sorted(Comparator.comparing(
+                            s -> s.getClosedAt() != null ? s.getClosedAt() : s.getStartedAt(),
+                            Comparator.nullsFirst(Comparator.naturalOrder())))
+                    .map(Session::getScore)
+                    .toList();
+            boolean declining = false;
+            if (scoresChrono.size() >= 2) {
+                List<Integer> earlier = scoresChrono.subList(0, scoresChrono.size() - 1);
+                int earlierAvg = (int) Math.round(earlier.stream().mapToInt(Integer::intValue).average().orElse(0));
+                int latest = scoresChrono.get(scoresChrono.size() - 1);
+                declining = latest <= earlierAvg - DECLINE_DROP;
+            }
+
+            // Überfällige Aufgaben, die diese:r Schüler:in NICHT abgegeben hat
+            long missingAssignments = overdueAssignments.stream()
+                    .filter(a -> !submissionRepository.existsByAssignmentIdAndStudentEmail(a.getId(), student.getEmail()))
+                    .count();
+
+            int practiceEngagement = Math.max(sessionCount, practiceUsed);
+
             List<String> reasons = new ArrayList<>();
             if (!everPracticed) {
                 reasons.add("NEVER_PRACTICED");
             } else {
+                if (practiceEngagement <= BARELY_MAX_PRACTICES) {
+                    reasons.add("BARELY_PRACTICED");
+                }
                 if (bestScore != null && bestScore < LOW_SCORE_THRESHOLD) {
                     reasons.add("LOW_SCORE");
+                }
+                if (declining) {
+                    reasons.add("DECLINING");
                 }
                 if (lastActivity != null && lastActivity.isBefore(inactiveCutoff)) {
                     reasons.add("INACTIVE");
                 }
+            }
+            if (missingAssignments > 0) {
+                reasons.add("MISSING_ASSIGNMENT");
             }
             boolean needsAttention = !reasons.isEmpty();
 
