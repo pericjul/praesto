@@ -28,6 +28,9 @@
     // Wie viele offene sind überfällig? (für die Kopfzeile)
     let overdueCount = $derived(openList.filter(a => getDeadlineStatus(a.dueDate) === "overdue").length);
 
+    // Erledigte sind standardmässig eingeklappt – wichtig sind die offenen.
+    let showDone = $state(false);
+
     let assignmentTypes = $derived({
         AI_INTERVIEW: { label: $t("stasks.typeInterview"), action: $t("stasks.actionInterview"), color: "var(--color-primary)" },
         DOCUMENT_UPLOAD: { label: $t("stasks.typeDocument"), action: $t("stasks.actionDocument"), color: "var(--color-info)" },
@@ -232,10 +235,15 @@
 
         <!-- Gruppe: Erledigt -->
         {#if doneList.length > 0}
-            <h2 class="group-head done">✅ {$t("stasks.sectionDone")} <span class="group-count">{doneList.length}</span></h2>
-            <div class="assignments-list">
-                {#each doneList as assignment (assignment.id)}{@render card(assignment)}{/each}
-            </div>
+            <button type="button" class="group-head done group-toggle" onclick={() => (showDone = !showDone)} aria-expanded={showDone}>
+                <span class="chev">{showDone ? "▾" : "▸"}</span>
+                ✅ {$t("stasks.sectionDone")} <span class="group-count">{doneList.length}</span>
+            </button>
+            {#if showDone}
+                <div class="assignments-list">
+                    {#each doneList as assignment (assignment.id)}{@render card(assignment)}{/each}
+                </div>
+            {/if}
         {/if}
     {/if}
 </div>
@@ -263,6 +271,13 @@
         border-radius: 999px; padding: 0.05rem 0.55rem;
     }
     .group-head.done .group-count { background: #eef0f2; color: #6b647a; }
+    .group-toggle {
+        background: none; border: none; padding: 0; cursor: pointer;
+        font-family: inherit; font-size: 1.05rem; font-weight: 700;
+        width: 100%; text-align: left;
+    }
+    .group-toggle:hover { color: #2F124D; }
+    .chev { display: inline-block; width: 0.9rem; color: #9a8b9d; font-size: 0.9rem; }
     .group-overdue { color: #dc2626; font-size: 0.85rem; font-weight: 600; }
     .all-done {
         background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534;
