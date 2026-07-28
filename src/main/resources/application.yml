@@ -57,6 +57,8 @@ praesto:
   # Umschalten via STORAGE_TYPE=azure + AZURE_STORAGE_CONNECTION_STRING in den App-Einstellungen.
   storage:
     type: ${STORAGE_TYPE:local}
+    # Einmal-Migration lokaler Dateien -> Blob beim Start (danach wieder entfernen).
+    migrate-local-to-blob: ${MIGRATE_LOCAL_TO_BLOB:false}
     azure:
       connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
       container: ${AZURE_STORAGE_CONTAINER:documents}
