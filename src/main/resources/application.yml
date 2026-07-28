@@ -53,6 +53,15 @@ spring:
             enable: true
 
 praesto:
+  # Datei-Ablage: "local" (Dateisystem, Standard) oder "azure" (Azure Blob Storage).
+  # Umschalten via STORAGE_TYPE=azure + AZURE_STORAGE_CONNECTION_STRING in den App-Einstellungen.
+  storage:
+    type: ${STORAGE_TYPE:local}
+    azure:
+      connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
+      container: ${AZURE_STORAGE_CONTAINER:documents}
+  uploads:
+    dir: ${PRAESTO_UPLOADS_DIR:uploads}
   jwt:
     secret: ${JWT_SECRET}          # min 256-bit (32 Bytes), in Azure App Settings
     expiration-hours: 24

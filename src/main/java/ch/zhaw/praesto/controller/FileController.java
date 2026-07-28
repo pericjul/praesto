@@ -3,10 +3,10 @@ package ch.zhaw.praesto.controller;
 import ch.zhaw.praesto.exception.BadRequestException;
 import ch.zhaw.praesto.exception.NotFoundException;
 import ch.zhaw.praesto.service.FileAccessService;
+import ch.zhaw.praesto.service.storage.StorageService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,21 +15,20 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 /**
  * Datei-Upload und -Download für Abgaben (DOCUMENT_UPLOAD, VIDEO_PITCH) und Dossier.
- * Dateien liegen im konfigurierten Upload-Ordner. Beide Endpoints sind über die
- * SecurityConfig nur für authentifizierte Nutzer erreichbar; der Download wird
- * zusätzlich pro Datei autorisiert ({@link FileAccessService}).
+ * Die eigentliche Ablage übernimmt der {@link StorageService} (lokales Dateisystem oder
+ * Azure Blob – umschaltbar per Konfiguration). Beide Endpoints sind über die SecurityConfig
+ * nur für authentifizierte Nutzer erreichbar; der Download wird zusätzlich pro Datei
+ * autorisiert ({@link FileAccessService}).
  */
 @RestController
 @RequestMapping("/api/files")
+@RequiredArgsConstructor
 @Slf4j
 public class FileController {
 
@@ -39,19 +38,8 @@ public class FileController {
             "jpg", "jpeg", "png", "gif", "webp", "heic", "heif",
             "mp4", "webm", "mov", "m4v");
 
-    private final Path uploadDir;
+    private final StorageService storageService;
     private final FileAccessService fileAccessService;
-
-    public FileController(@Value("${praesto.uploads.dir:uploads}") String uploadsDir,
-                          FileAccessService fileAccessService) {
-        this.uploadDir = Paths.get(uploadsDir).toAbsolutePath().normalize();
-        this.fileAccessService = fileAccessService;
-        // Verifizierung: in Azure muss dieser Pfad unter /home liegen (persistent + instanz-
-        // übergreifend), sonst gehen hochgeladene Dokumente bei Neustart/Skalierung verloren.
-        boolean persistent = this.uploadDir.startsWith("/home");
-        log.info("Uploads-Verzeichnis: {} ({})", this.uploadDir,
-                persistent ? "persistent /home" : "ACHTUNG: nicht unter /home – evtl. flüchtig");
-    }
 
     @PostMapping
     public ResponseEntity<Map<String, String>> upload(@RequestParam("file") MultipartFile file) throws IOException {
@@ -71,19 +59,14 @@ public class FileController {
         String safe = original.replaceAll("[^a-zA-Z0-9._-]", "_");
         String storedName = UUID.randomUUID() + "_" + safe;
 
-        Files.createDirectories(uploadDir);
-        Path target = uploadDir.resolve(storedName).normalize();
-        if (!target.startsWith(uploadDir)) {
-            throw new BadRequestException("Ungültiger Dateiname");
-        }
-        file.transferTo(target);
+        storageService.store(storedName, file.getBytes());
 
         log.info("Datei hochgeladen: {} ({} Bytes)", storedName, file.getSize());
         return ResponseEntity.ok(Map.of("fileUrl", storedName, "fileName", original));
     }
 
     @GetMapping("/{name}")
-    public ResponseEntity<Resource> download(@PathVariable String name) throws IOException {
+    public ResponseEntity<Resource> download(@PathVariable String name) {
         if (name.contains("..") || name.contains("/") || name.contains("\\")) {
             throw new BadRequestException("Ungültiger Dateiname");
         }
@@ -91,15 +74,14 @@ public class FileController {
         // Objekt-Level-Autorisierung: nur Besitzer / Schul-Personal / Super-Admin
         fileAccessService.assertCanAccess(name);
 
-        Path file = uploadDir.resolve(name).normalize();
-        if (!file.startsWith(uploadDir) || !Files.exists(file)) {
+        Resource resource = storageService.exists(name) ? storageService.load(name) : null;
+        if (resource == null) {
             throw new NotFoundException("Datei nicht gefunden");
         }
 
-        Resource resource = new UrlResource(file.toUri());
         // Original-Dateiname = alles nach dem ersten "_" (UUID-Präfix entfernen)
         String downloadName = name.contains("_") ? name.substring(name.indexOf('_') + 1) : name;
-        String contentType = Files.probeContentType(file);
+        String contentType = storageService.probeContentType(name);
 
         return ResponseEntity.ok()
                 .contentType(contentType != null

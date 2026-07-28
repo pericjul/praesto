@@ -4,19 +4,16 @@ import ch.zhaw.praesto.exception.ForbiddenException;
 import ch.zhaw.praesto.exception.NotFoundException;
 import ch.zhaw.praesto.model.*;
 import ch.zhaw.praesto.repository.DocumentRepository;
+import ch.zhaw.praesto.service.storage.StorageService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
 
 /**
  * Bewerbungsdossier: Dokumente einer Schüler:in auflisten, ablegen (hochgeladen
- * oder KI-generiert) und löschen. Dateien liegen im Upload-Ordner.
+ * oder KI-generiert) und löschen. Die Datei-Ablage übernimmt der {@link StorageService}.
  */
 @Service
 @Slf4j
@@ -24,14 +21,13 @@ public class DocumentService {
 
     private final DocumentRepository documentRepository;
     private final UserService userService;
-
-    private final Path uploadDir;
+    private final StorageService storageService;
 
     public DocumentService(DocumentRepository documentRepository, UserService userService,
-                           @Value("${praesto.uploads.dir:uploads}") String uploadsDir) {
+                           StorageService storageService) {
         this.documentRepository = documentRepository;
         this.userService = userService;
-        this.uploadDir = Paths.get(uploadsDir).toAbsolutePath().normalize();
+        this.storageService = storageService;
     }
 
     public List<DocumentDTO> myDocuments() {
@@ -76,7 +72,9 @@ public class DocumentService {
         if (!userService.getUserId().equals(doc.getStudentId())) {
             throw new ForbiddenException("Keine Berechtigung");
         }
-        deletePhysicalFile(doc.getFileUrl());
+        if (doc.getFileUrl() != null && !doc.getFileUrl().isBlank()) {
+            storageService.delete(doc.getFileUrl());
+        }
         documentRepository.delete(doc);
     }
 
@@ -95,20 +93,6 @@ public class DocumentService {
                 .generated(generated)
                 .createdAt(Instant.now())
                 .build());
-    }
-
-    private void deletePhysicalFile(String fileUrl) {
-        if (fileUrl == null || fileUrl.contains("..") || fileUrl.contains("/") || fileUrl.contains("\\")) {
-            return;
-        }
-        try {
-            Path file = uploadDir.resolve(fileUrl).normalize();
-            if (file.startsWith(uploadDir)) {
-                Files.deleteIfExists(file);
-            }
-        } catch (Exception e) {
-            log.warn("Datei konnte nicht gelöscht werden: {}", e.getMessage());
-        }
     }
 
     private DocumentCategory parseCategory(String value) {

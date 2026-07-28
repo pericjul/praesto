@@ -1,9 +1,9 @@
 package ch.zhaw.praesto.service;
 
+import ch.zhaw.praesto.service.storage.StorageService;
 import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.usermodel.*;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -12,16 +12,12 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Erzeugt Word-Dokumente (.docx) und legt sie im Upload-Ordner ab.
+ * Erzeugt Word-Dokumente (.docx) und legt sie über den {@link StorageService} ab.
  *
  * - {@link #writeStructured} rendert einfaches Markup (für das Bewerbungsschreiben).
  * - {@link #writeCv} erzeugt einen sauber formatierten Lebenslauf (Kopf mit Foto,
@@ -35,10 +31,10 @@ public class DocxService {
     /** Tab-Position der Wert-Spalte (Twips ≈ 3.3 cm). */
     private static final int VALUE_TAB = 1850;
 
-    private final Path uploadDir;
+    private final StorageService storageService;
 
-    public DocxService(@Value("${praesto.uploads.dir:uploads}") String uploadsDir) {
-        this.uploadDir = Paths.get(uploadsDir).toAbsolutePath().normalize();
+    public DocxService(StorageService storageService) {
+        this.storageService = storageService;
     }
 
     /** Ein Lebenslauf-Abschnitt: Titel + Zeilen, jede Zeile [links, rechts]. */
@@ -208,9 +204,9 @@ public class DocxService {
     private byte[] loadPhotoPng(String storedName) {
         if (storedName == null || storedName.isBlank()) return null;
         try {
-            Path img = uploadDir.resolve(storedName).normalize();
-            if (!img.startsWith(uploadDir) || !Files.exists(img)) return null;
-            BufferedImage src = ImageIO.read(img.toFile());
+            byte[] raw = storageService.readAllBytes(storedName);
+            if (raw == null) return null;
+            BufferedImage src = ImageIO.read(new ByteArrayInputStream(raw));
             if (src == null || src.getWidth() <= 0) return null;
 
             int targetW = 360;
@@ -388,14 +384,12 @@ public class DocxService {
     // ============================================================
 
     private String save(XWPFDocument doc, String fileBaseName) throws Exception {
-        Files.createDirectories(uploadDir);
         String safe = (fileBaseName == null ? "dokument" : fileBaseName)
                 .replaceAll("[^a-zA-Z0-9._-]", "_");
         String storedName = UUID.randomUUID() + "_" + safe + ".docx";
-        Path target = uploadDir.resolve(storedName).normalize();
-        try (OutputStream os = Files.newOutputStream(target)) {
-            doc.write(os);
-        }
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        doc.write(bos);
+        storageService.store(storedName, bos.toByteArray());
         return storedName;
     }
 }

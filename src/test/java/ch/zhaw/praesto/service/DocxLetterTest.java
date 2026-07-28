@@ -1,13 +1,13 @@
 package ch.zhaw.praesto.service;
 
+import ch.zhaw.praesto.service.storage.LocalFileStorageService;
+import ch.zhaw.praesto.service.storage.StorageService;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.junit.jupiter.api.Test;
 
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.ByteArrayInputStream;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,8 +16,8 @@ class DocxLetterTest {
 
     @Test
     void writesFormattedLetterWithBoldSubject() throws Exception {
-        Path dir = Paths.get("target/test-letters");
-        DocxService docx = new DocxService(dir.toString());
+        StorageService storage = new LocalFileStorageService(Paths.get("target/test-letters").toString());
+        DocxService docx = new DocxService(storage);
 
         String stored = docx.writeLetter("Bewerbung_Test",
                 "Julia Peric", "Musterstrasse 1", "8000 Zürich", "079 123 45 67", "j@example.com",
@@ -28,11 +28,10 @@ class DocxLetterTest {
                 "Erster Absatz mit Bezug zur Stelle.\n\nZweiter Absatz mit meiner Stärke.",
                 "Julia Peric");
 
-        Path file = dir.resolve(stored);
-        assertThat(Files.exists(file)).isTrue();
+        byte[] bytes = storage.readAllBytes(stored);
+        assertThat(bytes).as("Dokument wurde abgelegt").isNotNull();
 
-        try (InputStream in = Files.newInputStream(file);
-             XWPFDocument doc = new XWPFDocument(in)) {
+        try (XWPFDocument doc = new XWPFDocument(new ByteArrayInputStream(bytes))) {
             boolean subjectBold = false;
             StringBuilder all = new StringBuilder();
             for (XWPFParagraph p : doc.getParagraphs()) {
