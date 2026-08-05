@@ -178,6 +178,7 @@
     <!-- Stats Cards -->
     <div class="stats-grid">
         <div class="stat-card"><span class="stat-value">{stats.total ?? 0}</span><span class="stat-label">{$t('sapp.statTotal')}</span></div>
+        <div class="stat-card stat-trial"><span class="stat-value">{stats.trial ?? 0}</span><span class="stat-label">{$t('sapp.statTrial')}</span></div>
         <div class="stat-card stat-info"><span class="stat-value">{stats.applied ?? 0}</span><span class="stat-label">{$t('sapp.statApplied')}</span></div>
         <div class="stat-card stat-warning"><span class="stat-value">{stats.invited ?? 0}</span><span class="stat-label">{$t('sapp.statInvited')}</span></div>
         <div class="stat-card stat-success"><span class="stat-value">{stats.accepted ?? 0}</span><span class="stat-label">{$t('sapp.statAccepted')}</span></div>
@@ -421,6 +422,8 @@
         margin-bottom: var(--space-xl);
     }
 
+    .stat-card.stat-trial { border-color: #99f6e4; background: #f0fdfa; }
+    .stat-card.stat-trial .stat-value { color: #0d9488; }
     .stat-card.stat-info { border-color: var(--color-info-border); background: var(--color-info-bg); }
     .stat-card.stat-info .stat-value { color: var(--color-info); }
     .stat-card.stat-warning { border-color: var(--color-warning-border); background: var(--color-warning-bg); }

@@ -7,6 +7,7 @@ import lombok.Data;
 @Builder
 public class ApplicationStats {
     private long total;             // Alle Bewerbungen
+    private long trial;             // Schnuppern (geplant + gemacht)
     private long planned;           // Geplant
     private long applied;           // Beworben
     private long invited;           // Eingeladen

@@ -186,6 +186,7 @@ public class ApplicationService {
 
         return ApplicationStats.builder()
                 .total(total)
+                .trial(trialPlanned + trialDone)
                 .planned(planned)
                 .applied(applied)
                 .invited(invited)
