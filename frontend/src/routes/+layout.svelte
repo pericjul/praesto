@@ -72,6 +72,7 @@
       { href: "/teacher/cockpit", label: "📊 " + $t("nav.cockpit") },
       { href: "/teacher/classes", label: $t("nav.classes") },
       { href: "/teacher/assignments", label: $t("nav.tasks") },
+      { href: "/teacher/applications", label: "📊 " + $t("nav.applicationsTeacher") },
       { href: "/bug-melden", label: "🐞 " + $t("bug.report") }
     ];
     if (isSchoolAdmin) return [

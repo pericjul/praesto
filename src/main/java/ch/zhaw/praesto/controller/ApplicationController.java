@@ -4,6 +4,8 @@ import ch.zhaw.praesto.model.Application;
 import ch.zhaw.praesto.model.ApplicationDTO;
 import ch.zhaw.praesto.model.ApplicationStats;
 import ch.zhaw.praesto.service.ApplicationService;
+import ch.zhaw.praesto.service.ApplicationShareService;
+import ch.zhaw.praesto.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,23 @@ import java.util.Map;
 public class ApplicationController {
 
     private final ApplicationService applicationService;
+    private final ApplicationShareService applicationShareService;
+    private final UserService userService;
+
+    /** GET /api/applications/sharing – teile ich meine Bewerbungen mit der Lehrperson? */
+    @GetMapping("/sharing")
+    public ResponseEntity<Map<String, Boolean>> getSharing() {
+        boolean shared = applicationShareService.isShared(userService.getUserId());
+        return ResponseEntity.ok(Map.of("shared", shared));
+    }
+
+    /** PUT /api/applications/sharing – Freigabe ein-/ausschalten. */
+    @PutMapping("/sharing")
+    public ResponseEntity<Map<String, Boolean>> setSharing(@RequestBody Map<String, Boolean> body) {
+        boolean shared = Boolean.TRUE.equals(body.get("shared"));
+        applicationShareService.setShared(userService.getUserId(), userService.getCurrentSchoolId(), shared);
+        return ResponseEntity.ok(Map.of("shared", shared));
+    }
 
     /**
      * POST /api/applications - Neue Bewerbung erstellen

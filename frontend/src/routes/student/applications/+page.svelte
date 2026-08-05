@@ -154,6 +154,19 @@
         </div>
     {/if}
 
+    <!-- Freigabe: Bewerbungen mit der Lehrperson teilen (Opt-in) -->
+    <form method="POST" action="?/setSharing" class="share-banner" class:on={data.sharing}
+        use:enhance={() => async ({ update }) => { await update({ reset: false }); await invalidateAll(); }}>
+        <input type="hidden" name="shared" value={data.sharing ? "false" : "true"} />
+        <div class="share-text">
+            <strong>🔗 {$t('sapp.shareTitle')}</strong>
+            <span>{data.sharing ? $t('sapp.shareOn') : $t('sapp.shareOff')}</span>
+        </div>
+        <button type="submit" class="share-toggle" aria-pressed={data.sharing}>
+            <span class="knob"></span>
+        </button>
+    </form>
+
     <!-- Stats Cards -->
     <div class="stats-grid">
         <div class="stat-card"><span class="stat-value">{stats.total ?? 0}</span><span class="stat-label">{$t('sapp.statTotal')}</span></div>
@@ -373,6 +386,26 @@
 {/if}
 
 <style>
+    .share-banner {
+        display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+        background: #faf8fc; border: 1px solid #e8e0f0; border-radius: 0.9rem;
+        padding: 0.8rem 1.1rem; margin-bottom: 1.25rem;
+    }
+    .share-banner.on { background: #f0e7fa; border-color: #d6c8ea; }
+    .share-text { display: flex; flex-direction: column; gap: 0.15rem; }
+    .share-text strong { color: #2d2141; font-size: 0.95rem; }
+    .share-text span { color: #6b647a; font-size: 0.82rem; }
+    .share-toggle {
+        flex-shrink: 0; width: 46px; height: 26px; border-radius: 999px; border: none;
+        background: #cdc6d8; cursor: pointer; position: relative; transition: background 0.15s; padding: 0;
+    }
+    .share-banner.on .share-toggle { background: #2F124D; }
+    .share-toggle .knob {
+        position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+        background: #fff; transition: left 0.15s;
+    }
+    .share-banner.on .share-toggle .knob { left: 23px; }
+
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));

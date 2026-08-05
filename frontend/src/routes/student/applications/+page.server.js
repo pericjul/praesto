@@ -14,9 +14,10 @@ export async function load({ locals, fetch }) {
     };
 
     try {
-        const [applicationsRes, statsRes] = await Promise.all([
+        const [applicationsRes, statsRes, sharingRes] = await Promise.all([
             fetch(`${API_BASE}/applications`, { method: "GET", headers }),
-            fetch(`${API_BASE}/applications/stats`, { method: "GET", headers })
+            fetch(`${API_BASE}/applications/stats`, { method: "GET", headers }),
+            fetch(`${API_BASE}/applications/sharing`, { method: "GET", headers })
         ]);
 
         if (!applicationsRes.ok) {
@@ -26,8 +27,9 @@ export async function load({ locals, fetch }) {
 
         const applications = await applicationsRes.json();
         const stats = statsRes.ok ? await statsRes.json() : null;
+        const sharing = sharingRes.ok ? (await sharingRes.json())?.shared === true : false;
 
-        return { applications, stats };
+        return { applications, stats, sharing };
     } catch (err) {
         console.error("Netzwerkfehler", err);
         return { applications: [], stats: null, error: "Verbindungsfehler" };
@@ -35,6 +37,22 @@ export async function load({ locals, fetch }) {
 }
 
 export const actions = {
+    // Freigabe an die Lehrperson ein-/ausschalten
+    setSharing: async ({ locals, fetch, request }) => {
+        if (!locals.isAuthenticated) throw redirect(302, "/login");
+        const headers = {
+            "Content-Type": "application/json",
+            ...(locals.jwt_token ? { Authorization: `Bearer ${locals.jwt_token}` } : {})
+        };
+        const data = await request.formData();
+        const shared = data.get("shared") === "true";
+        const res = await fetch(`${API_BASE}/applications/sharing`, {
+            method: "PUT", headers, body: JSON.stringify({ shared })
+        });
+        if (!res.ok) return { error: "Freigabe konnte nicht geändert werden" };
+        return { success: true, action: "sharing", shared };
+    },
+
     // Neue Bewerbung erstellen
     create: async ({ locals, fetch, request }) => {
         if (!locals.isAuthenticated) {
