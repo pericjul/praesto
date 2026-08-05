@@ -4,6 +4,7 @@ import ch.zhaw.praesto.exception.ForbiddenException;
 import ch.zhaw.praesto.model.ChatMessageRequest;
 import ch.zhaw.praesto.model.Session;
 import ch.zhaw.praesto.model.StartSessionRequest;
+import ch.zhaw.praesto.service.SessionFeedbackService;
 import ch.zhaw.praesto.service.SessionService;
 import ch.zhaw.praesto.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/sessions")
@@ -18,8 +20,10 @@ import java.util.List;
 public class SessionController {
 
     private static final String STUDENT = "STUDENT";
+    private static final String TEACHER = "TEACHER";
     private final SessionService sessionService;
     private final UserService userService;
+    private final SessionFeedbackService sessionFeedbackService;
 
     // Session starten (nur Student) - mit optionalem assignmentId
     @PostMapping("")
@@ -38,6 +42,29 @@ public class SessionController {
     public ResponseEntity<Session> getSessionById(@PathVariable String id) {
         Session session = sessionService.getSessionById(id);
         return ResponseEntity.ok(session);
+    }
+
+    // Lehrer-Feedback zu einem Chat lesen (Text + optionale Note). Autorisierung: getSessionById
+    // stellt sicher, dass die Session zur eigenen Schule gehört.
+    @GetMapping("/{id}/feedback")
+    public ResponseEntity<Map<String, Object>> getFeedback(@PathVariable String id) {
+        sessionService.getSessionById(id); // wirft, wenn keine Berechtigung
+        return ResponseEntity.ok(sessionFeedbackService.get(id));
+    }
+
+    // Lehrer-Feedback zu einem Chat speichern (nur Lehrperson der eigenen Schule).
+    @PutMapping("/{id}/feedback")
+    public ResponseEntity<Void> saveFeedback(@PathVariable String id, @RequestBody Map<String, Object> body) {
+        if (!userService.userHasRole(TEACHER)) {
+            throw new ForbiddenException("Nur Lehrpersonen duerfen Feedback geben");
+        }
+        sessionService.getSessionById(id); // Mandanten-Check
+        Object fb = body.get("teacherFeedback");
+        Object g = body.get("grade");
+        String feedback = fb == null ? null : fb.toString();
+        Double grade = (g == null || g.toString().isBlank()) ? null : Double.valueOf(g.toString());
+        sessionFeedbackService.save(id, feedback, grade, userService.getUserId());
+        return ResponseEntity.noContent().build();
     }
 
     // Nachricht senden und KI-Antwort erhalten

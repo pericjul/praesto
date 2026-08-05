@@ -102,6 +102,23 @@ export async function load({ locals, fetch, params }) {
         }
     }
 
+    // Feedback zu freien Übungs-/Schnupper-Chats (ohne Aufgabe) laden – Fallback, wenn keine
+    // Submission-Note gesetzt ist.
+    if (session && session.teacherFeedback == null && session.grade == null) {
+        try {
+            const fbRes = await fetch(`${API_BASE}/sessions/${sessionId}/feedback`, { method: "GET", headers });
+            if (fbRes.ok) {
+                const fb = await fbRes.json();
+                if (fb && (fb.teacherFeedback != null || fb.grade != null)) {
+                    session.teacherFeedback = fb.teacherFeedback ?? null;
+                    session.grade = fb.grade ?? null;
+                }
+            }
+        } catch (err) {
+            console.error("Fehler beim Laden des Chat-Feedbacks:", err);
+        }
+    }
+
     return {
         session,
         student
@@ -127,7 +144,7 @@ export const actions = {
 
         const sessionId = params.id;
 
-        // Zuerst Session laden um submissionId zu bekommen
+        // Session laden (für assignmentId)
         let session = null;
         try {
             const sessionRes = await fetch(`${API_BASE}/sessions/${sessionId}`, {
@@ -142,43 +159,41 @@ export const actions = {
             return fail(500, { error: "Session konnte nicht geladen werden" });
         }
 
-        if (!session?.assignmentId) {
-            return fail(400, { error: "Keine Aufgabe mit dieser Session verknüpft" });
-        }
-
-        // Submission finden
+        // Wenn der Chat zu einer abgegebenen Aufgabe gehört: Feedback an der Submission speichern
+        // (fliesst in die Aufgaben-Übersicht/Note ein).
         let submissionId = null;
-        try {
-            const submissionsRes = await fetch(`${API_BASE}/submissions/assignment/${session.assignmentId}`, {
-                method: "GET",
-                headers
-            });
-
-            if (submissionsRes.ok) {
-                const submissions = await submissionsRes.json();
-                const submission = submissions.find(s => s.chatSessionId === sessionId);
-                if (submission) {
-                    submissionId = submission.id;
+        if (session?.assignmentId) {
+            try {
+                const submissionsRes = await fetch(`${API_BASE}/submissions/assignment/${session.assignmentId}`, {
+                    method: "GET",
+                    headers
+                });
+                if (submissionsRes.ok) {
+                    const submissions = await submissionsRes.json();
+                    const submission = submissions.find(s => s.chatSessionId === sessionId);
+                    if (submission) submissionId = submission.id;
                 }
+            } catch (err) {
+                console.error("Submission-Lookup fehlgeschlagen:", err);
             }
-        } catch (err) {
-            return fail(500, { error: "Submission konnte nicht gefunden werden" });
         }
 
-        if (!submissionId) {
-            return fail(400, { error: "Keine Abgabe gefunden" });
-        }
-
-        // Feedback speichern
         try {
-            const res = await fetch(`${API_BASE}/submissions/${submissionId}/feedback`, {
-                method: "PUT",
-                headers,
-                body: JSON.stringify({
-                    teacherFeedback: feedback,
-                    grade: grade
-                })
-            });
+            let res;
+            if (submissionId) {
+                res = await fetch(`${API_BASE}/submissions/${submissionId}/feedback`, {
+                    method: "PUT",
+                    headers,
+                    body: JSON.stringify({ teacherFeedback: feedback, grade })
+                });
+            } else {
+                // Freier Übungs-/Schnupper-Chat ohne Abgabe: Feedback direkt an der Session speichern.
+                res = await fetch(`${API_BASE}/sessions/${sessionId}/feedback`, {
+                    method: "PUT",
+                    headers,
+                    body: JSON.stringify({ teacherFeedback: feedback, grade })
+                });
+            }
 
             if (!res.ok) {
                 const errorText = await res.text();

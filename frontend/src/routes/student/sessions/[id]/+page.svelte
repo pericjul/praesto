@@ -222,7 +222,7 @@
         {/if}
 
         <!-- Datenschutz-Hinweis: keine sensiblen Daten nötig, Fragen dürfen abgelehnt werden -->
-        <div class="privacy-note">🔒 {$t('common.aiChatNotice')}</div>
+        <div class="privacy-note"><span class="privacy-ico">🔒</span><span>{$t('common.aiChatNotice')}</span></div>
 
         {#if form?.error}
             <div class="alert alert-danger">
@@ -729,14 +729,23 @@
     .hint-privacy { margin-top: 0.2rem; color: #7c6a92; }
 
     .privacy-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
         margin: 0.75rem 1rem 0;
-        padding: 0.55rem 0.85rem;
-        background: #f5f0fb;
-        border: 1px solid #e0d2f0;
-        border-radius: 0.6rem;
-        color: #5b2a86;
-        font-size: 0.82rem;
-        line-height: 1.45;
+        padding: 0.5rem 0.8rem;
+        background: #faf8fd;
+        border-left: 3px solid #cdb8e6;
+        border-radius: 0.25rem;
+        color: #7a6b8d;
+        font-size: 0.78rem;
+        line-height: 1.5;
+    }
+    .privacy-ico {
+        flex-shrink: 0;
+        opacity: 0.7;
+        font-size: 0.85rem;
+        line-height: 1.5;
     }
 
     /* Closed Notice */

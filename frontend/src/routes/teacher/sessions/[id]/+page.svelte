@@ -10,6 +10,9 @@
     let session = $derived(data?.session ?? null);
     let messages = $derived(data?.session?.messages ?? []);
     let student = $derived(data?.student ?? null);
+    // Feedback ist für jeden Chat mit Nachrichten möglich (auch freie Übung/Schnuppern),
+    // nicht nur für abgegebene Aufgaben.
+    let canFeedback = $derived((data?.session?.messages?.length ?? 0) > 0);
     
     // Feedback state
     let showFeedbackModal = $state(false);
@@ -76,9 +79,9 @@
                 </p>
             </div>
 
-            {#if session?.submittedAsAssignment}
+            {#if canFeedback}
                 <button type="button" class="btn-feedback" onclick={openFeedbackModal}>
-                    {session.teacherFeedback ? `✏️ ${$t('tsess.editFeedback')}` : `💬 ${$t('tsess.giveFeedback')}`}
+                    {session?.teacherFeedback ? `✏️ ${$t('tsess.editFeedback')}` : `💬 ${$t('tsess.giveFeedback')}`}
                 </button>
             {:else}
                 <span class="status-badge in-progress">⏳ {$t('tsess.inProgress')}</span>
@@ -172,9 +175,12 @@
 
         <form method="POST" action="?/saveFeedback"
             use:enhance={() => {
-                return async ({ result }) => {
+                return async ({ result, update }) => {
+                    // Modal in jedem Fall schliessen, damit die Erfolgs-/Fehlermeldung
+                    // auf der Seite sichtbar ist (sonst läge sie hinter dem Modal).
+                    closeFeedbackModal();
+                    await update({ reset: false });
                     if (result.type === 'success') {
-                        closeFeedbackModal();
                         await invalidateAll();
                     }
                 };
