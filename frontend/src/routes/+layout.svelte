@@ -68,6 +68,8 @@
       { href: "/student/applications", label: $t("nav.applications"), desc: $t("navd.applications") },
       { href: "/student/dossier", label: "📁 " + $t("nav.dossier"), desc: $t("navd.dossier") },
       { href: "/student/badges", label: "🏅 " + $t("nav.badges"), desc: $t("navd.badges") },
+      // Privat-Konten: Abo verwalten / abschliessen.
+      ...(isIndividual ? [{ href: "/abo", label: "⭐ Abo", desc: "Dein Zugang & Abo" }] : []),
       { href: "/bug-melden", label: "🐞 " + $t("bug.report"), desc: $t("navd.bug") }
     ];
     if (isTeacher) return [

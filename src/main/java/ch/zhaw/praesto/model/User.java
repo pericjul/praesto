@@ -55,6 +55,8 @@ public class User {
 
     private String subscriptionStatus;   // z.B. TRIAL, ACTIVE, CANCELED, EXPIRED (nur INDIVIDUAL)
     private Instant trialEndsAt;          // Ende der Gratis-Testphase (nur INDIVIDUAL)
+    private String stripeCustomerId;      // Stripe-Kunden-ID (nur INDIVIDUAL, nach erster Zahlung)
+    private Instant subscriptionEndsAt;   // Zugang bezahlt bis (nur INDIVIDUAL)
 
     private Instant createdAt;
     private Instant lastLoginAt;
@@ -77,6 +79,23 @@ public class User {
             return false;
         }
         return demoAccessUntil == null || !now.isAfter(demoAccessUntil);
+    }
+
+    /**
+     * Hat dieses Konto gerade Zugriff? Schul-/Bestandskonten immer. Privat-Konten
+     * (INDIVIDUAL) nur während der Gratis-Testphase oder mit aktivem, bezahltem Abo.
+     */
+    @Transient
+    public boolean hasSubscriptionAccess(Instant now) {
+        if (accountType != AccountType.INDIVIDUAL) {
+            return true;
+        }
+        // Gratis-Testphase noch aktiv?
+        if (trialEndsAt != null && now.isBefore(trialEndsAt)) {
+            return true;
+        }
+        // Bezahlte Periode läuft noch? (bleibt bei Kündigung bis Periodenende bestehen)
+        return subscriptionEndsAt != null && now.isBefore(subscriptionEndsAt);
     }
 
     /**

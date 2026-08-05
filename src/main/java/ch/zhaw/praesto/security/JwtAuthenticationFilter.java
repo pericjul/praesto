@@ -74,6 +74,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         return;
                     }
 
+                    // Privat-Konto ohne aktive Testphase/Abo: nur Billing-Endpunkte erlaubt,
+                    // der Rest wird mit 402 (Payment Required) gesperrt -> Frontend zeigt die
+                    // Abo-Seite. Schul-/Bestandskonten sind davon nie betroffen.
+                    if (user.getAccountType() == ch.zhaw.praesto.model.AccountType.INDIVIDUAL
+                            && !user.hasSubscriptionAccess(java.time.Instant.now())
+                            && !isBillingPath(request)) {
+                        response.sendError(402, "Abo erforderlich");
+                        return;
+                    }
+
                     var authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
                     var authentication = new UsernamePasswordAuthenticationToken(
                             user, null, List.of(authority));
@@ -89,6 +99,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    // Billing-Endpunkte müssen auch ohne aktives Abo erreichbar sein (damit man bezahlen kann).
+    private boolean isBillingPath(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path != null && path.startsWith("/api/billing");
     }
 
     private boolean isMutating(HttpServletRequest request) {

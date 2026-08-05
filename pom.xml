@@ -101,6 +101,13 @@
 			<version>12.29.0</version>
 		</dependency>
 
+		<!-- Stripe: Abo-Zahlungen für Privat-Konten (Checkout, Kundenportal, Webhooks) -->
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>29.2.0</version>
+		</dependency>
+
 		<!-- KI-Wissensbasis: Text aus PDFs (PDFBox) und aus Webseiten (jsoup) extrahieren -->
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>

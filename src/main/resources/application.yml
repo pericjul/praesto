@@ -64,6 +64,16 @@ praesto:
   # Häppchen an die KI geschickt. Voraussetzung in Prod: Extension "vector" aktiviert +
   # Embedding-Deployment vorhanden. Ohne das fällt die KI automatisch auf die einfache
   # Variante zurück (alle aktiven Quellen als Text, gedeckelt).
+  # Stripe-Abo für Privat-Konten. Secret-Key + Webhook-Secret sind GEHEIM -> nur in den
+  # Azure-App-Einstellungen setzen, niemals im Code/Git. Ohne secret-key ist Billing inaktiv.
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+    price-monthly: ${STRIPE_PRICE_MONTHLY:}      # Preis-ID des Monats-Abos (price_...)
+    price-yearly: ${STRIPE_PRICE_YEARLY:}        # Preis-ID des Jahres-Abos (price_...)
+    success-url: ${STRIPE_SUCCESS_URL:https://praesto.ch/abo/erfolg}
+    cancel-url: ${STRIPE_CANCEL_URL:https://praesto.ch/abo}
+    portal-return-url: ${STRIPE_PORTAL_RETURN_URL:https://praesto.ch/student/dashboard}
   knowledge:
     embeddings-enabled: ${KNOWLEDGE_EMBEDDINGS:true}
     embedding-dim: ${KNOWLEDGE_EMBEDDING_DIM:1536}   # muss zum Embedding-Modell passen
