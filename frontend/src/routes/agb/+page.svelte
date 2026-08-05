@@ -8,6 +8,7 @@
         { t: $t("agb.s4.t"), p: $t("agb.s4.p") },
         { t: $t("agb.s5.t"), p: $t("agb.s5.p") },
         { t: $t("agb.s6.t"), p: $t("agb.s6.p") },
+        { t: $t("agb.sPriv.t"), p: $t("agb.sPriv.p") },
         { t: $t("agb.s7.t"), p: $t("agb.s7.p") },
         { t: $t("agb.s8.t"), p: $t("agb.s8.p") },
         { t: $t("agb.s9.t"), p: $t("agb.s9.p") },
