@@ -9,11 +9,18 @@ const COOKIE = {
 	secure: process.env.NODE_ENV === "production"
 };
 
-export async function load({ locals }) {
+export async function load({ locals, fetch }) {
 	if (!locals.isAuthenticated) {
 		throw redirect(302, "/login");
 	}
-	return {};
+	let billing = null;
+	try {
+		const res = await fetch(`${API_BASE}/billing/status`, { headers: apiHeaders(locals.jwt_token) });
+		if (res.ok) billing = await res.json();
+	} catch {
+		billing = null;
+	}
+	return { billing };
 }
 
 export const actions = {
@@ -36,6 +43,21 @@ export const actions = {
 		// user_info Cookie aktualisieren, damit Header/Anzeige sofort stimmen
 		cookies.set("user_info", encodeURIComponent(JSON.stringify(user)), COOKIE);
 		return { profileSuccess: true };
+	},
+
+	// Stripe-Kundenportal öffnen (Abo verwalten/kündigen).
+	portal: async ({ locals, fetch }) => {
+		const res = await fetch(`${API_BASE}/billing/portal`, {
+			method: "POST",
+			headers: apiHeaders(locals.jwt_token),
+			body: JSON.stringify({})
+		});
+		if (!res.ok) {
+			const msg = await res.text().catch(() => "");
+			return fail(400, { portalError: msg && msg.length < 300 ? msg : "Kundenportal konnte nicht geöffnet werden." });
+		}
+		const { url } = await res.json();
+		throw redirect(303, url);
 	},
 
 	password: async ({ request, locals, fetch }) => {

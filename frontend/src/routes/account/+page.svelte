@@ -28,6 +28,17 @@
             await update({ reset: false });
         };
     }
+
+    // Abo/Zugang
+    let billing = $derived(data.billing ?? {});
+    let isIndividual = $derived(billing?.individual === true || user.accountType === "INDIVIDUAL");
+    let hasSub = $derived(!!billing?.subscriptionEndsAt);
+    let trialActive = $derived(billing?.trialActive === true);
+    function fmtDate(d) {
+        if (!d) return "";
+        try { return new Date(d).toLocaleDateString("de-CH", { day: "2-digit", month: "2-digit", year: "numeric" }); }
+        catch { return ""; }
+    }
 </script>
 
 <svelte:head>
@@ -43,6 +54,39 @@
             <p><b>{$t('account.email')}</b> {user.email}</p>
             {#if user.role}
                 <p><b>{$t('account.role')}</b> {roleLabels[user.role] ?? user.role}</p>
+            {/if}
+        </section>
+
+        <!-- Abo & Zugang -->
+        <section class="card abo-card">
+            <h2>⭐ Abo & Zugang</h2>
+
+            {#if form?.portalError}
+                <div class="alert error">⚠️ {form.portalError}</div>
+            {/if}
+
+            {#if !isIndividual}
+                <!-- Schul-/Bestandskonto -->
+                <p class="abo-lead">🏫 <b>Deine Schule zahlt für dich.</b></p>
+                <p class="abo-note">Du nutzt Praesto kostenlos über deine Schule – alles inklusive, kein eigenes Abo nötig. 🎉</p>
+            {:else if trialActive}
+                <!-- Privat-Konto in der Testphase -->
+                <p class="abo-lead">✨ <b>Gratis-Testphase</b> – noch bis {fmtDate(billing.trialEndsAt)}.</p>
+                <p class="abo-note">Damit es danach ohne Unterbruch weitergeht, kannst du jetzt schon ein Abo lösen.</p>
+                <p class="abo-tip">💡 Tipp: Sag deiner Schule von Praesto – oft übernimmt die Schule die Kosten für die ganze Klasse!</p>
+                <a href="/abo" class="btn-primary">Abo abschliessen</a>
+            {:else if hasSub}
+                <!-- Privat-Konto mit aktivem Abo -->
+                <p class="abo-lead">✅ <b>Abo aktiv</b> – Zugang bis {fmtDate(billing.subscriptionEndsAt)}.</p>
+                <p class="abo-note">Du kannst dein Abo jederzeit verwalten oder kündigen. Bei einer Kündigung bleibt der Zugang bis zum Ende der bezahlten Periode bestehen.</p>
+                <form method="POST" action="?/portal">
+                    <button type="submit" class="btn-primary">Abo verwalten / kündigen</button>
+                </form>
+            {:else}
+                <!-- Privat-Konto ohne Zugang -->
+                <p class="abo-lead">⏳ <b>Kein aktiver Zugang.</b></p>
+                <p class="abo-note">Schliesse ein Abo ab, um Praesto weiter zu nutzen – oder sag deiner Schule Bescheid, vielleicht übernimmt sie die Kosten.</p>
+                <a href="/abo" class="btn-primary">Zu den Abos</a>
             {/if}
         </section>
 
@@ -148,4 +192,10 @@
     .alert { padding: 0.7rem 1rem; border-radius: 0.5rem; margin-bottom: 0.85rem; font-size: 0.9rem; }
     .alert.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
     .alert.error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+    .abo-card h2 { margin-top: 0; }
+    .abo-lead { font-size: 1rem; margin: 0 0 0.35rem; color: #2d2141; }
+    .abo-note { font-size: 0.88rem; color: #6b647a; margin: 0 0 0.6rem; line-height: 1.5; }
+    .abo-tip { font-size: 0.85rem; color: #0d9488; background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 0.5rem; padding: 0.5rem 0.7rem; margin: 0 0 0.85rem; }
+    a.btn-primary { display: inline-block; text-decoration: none; }
 </style>
