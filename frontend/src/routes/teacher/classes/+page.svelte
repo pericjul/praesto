@@ -10,6 +10,18 @@
     // Schüler-IDs mit vorliegender, unterschriebener Einverständniserklärung
     let signedSet = $derived(new Set(data.consentSignedIds ?? []));
 
+    // Lehrpersonen der Schule (für Co-Lehrpersonen-Auswahl) + eigene Id
+    let schoolTeachers = $derived(data.schoolTeachers ?? []);
+    let myUserId = $derived(data.myUserId ?? null);
+    // Lehrpersonen, die noch nicht Teil einer Klasse sind (Ersteller:in + bereits hinzugefügte ausschliessen)
+    function availableTeachers(cls) {
+        const taken = new Set([cls.ownerId, ...(cls.coTeachers ?? []).map((t) => t.id)]);
+        return schoolTeachers.filter((t) => !taken.has(t.id));
+    }
+    function teacherLabel(t) {
+        return `${t.firstName ?? ""} ${t.lastName ?? ""}`.trim() || t.email;
+    }
+
     // Einladungslinks pro Klasse: { [classId]: { url, expiresAt, qr, copied } }
     let inviteByClass = $state({});
 
@@ -228,6 +240,41 @@
                     {/if}
 
                     {#if expandedClassId === cls.id}
+                        <!-- Weitere Lehrpersonen (mehrere Lehrpersonen pro Klasse) -->
+                        <div class="teachers-section">
+                            <h4>👩‍🏫 {$t('tclass.teachersTitle')}</h4>
+                            <ul class="coteacher-list">
+                                <li class="coteacher owner">
+                                    <span>{cls.ownerName}</span>
+                                    <span class="owner-tag">{$t('tclass.creator')}</span>
+                                </li>
+                                {#each cls.coTeachers ?? [] as ct (ct.id)}
+                                    <li class="coteacher">
+                                        <span>{ct.name}</span>
+                                        <form method="POST" action="?/removeCoTeacher" use:enhance={() => async ({ result, update }) => { if (result.type === 'success') await invalidateAll(); await update({ reset: false }); }}>
+                                            <input type="hidden" name="classId" value={cls.id} />
+                                            <input type="hidden" name="teacherId" value={ct.id} />
+                                            <button type="submit" class="ct-remove" title={$t('tclass.remove')} aria-label={$t('tclass.remove')}>✕</button>
+                                        </form>
+                                    </li>
+                                {/each}
+                            </ul>
+                            {#if availableTeachers(cls).length > 0}
+                                <form method="POST" action="?/addCoTeacher" class="add-coteacher" use:enhance={() => async ({ result, update }) => { if (result.type === 'success') await invalidateAll(); await update({ reset: true }); }}>
+                                    <input type="hidden" name="classId" value={cls.id} />
+                                    <select name="teacherId" required>
+                                        <option value="">{$t('tclass.addTeacherPlaceholder')}</option>
+                                        {#each availableTeachers(cls) as t (t.id)}
+                                            <option value={t.id}>{teacherLabel(t)}</option>
+                                        {/each}
+                                    </select>
+                                    <button type="submit" class="btn btn-secondary">＋ {$t('tclass.addTeacher')}</button>
+                                </form>
+                            {:else}
+                                <p class="ct-hint">{$t('tclass.noMoreTeachers')}</p>
+                            {/if}
+                        </div>
+
                         <div class="students-section">
                             <h4>{$t('tclass.studentsInClass')}</h4>
 
@@ -466,6 +513,21 @@
     }
 
     /* Students Section */
+    .teachers-section {
+        padding: var(--space-lg);
+        background: var(--color-bg-muted);
+        border-top: 1px solid var(--color-border-light);
+    }
+    .teachers-section h4 { margin: 0 0 0.6rem; font-size: 0.95rem; color: #2d2141; }
+    .coteacher-list { list-style: none; margin: 0 0 0.75rem; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+    .coteacher { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+        background: #fff; border: 1px solid #ece3f5; border-radius: 0.5rem; padding: 0.4rem 0.7rem; font-size: 0.9rem; }
+    .owner-tag { font-size: 0.72rem; color: #5b2a86; background: #f0e7fa; border-radius: 999px; padding: 0.1rem 0.55rem; font-weight: 600; }
+    .ct-remove { background: none; border: none; color: #b91c1c; cursor: pointer; font-size: 0.95rem; padding: 0.1rem 0.3rem; }
+    .add-coteacher { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .add-coteacher select { flex: 1; min-width: 160px; padding: 0.5rem 0.6rem; border: 1px solid #e8e0f0; border-radius: 0.5rem; background: #fff; font: inherit; }
+    .ct-hint { margin: 0; font-size: 0.82rem; color: #8a7f9a; }
+
     .students-section {
         padding: var(--space-lg);
         background: var(--color-bg-muted);

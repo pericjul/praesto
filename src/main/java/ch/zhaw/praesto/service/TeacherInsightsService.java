@@ -44,7 +44,7 @@ public class TeacherInsightsService {
                 .findByIdAndSchoolId(classId, userService.getCurrentSchoolId())
                 .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
 
-        boolean isOwner = userService.getCurrentUserId().equals(schoolClass.getTeacherId());
+        boolean isOwner = schoolClass.canManage(userService.getCurrentUserId());
         boolean isAdmin = userService.userHasRole(UserRole.SCHOOL_ADMIN)
                 || userService.userHasRole(UserRole.SUPER_ADMIN);
         if (!isOwner && !isAdmin) {

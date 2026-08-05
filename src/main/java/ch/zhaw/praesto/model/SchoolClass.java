@@ -39,6 +39,14 @@ public class SchoolClass {
     @Builder.Default
     private List<String> studentIds = new ArrayList<>();  // User.id der Schüler
 
+    // Weitere Lehrpersonen (neben teacherId = Ersteller:in), die die Klasse gleichberechtigt
+    // verwalten dürfen. Eigene Tabelle -> unkritisch fürs bestehende Schema.
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "class_co_teacher_ids", joinColumns = @JoinColumn(name = "class_id"))
+    @Column(name = "teacher_id")
+    @Builder.Default
+    private List<String> coTeacherIds = new ArrayList<>();
+
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -64,5 +72,32 @@ public class SchoolClass {
     @Transient
     public int getStudentCount() {
         return studentIds != null ? studentIds.size() : 0;
+    }
+
+    // ----- Lehrpersonen der Klasse -----
+
+    /** Darf diese:r Nutzer:in die Klasse verwalten? (Ersteller:in ODER Co-Lehrperson) */
+    public boolean canManage(String userId) {
+        if (userId == null) {
+            return false;
+        }
+        return userId.equals(teacherId)
+                || (coTeacherIds != null && coTeacherIds.contains(userId));
+    }
+
+    public void addCoTeacher(String userId) {
+        if (coTeacherIds == null) {
+            coTeacherIds = new ArrayList<>();
+        }
+        // Ersteller:in ist ohnehin schon Verwalter:in – nicht doppelt.
+        if (userId != null && !userId.equals(teacherId) && !coTeacherIds.contains(userId)) {
+            coTeacherIds.add(userId);
+        }
+    }
+
+    public void removeCoTeacher(String userId) {
+        if (coTeacherIds != null) {
+            coTeacherIds.remove(userId);
+        }
     }
 }

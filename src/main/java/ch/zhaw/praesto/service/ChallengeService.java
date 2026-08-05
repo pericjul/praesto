@@ -120,7 +120,7 @@ public class ChallengeService {
         SchoolClass schoolClass = schoolClassRepository
                 .findByIdAndSchoolId(classId, userService.getCurrentSchoolId())
                 .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
-        boolean owner = userService.getCurrentUserId().equals(schoolClass.getTeacherId());
+        boolean owner = schoolClass.canManage(userService.getCurrentUserId());
         boolean admin = userService.userHasRole(UserRole.SCHOOL_ADMIN)
                 || userService.userHasRole(UserRole.SUPER_ADMIN);
         if (!owner && !admin) {

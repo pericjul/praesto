@@ -136,7 +136,7 @@ class SchoolClassServiceTest {
             when(userService.userHasRole("TEACHER")).thenReturn(true);
             when(userService.getCurrentSchoolId()).thenReturn(SCHOOL);
             when(userService.getCurrentUserId()).thenReturn(TEACHER);
-            when(schoolClassRepository.findBySchoolIdAndTeacherId(SCHOOL, TEACHER)).thenReturn(List.of(testClass));
+            when(schoolClassRepository.findManageableBy(SCHOOL, TEACHER)).thenReturn(List.of(testClass));
 
             assertThat(schoolClassService.getMyClasses()).hasSize(1);
         }

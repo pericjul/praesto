@@ -96,4 +96,34 @@ public class SchoolClassController {
         schoolClassService.deleteClass(id);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * GET /api/classes/school-teachers - Lehrpersonen der eigenen Schule (Auswahl als Co-Lehrperson)
+     */
+    @GetMapping("/school-teachers")
+    public ResponseEntity<List<ch.zhaw.praesto.model.UserDTO>> schoolTeachers() {
+        return ResponseEntity.ok(schoolClassService.listSchoolTeachers());
+    }
+
+    /**
+     * POST /api/classes/{id}/co-teachers - weitere Lehrperson zur Klasse hinzufügen (per User-Id)
+     */
+    @PostMapping("/{id}/co-teachers")
+    public ResponseEntity<SchoolClass> addCoTeacher(
+            @PathVariable String id,
+            @RequestBody Map<String, String> body) {
+        SchoolClass schoolClass = schoolClassService.addCoTeacher(id, body.get("teacherId"));
+        return ResponseEntity.ok(schoolClass);
+    }
+
+    /**
+     * DELETE /api/classes/{id}/co-teachers/{teacherId} - Co-Lehrperson entfernen
+     */
+    @DeleteMapping("/{id}/co-teachers/{teacherId}")
+    public ResponseEntity<SchoolClass> removeCoTeacher(
+            @PathVariable String id,
+            @PathVariable String teacherId) {
+        SchoolClass schoolClass = schoolClassService.removeCoTeacher(id, teacherId);
+        return ResponseEntity.ok(schoolClass);
+    }
 }

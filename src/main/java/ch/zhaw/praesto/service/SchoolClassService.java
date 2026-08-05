@@ -6,6 +6,7 @@ import ch.zhaw.praesto.exception.NotFoundException;
 import ch.zhaw.praesto.model.SchoolClass;
 import ch.zhaw.praesto.model.SchoolClassDTO;
 import ch.zhaw.praesto.model.User;
+import ch.zhaw.praesto.model.UserDTO;
 import ch.zhaw.praesto.model.UserRole;
 import ch.zhaw.praesto.repository.SchoolClassRepository;
 import ch.zhaw.praesto.repository.UserRepository;
@@ -65,7 +66,7 @@ public class SchoolClassService {
      */
     public List<SchoolClass> getMyClasses() {
         requireTeacher("Nur Lehrer duerfen Klassen sehen");
-        return schoolClassRepository.findBySchoolIdAndTeacherId(
+        return schoolClassRepository.findManageableBy(
                 userService.getCurrentSchoolId(), userService.getCurrentUserId());
     }
 
@@ -79,7 +80,7 @@ public class SchoolClassService {
         boolean isTeacher = userService.userHasRole(TEACHER);
         boolean isStudent = userService.userHasRole("STUDENT");
 
-        if (isTeacher && !schoolClass.getTeacherId().equals(userId)) {
+        if (isTeacher && !schoolClass.canManage(userId)) {
             throw new ForbiddenException(KEINE_BERECHTIGUNG);
         }
         if (isStudent && !schoolClass.hasStudent(userId)) {
@@ -179,8 +180,43 @@ public class SchoolClassService {
      */
     public void deleteClass(String classId) {
         requireTeacher("Nur Lehrer duerfen Klassen loeschen");
-        SchoolClass schoolClass = requireOwnClass(classId);
+        SchoolClass schoolClass = requireClassCreator(classId);
         schoolClassRepository.delete(schoolClass);
+    }
+
+    // ============================================================
+    // Co-Lehrpersonen (mehrere Lehrpersonen pro Klasse)
+    // ============================================================
+
+    /** Lehrpersonen der eigenen Schule – zur Auswahl als Co-Lehrperson. */
+    public List<UserDTO> listSchoolTeachers() {
+        requireTeacher("Nur Lehrpersonen");
+        return userRepository.findBySchoolIdAndRole(userService.getCurrentSchoolId(), UserRole.TEACHER)
+                .stream().map(UserDTO::from).toList();
+    }
+
+    /** Co-Lehrperson hinzufügen. Jede Lehrperson der Schule darf das (Klasse muss in der Schule sein). */
+    public SchoolClass addCoTeacher(String classId, String teacherUserId) {
+        requireTeacher("Nur Lehrpersonen");
+        SchoolClass schoolClass = requireClassInSchool(classId);
+        User target = userRepository.findById(teacherUserId)
+                .orElseThrow(() -> new NotFoundException("Lehrperson nicht gefunden"));
+        if (target.getRole() != UserRole.TEACHER
+                || !userService.getCurrentSchoolId().equals(target.getSchoolId())) {
+            throw new BadRequestException("Nur Lehrpersonen der eigenen Schule können hinzugefügt werden.");
+        }
+        schoolClass.addCoTeacher(teacherUserId);
+        schoolClass.setUpdatedAt(Instant.now());
+        return schoolClassRepository.save(schoolClass);
+    }
+
+    /** Co-Lehrperson entfernen (die Ersteller:in kann so nicht entfernt werden). */
+    public SchoolClass removeCoTeacher(String classId, String teacherUserId) {
+        requireTeacher("Nur Lehrpersonen");
+        SchoolClass schoolClass = requireClassInSchool(classId);
+        schoolClass.removeCoTeacher(teacherUserId);
+        schoolClass.setUpdatedAt(Instant.now());
+        return schoolClassRepository.save(schoolClass);
     }
 
     // ============================================================
@@ -198,10 +234,20 @@ public class SchoolClassService {
                 .orElseThrow(() -> new NotFoundException(KLASSE_NICHT_GEFUNDEN));
     }
 
+    /** Verwalten (Schüler, umbenennen): Ersteller:in ODER Co-Lehrperson. */
     private SchoolClass requireOwnClass(String classId) {
         SchoolClass schoolClass = requireClassInSchool(classId);
-        if (!schoolClass.getTeacherId().equals(userService.getCurrentUserId())) {
+        if (!schoolClass.canManage(userService.getCurrentUserId())) {
             throw new ForbiddenException(KEINE_BERECHTIGUNG);
+        }
+        return schoolClass;
+    }
+
+    /** Nur die Ersteller:in (Besitzer:in) darf eine Klasse löschen. */
+    private SchoolClass requireClassCreator(String classId) {
+        SchoolClass schoolClass = requireClassInSchool(classId);
+        if (!schoolClass.getTeacherId().equals(userService.getCurrentUserId())) {
+            throw new ForbiddenException("Nur die Lehrperson, die die Klasse erstellt hat, darf sie löschen.");
         }
         return schoolClass;
     }

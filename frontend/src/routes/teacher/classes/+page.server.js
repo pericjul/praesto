@@ -40,11 +40,28 @@ export async function load({ locals, fetch }) {
             })
         );
 
+        // Lehrpersonen der Schule (für Co-Lehrpersonen-Auswahl + Namensanzeige)
+        let schoolTeachers = [];
+        try {
+            const tr = await fetch(`${API_BASE}/classes/school-teachers`, { headers });
+            if (tr.ok) schoolTeachers = await tr.json();
+        } catch {
+            schoolTeachers = [];
+        }
+        const teacherName = (id) => {
+            const t = schoolTeachers.find((x) => x.id === id);
+            if (!t) return id;
+            return `${t.firstName ?? ""} ${t.lastName ?? ""}`.trim() || t.email || id;
+        };
+
         const enriched = classes.map((c) => ({
             ...c,
             students: (c.studentIds ?? []).map(
                 (id) => idToUser[id] ?? { id, firstName: "?", lastName: "", email: id }
-            )
+            ),
+            ownerId: c.teacherId,
+            ownerName: teacherName(c.teacherId),
+            coTeachers: (c.coTeacherIds ?? []).map((id) => ({ id, name: teacherName(id) }))
         }));
 
         // Einverständnis-Status (welche Schüler:innen haben die unterschriebene Erklärung)
@@ -56,7 +73,7 @@ export async function load({ locals, fetch }) {
             consentSignedIds = [];
         }
 
-        return { classes: enriched, consentSignedIds };
+        return { classes: enriched, consentSignedIds, schoolTeachers, myUserId: locals.user?.id ?? null };
     } catch (err) {
         console.error("Netzwerkfehler", err);
         return { classes: [], error: "Verbindungsfehler" };
@@ -255,6 +272,44 @@ export const actions = {
         }
 
         return { success: true, action: "studentRemoved" };
+    },
+
+    // Co-Lehrperson zur Klasse hinzufügen
+    addCoTeacher: async ({ locals, fetch, request }) => {
+        if (!locals.isAuthenticated) throw redirect(302, "/login");
+        const headers = {
+            "Content-Type": "application/json",
+            ...(locals.jwt_token ? { Authorization: `Bearer ${locals.jwt_token}` } : {})
+        };
+        const formData = await request.formData();
+        const classId = formData.get("classId")?.toString();
+        const teacherId = formData.get("teacherId")?.toString();
+        if (!teacherId) return { error: "Bitte eine Lehrperson auswählen." };
+        const res = await fetch(`${API_BASE}/classes/${classId}/co-teachers`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ teacherId })
+        });
+        if (!res.ok) return { error: "Lehrperson konnte nicht hinzugefügt werden" };
+        return { success: true, action: "coTeacherAdded" };
+    },
+
+    // Co-Lehrperson entfernen
+    removeCoTeacher: async ({ locals, fetch, request }) => {
+        if (!locals.isAuthenticated) throw redirect(302, "/login");
+        const headers = {
+            "Content-Type": "application/json",
+            ...(locals.jwt_token ? { Authorization: `Bearer ${locals.jwt_token}` } : {})
+        };
+        const formData = await request.formData();
+        const classId = formData.get("classId")?.toString();
+        const teacherId = formData.get("teacherId")?.toString();
+        const res = await fetch(`${API_BASE}/classes/${classId}/co-teachers/${encodeURIComponent(teacherId)}`, {
+            method: "DELETE",
+            headers
+        });
+        if (!res.ok) return { error: "Lehrperson konnte nicht entfernt werden" };
+        return { success: true, action: "coTeacherRemoved" };
     },
 
     // Passwort einer Schüler:in zurücksetzen (nur Lehrperson, nur eigene Klassen – Backend prüft das)

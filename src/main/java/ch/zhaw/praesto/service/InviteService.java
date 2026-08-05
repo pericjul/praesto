@@ -164,7 +164,7 @@ public class InviteService {
         String schoolId = userService.getCurrentSchoolId();
         SchoolClass schoolClass = schoolClassRepository.findByIdAndSchoolId(classId, schoolId)
                 .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
-        if (!schoolClass.getTeacherId().equals(userService.getCurrentUserId())) {
+        if (!schoolClass.canManage(userService.getCurrentUserId())) {
             throw new ForbiddenException(KEINE_BERECHTIGUNG);
         }
         return schoolClass;

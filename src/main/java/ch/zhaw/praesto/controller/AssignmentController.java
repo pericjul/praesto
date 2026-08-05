@@ -76,7 +76,7 @@ public class AssignmentController {
         for (String classId : classIds) {
             SchoolClass schoolClass = schoolClassRepository.findByIdAndSchoolId(classId, schoolId)
                     .orElseThrow(() -> new NotFoundException("Klasse nicht gefunden"));
-            if (!schoolClass.getTeacherId().equals(teacherId)) {
+            if (!schoolClass.canManage(teacherId)) {
                 throw new ForbiddenException("Keine Berechtigung fuer diese Klasse");
             }
 

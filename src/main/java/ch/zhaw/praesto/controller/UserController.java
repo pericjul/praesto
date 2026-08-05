@@ -199,7 +199,7 @@ public class UserController {
         }
 
         boolean inOwnClass = schoolClassRepository
-                .findBySchoolIdAndTeacherId(current.getSchoolId(), current.getId())
+                .findManageableBy(current.getSchoolId(), current.getId())
                 .stream()
                 .anyMatch(c -> c.hasStudent(id));
         if (!inOwnClass) {
@@ -230,7 +230,7 @@ public class UserController {
             throw new ForbiddenException("Keine Berechtigung");
         }
         boolean inOwnClass = schoolClassRepository
-                .findBySchoolIdAndTeacherId(current.getSchoolId(), current.getId())
+                .findManageableBy(current.getSchoolId(), current.getId())
                 .stream()
                 .anyMatch(c -> c.hasStudent(id));
         if (!inOwnClass) {

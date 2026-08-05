@@ -11,9 +11,17 @@ import java.util.Optional;
 public interface SchoolClassRepository extends JpaRepository<SchoolClass, String> {
 
     /**
-     * Alle Klassen eines Lehrers innerhalb seiner Schule.
+     * Alle Klassen eines Lehrers innerhalb seiner Schule (nur als Ersteller:in).
      */
     List<SchoolClass> findBySchoolIdAndTeacherId(String schoolId, String teacherId);
+
+    /**
+     * Alle Klassen, die eine Lehrperson verwalten darf: als Ersteller:in ODER als
+     * hinzugefügte Co-Lehrperson – innerhalb der eigenen Schule.
+     */
+    @Query("select distinct c from SchoolClass c left join c.coTeacherIds t "
+            + "where c.schoolId = :schoolId and (c.teacherId = :userId or t = :userId)")
+    List<SchoolClass> findManageableBy(@Param("schoolId") String schoolId, @Param("userId") String userId);
 
     /**
      * Alle Klassen einer Schule.
