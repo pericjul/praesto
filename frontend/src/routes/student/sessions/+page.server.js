@@ -63,11 +63,12 @@ export const actions = {
         const formData = await request.formData();
         const assignmentId = formData.get("assignmentId") || null;
         const roast = formData.get("roast") === "on";
+        const career = formData.get("career") === "on";
 
         const res = await fetch(`${API_BASE}/sessions`, {
             method: "POST",
             headers,
-            body: JSON.stringify({ assignmentId, roast })
+            body: JSON.stringify({ assignmentId, roast, career })
         });
 
         if (!res.ok) {

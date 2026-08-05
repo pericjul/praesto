@@ -51,6 +51,10 @@ public class Session {
 
     private boolean roast;        // Roast-Modus (nur freies Üben, bei Aufgaben immer false)
 
+    // Berufs-Finder-Modus (Berufswahl-Coach). Nullable (Object) -> alte Sessions ohne Spalte
+    // werden als null=false gelesen, ohne Fehler. null wird wie false behandelt.
+    private Boolean careerMode;
+
     @Enumerated(EnumType.STRING)
     private SessionStatus status;
 

@@ -99,6 +99,17 @@
         </form>
     </header>
 
+    <div class="career-cta">
+        <div class="career-text">
+            <strong>🧭 Weisst du noch nicht, welcher Beruf zu dir passt?</strong>
+            <span>Finde es mit dem KI-Berufs-Coach heraus – ein paar lockere Fragen, dann bekommst du Vorschläge.</span>
+        </div>
+        <form method="POST" action="?/start" use:enhance={handleStartEnhance}>
+            <input type="hidden" name="career" value="on" />
+            <button type="submit" class="btn btn-career" disabled={starting}>Berufe entdecken</button>
+        </form>
+    </div>
+
     {#if starting}
         <div class="start-overlay" role="status" aria-live="polite">
             <div class="start-overlay-card">
@@ -329,6 +340,18 @@
         align-items: center;
         gap: var(--space-md);
     }
+    .career-cta {
+        display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+        background: linear-gradient(135deg, #f0fdfa 0%, #faf8fd 100%);
+        border: 1px solid #cdeee6; border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1.25rem;
+    }
+    .career-text { display: flex; flex-direction: column; gap: 0.2rem; min-width: 200px; }
+    .career-text strong { color: #0f766e; font-size: 0.98rem; }
+    .career-text span { color: #5b6b68; font-size: 0.85rem; }
+    .btn-career { background: #0d9488; color: #fff; border: none; border-radius: 0.6rem; padding: 0.65rem 1.3rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .btn-career:hover { background: #0f766e; }
+    .btn-career:disabled { opacity: 0.6; cursor: default; }
+
     .roast-toggle {
         display: inline-flex;
         align-items: center;

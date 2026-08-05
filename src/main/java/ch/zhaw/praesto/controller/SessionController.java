@@ -33,7 +33,8 @@ public class SessionController {
         }
         String assignmentId = (request != null) ? request.getAssignmentId() : null;
         boolean roast = request != null && request.isRoast();
-        Session session = sessionService.startSession(assignmentId, roast);
+        boolean career = request != null && request.isCareer();
+        Session session = sessionService.startSession(assignmentId, roast, career);
         return ResponseEntity.ok(session);
     }
 

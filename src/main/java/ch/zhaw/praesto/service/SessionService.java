@@ -179,6 +179,38 @@ public class SessionService {
             """;
 
     // ============================================================
+    // BERUFS-FINDER (Berufswahl-Coach für Schüler:innen ganz am Anfang)
+    // ============================================================
+
+    private static final String CAREER_PROMPT = """
+            Du bist ein warmherziger, ermutigender Berufswahl-Coach für Schüler:innen in der Schweiz
+            (14-16 Jahre), die noch nicht wissen, welcher Beruf zu ihnen passt.
+
+            DEIN ZIEL: Gemeinsam herausfinden, welche Lehrberufe zur Person passen könnten – ohne Druck.
+
+            ABLAUF:
+            1. Stelle nacheinander lockere Fragen, um die Person kennenzulernen:
+               - Was machst du in deiner Freizeit gern? Welche Hobbys?
+               - Welche Schulfächer magst du (oder welche gar nicht)?
+               - Arbeitest du lieber mit Menschen, mit den Händen, mit Technik, mit Zahlen oder kreativ?
+               - Lieber drinnen oder draussen? Lieber im Team oder allein?
+               - Was können deine Kolleg:innen/Familie gut an dir?
+            2. IMMER NUR EINE Frage pro Nachricht. Kurz halten (2-4 Sätze). Freundlich, Du-Form.
+            3. Nach ein paar Antworten (ca. 4-6): Schlage 3-5 KONKRETE Schweizer Lehrberufe (EFZ/EBA) vor.
+               Für jeden: 1 Satz „warum das zu dir passen könnte" (bezieht sich auf ihre Antworten)
+               und 1 Tipp „so kannst du reinschnuppern".
+            4. Ermutige zum Schnuppern und dazu, mit der Lehrperson/Berufsberatung zu sprechen.
+
+            WICHTIG:
+            - Keine falschen Antworten – es geht ums Entdecken, nicht ums Bewerten.
+            - Erfinde keine Fakten über Berufe/Anforderungen; wenn du unsicher bist, sag es und
+              empfiehl berufsberatung.ch oder die Lehrperson. Nutze das Plattform-Wissen, wenn vorhanden.
+            - Keine endgültige Berufsempfehlung als „Entscheidung" – nur Ideen und Denkanstösse.
+
+            Beginne mit einer kurzen, freundlichen Begrüssung und EINER offenen Einstiegsfrage.
+            """;
+
+    // ============================================================
     // AUFGABEN-SPEZIFISCHER PROMPT (Interview für Aufgaben)
     // ============================================================
 
@@ -301,6 +333,10 @@ public class SessionService {
      * (bei Aufgaben immer der seriöse Modus).
      */
     public Session startSession(String assignmentId, boolean roast) {
+        return startSession(assignmentId, roast, false);
+    }
+
+    public Session startSession(String assignmentId, boolean roast, boolean career) {
         if (!userService.userHasRole(STUDENT)) {
             throw new ForbiddenException("Nur Schueler duerfen Sessions starten");
         }
@@ -311,6 +347,8 @@ public class SessionService {
         boolean isAssignment = assignmentId != null && !assignmentId.isBlank();
         // Roast nur beim freien Üben – bei Aufgaben immer der seriöse Modus.
         boolean roastEffective = roast && !isAssignment;
+        // Berufs-Finder nur beim freien Üben (nicht bei Aufgaben, nicht kombiniert mit Roast).
+        boolean careerEffective = career && !isAssignment && !roastEffective;
 
         // KI-Gespräche sind UNBEGRENZT – weder beim freien Üben noch bei Aufgaben gibt es
         // eine Anzahl-Grenze. Begrenzt wird nur die Dauer pro Chat (15 Min, targetDurationMin).
@@ -326,10 +364,12 @@ public class SessionService {
                 .status(SessionStatus.OPEN)
                 .startedAt(Instant.now())
                 .roast(roastEffective)
+                .careerMode(careerEffective)
                 .targetDurationMin(FREE_PRACTICE_MINUTES)
                 .submittedAsAssignment(false);
 
-        String systemPrompt = roastEffective ? SYSTEM_PROMPT + ROAST_ADDENDUM : SYSTEM_PROMPT;
+        String systemPrompt = careerEffective ? CAREER_PROMPT
+                : (roastEffective ? SYSTEM_PROMPT + ROAST_ADDENDUM : SYSTEM_PROMPT);
 
         // Wenn für eine Aufgabe: Lade Aufgaben-Details
         if (assignmentId != null && !assignmentId.isBlank()) {
@@ -358,7 +398,7 @@ public class SessionService {
         }
 
         // Erste KI-Nachricht generieren
-        String initialMessage = getInitialAIMessage(systemPrompt, assignmentId != null);
+        String initialMessage = getInitialAIMessage(systemPrompt, assignmentId != null, careerEffective);
 
         List<SessionMessage> messages = new ArrayList<>();
         messages.add(SessionMessage.builder()
@@ -443,27 +483,34 @@ public class SessionService {
                     description,
                     duration);
         }
+        if (Boolean.TRUE.equals(session.getCareerMode())) {
+            return CAREER_PROMPT;
+        }
         return session.isRoast() ? SYSTEM_PROMPT + ROAST_ADDENDUM : SYSTEM_PROMPT;
     }
 
     /**
      * Initiale KI-Begruessung generieren.
      */
-    private String getInitialAIMessage(String systemPrompt, boolean isAssignment) {
+    private String getInitialAIMessage(String systemPrompt, boolean isAssignment, boolean career) {
         try {
             String startPrompt;
-            if (isAssignment) {
+            if (career) {
+                startPrompt = systemPrompt + SAFETY_ADDENDUM + "\n\nBegrüsse kurz und warmherzig und stelle DANN EINE offene Einstiegsfrage, um die Interessen kennenzulernen (z.B. was die Person in der Freizeit gern macht). Nur eine Frage." + langSuffix();
+            } else if (isAssignment) {
                 startPrompt = systemPrompt + SAFETY_ADDENDUM + "\n\nBegrüsse kurz und stelle dann EINE Frage: Für welchen Beruf der Schüler üben möchte. Mehr nicht." + langSuffix();
             } else {
                 startPrompt = systemPrompt + SAFETY_ADDENDUM + "\n\nBegrüsse kurz und frag mit EINER Frage, ob der Schüler üben will oder eine Frage hat. Nicht mehr." + langSuffix();
             }
-            
+
             return AiTimeout.call(() -> chatClient
                     .prompt(startPrompt)
                     .call()
                     .content(), 25);
         } catch (Exception e) {
-            if (isAssignment) {
+            if (career) {
+                return "Hallo! 👋 Ich helfe dir herauszufinden, welcher Beruf zu dir passen könnte. Erzähl mir zuerst: Was machst du in deiner Freizeit am liebsten?";
+            } else if (isAssignment) {
                 return "Hey! Schön, dass du üben willst. Für welchen Beruf möchtest du dich vorbereiten?";
             } else {
                 return "Hey! 👋 Ich bin dein Bewerbungscoach. Was kann ich für dich tun - möchtest du ein Vorstellungsgespräch üben oder hast du eine Frage?";
