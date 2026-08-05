@@ -144,13 +144,19 @@
         <div class="alert alert-danger">{form.error}</div>
     {/if}
 
-    {#if form?.success}
+    {#if form?.success && form.action !== "sharing"}
         <div class="alert alert-success">
             {#if form.action === "created"}{$t('sapp.successCreated')}
             {:else if form.action === "updated"}{$t('sapp.successUpdated')}
             {:else if form.action === "deleted"}{$t('sapp.successDeleted')}
             {:else if form.action === "statusUpdated"}{$t('sapp.successStatusUpdated')}
             {/if}
+        </div>
+    {/if}
+
+    {#if form?.success && form.action === "sharing"}
+        <div class="alert alert-success">
+            {form.shared ? $t('sapp.shareSavedOn') : $t('sapp.shareSavedOff')}
         </div>
     {/if}
 
