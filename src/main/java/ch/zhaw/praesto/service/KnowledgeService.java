@@ -37,6 +37,7 @@ public class KnowledgeService {
 
     private final KnowledgeSourceRepository repository;
     private final UserService userService;
+    private final KnowledgeRagService ragService;
 
     // ============================================================
     // Super-Admin: verwalten
@@ -67,7 +68,7 @@ public class KnowledgeService {
         } catch (Exception e) {
             throw new BadRequestException("Die Seite konnte nicht gelesen werden: " + e.getMessage());
         }
-        return repository.save(KnowledgeSource.builder()
+        return saveAndIndex(KnowledgeSource.builder()
                 .type(KnowledgeSource.Type.LINK)
                 .title(title != null && !title.isBlank() ? title.trim() : normalized)
                 .url(normalized)
@@ -93,7 +94,7 @@ public class KnowledgeService {
         if (text == null || text.isBlank()) {
             throw new BadRequestException("Aus dieser Datei konnte kein Text gelesen werden.");
         }
-        return repository.save(KnowledgeSource.builder()
+        return saveAndIndex(KnowledgeSource.builder()
                 .type(KnowledgeSource.Type.DOCUMENT)
                 .title(title != null && !title.isBlank() ? title.trim() : name)
                 .fileName(name)
@@ -108,7 +109,7 @@ public class KnowledgeService {
         if (text == null || text.isBlank()) {
             throw new BadRequestException("Bitte einen Text eingeben.");
         }
-        return repository.save(KnowledgeSource.builder()
+        return saveAndIndex(KnowledgeSource.builder()
                 .type(KnowledgeSource.Type.TEXT)
                 .title(title != null && !title.isBlank() ? title.trim() : "Notiz")
                 .content(trim(text))
@@ -117,16 +118,30 @@ public class KnowledgeService {
                 .build());
     }
 
+    /** Speichert eine Quelle und indexiert sie (best-effort) für die Vektorsuche. */
+    private KnowledgeSource saveAndIndex(KnowledgeSource source) {
+        KnowledgeSource saved = repository.save(source);
+        ragService.reindex(saved);
+        return saved;
+    }
+
     public void setEnabled(String id, boolean enabled) {
         requireSuper();
         KnowledgeSource src = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Quelle nicht gefunden"));
         src.setEnabled(enabled);
         repository.save(src);
+        // Vektor-Index nachziehen: aktivieren -> (neu) indexieren, deaktivieren -> Häppchen entfernen.
+        if (enabled) {
+            ragService.reindex(src);
+        } else {
+            ragService.remove(id);
+        }
     }
 
     public void delete(String id) {
         requireSuper();
+        ragService.remove(id);
         repository.deleteById(id);
     }
 
@@ -135,8 +150,21 @@ public class KnowledgeService {
     // ============================================================
 
     /**
+     * Wissens-Kontext für eine konkrete Schülerfrage. Nutzt – wenn verfügbar – die
+     * Vektorsuche (nur die relevantesten Häppchen). Sonst Fallback: alle aktiven Quellen
+     * als Text (gedeckelt). KEIN Rollen-Check – wird intern vom KI-Coach genutzt.
+     */
+    public String getKnowledgeForQuery(String query) {
+        String viaRag = ragService.retrieve(query);
+        if (viaRag != null && !viaRag.isBlank()) {
+            return viaRag;
+        }
+        return getActiveKnowledgeText();
+    }
+
+    /**
      * Zusammengefasster Text aller aktiven Quellen (gedeckelt). Leer, wenn nichts vorhanden.
-     * KEIN Rollen-Check – wird intern vom KI-Coach genutzt.
+     * KEIN Rollen-Check – wird intern vom KI-Coach genutzt (Fallback ohne Vektorsuche).
      */
     public String getActiveKnowledgeText() {
         StringBuilder sb = new StringBuilder();

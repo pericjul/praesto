@@ -18,6 +18,12 @@ spring:
             # Per AZURE_OPENAI_TEMPERATURE überschreibbar (nur für Modelle wie gpt-4o,
             # die abweichende Werte erlauben).
             temperature: ${AZURE_OPENAI_TEMPERATURE:1.0}
+        embedding:
+          options:
+            # Eigenes Embedding-Deployment in Azure OpenAI (für die KI-Wissensbasis /
+            # Vektorsuche). MUSS in Azure als Deployment angelegt sein. Standard: das
+            # günstige text-embedding-3-small (1536 Dimensionen).
+            deployment-name: ${AZURE_OPENAI_EMBED_DEPLOYMENT:text-embedding-3-small}
 
   datasource:
     # Default = lokale PostgreSQL. In Prod via DB_URL/DB_USERNAME/DB_PASSWORD überschrieben
@@ -53,6 +59,17 @@ spring:
             enable: true
 
 praesto:
+  # KI-Wissensbasis (RAG): Quellen werden in Häppchen zerlegt, als Vektoren (Embeddings)
+  # in PostgreSQL (pgvector) gespeichert und pro Schülerfrage werden nur die relevantesten
+  # Häppchen an die KI geschickt. Voraussetzung in Prod: Extension "vector" aktiviert +
+  # Embedding-Deployment vorhanden. Ohne das fällt die KI automatisch auf die einfache
+  # Variante zurück (alle aktiven Quellen als Text, gedeckelt).
+  knowledge:
+    embeddings-enabled: ${KNOWLEDGE_EMBEDDINGS:true}
+    embedding-dim: ${KNOWLEDGE_EMBEDDING_DIM:1536}   # muss zum Embedding-Modell passen
+    chunk-size: 900
+    chunk-overlap: 150
+    top-k: ${KNOWLEDGE_TOP_K:5}
   # Datei-Ablage: "local" (Dateisystem, Standard) oder "azure" (Azure Blob Storage).
   # Umschalten via STORAGE_TYPE=azure + AZURE_STORAGE_CONNECTION_STRING in den App-Einstellungen.
   storage:

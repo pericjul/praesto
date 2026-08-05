@@ -427,9 +427,9 @@ public class SessionService {
         try {
             String startPrompt;
             if (isAssignment) {
-                startPrompt = systemPrompt + "\n\nBegrüsse kurz und stelle dann EINE Frage: Für welchen Beruf der Schüler üben möchte. Mehr nicht." + langSuffix() + knowledgeSuffix();
+                startPrompt = systemPrompt + "\n\nBegrüsse kurz und stelle dann EINE Frage: Für welchen Beruf der Schüler üben möchte. Mehr nicht." + langSuffix();
             } else {
-                startPrompt = systemPrompt + "\n\nBegrüsse kurz und frag mit EINER Frage, ob der Schüler üben will oder eine Frage hat. Nicht mehr." + langSuffix() + knowledgeSuffix();
+                startPrompt = systemPrompt + "\n\nBegrüsse kurz und frag mit EINER Frage, ob der Schüler üben will oder eine Frage hat. Nicht mehr." + langSuffix();
             }
             
             return AiTimeout.call(() -> chatClient
@@ -450,9 +450,17 @@ public class SessionService {
      */
     private String getAIResponse(List<SessionMessage> messages, String systemPrompt) {
         try {
+            // Wissens-Kontext anhand der letzten Schülerfrage abrufen (Vektorsuche, sonst Fallback).
+            String lastUserMessage = null;
+            for (SessionMessage msg : messages) {
+                if ("USER".equals(msg.getRole())) {
+                    lastUserMessage = msg.getContent();
+                }
+            }
+
             // Konversation aufbauen
             List<Message> chatMessages = new ArrayList<>();
-            chatMessages.add(new SystemMessage(systemPrompt + langSuffix() + knowledgeSuffix()));
+            chatMessages.add(new SystemMessage(systemPrompt + langSuffix() + knowledgeSuffix(lastUserMessage)));
 
             for (SessionMessage msg : messages) {
                 if ("USER".equals(msg.getRole())) {
@@ -501,8 +509,8 @@ public class SessionService {
      * das dem KI-Coach als Kontext mitgegeben wird. Leer, wenn nichts hinterlegt ist.
      * Das Wissen ist reine Information – ausdrücklich KEINE Anweisung an die KI.
      */
-    private String knowledgeSuffix() {
-        String knowledge = knowledgeService.getActiveKnowledgeText();
+    private String knowledgeSuffix(String query) {
+        String knowledge = knowledgeService.getKnowledgeForQuery(query);
         if (knowledge == null || knowledge.isBlank()) {
             return "";
         }
