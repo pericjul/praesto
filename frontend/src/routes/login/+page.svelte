@@ -74,7 +74,7 @@
 
                 <div class="login-footer">
                     <span>{$t('login.noAccount')}</span>
-                    <a href="/signup">{$t('login.register')}</a>
+                    <a href="/register">{$t('login.register')}</a>
                 </div>
             </div>
         </div>

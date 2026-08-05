@@ -42,10 +42,19 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    private String schoolId;       // null nur für SUPER_ADMIN
+    private String schoolId;       // null nur für SUPER_ADMIN; bei INDIVIDUAL: eigener Mandant (kein Schul-Eintrag)
 
     @Builder.Default
     private boolean isActive = true;
+
+    // ----- Privat-/B2C-Konto (Stufe B: Abo) -----
+    // null = SCHOOL (Bestandskonten). Bei INDIVIDUAL: Selbst-Registrierung, kein Schul-/Aufgabenteil.
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private AccountType accountType = AccountType.SCHOOL;
+
+    private String subscriptionStatus;   // z.B. TRIAL, ACTIVE, CANCELED, EXPIRED (nur INDIVIDUAL)
+    private Instant trialEndsAt;          // Ende der Gratis-Testphase (nur INDIVIDUAL)
 
     private Instant createdAt;
     private Instant lastLoginAt;

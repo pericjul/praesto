@@ -96,12 +96,13 @@ class StudentDashboardServiceTest {
 
         @Test
         @DisplayName("Dashboard ohne Klasse - lädt alle Assignments")
-        void getDashboard_noClass_loadsAllAssignments() {
+        void getDashboard_noClass_hasNoAssignments() {
+            // Ohne Klasse (z.B. Privat-Konto) gibt es KEINE Aufgaben – früher lud findAll()
+            // hier fälschlich alle Aufgaben aller Schulen.
             when(userService.getUserId()).thenReturn("student-123");
             when(userService.getUserName()).thenReturn("Max");
             when(userService.getEmail()).thenReturn("student@test.ch");
             when(schoolClassService.getMyClassId()).thenReturn(null);
-            when(assignmentRepository.findAll()).thenReturn(new ArrayList<>(List.of(testAssignment)));
             when(submissionRepository.findByStudentEmail("student@test.ch")).thenReturn(new ArrayList<>());
             when(sessionRepository.findByStudentId("student-123")).thenReturn(new ArrayList<>());
             when(applicationRepository.findByStudentId("student-123")).thenReturn(new ArrayList<>());
@@ -110,8 +111,8 @@ class StudentDashboardServiceTest {
 
             StudentDashboardResponse result = studentDashboardService.getDashboardForCurrentStudent();
 
-            assertThat(result.getOpenAssignmentsCount()).isEqualTo(1);
-            verify(assignmentRepository).findAll();
+            assertThat(result.getOpenAssignmentsCount()).isEqualTo(0);
+            verify(assignmentRepository, never()).findAll();
             verify(assignmentRepository, never()).findByClassId(any());
         }
 

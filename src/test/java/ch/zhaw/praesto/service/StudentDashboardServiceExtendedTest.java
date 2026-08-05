@@ -278,32 +278,31 @@ class StudentDashboardServiceExtendedTest {
     class ClassIdEdgeCases {
 
         @Test
-        @DisplayName("Leere ClassId - lädt alle Assignments")
-        void getDashboard_emptyClassId_loadsAllAssignments() {
+        @DisplayName("Leere ClassId - keine Aufgaben (ohne Klasse)")
+        void getDashboard_emptyClassId_hasNoAssignments() {
             when(schoolClassService.getMyClassId()).thenReturn("");
-            when(assignmentRepository.findAll()).thenReturn(new ArrayList<>());
             when(submissionRepository.findByStudentEmail("student@test.ch")).thenReturn(new ArrayList<>());
             when(sessionRepository.findByStudentId("student-123")).thenReturn(new ArrayList<>());
             when(applicationRepository.findByStudentId("student-123")).thenReturn(new ArrayList<>());
 
             studentDashboardService.getDashboardForCurrentStudent();
 
-            verify(assignmentRepository).findAll();
+            verify(assignmentRepository, never()).findAll();
             verify(assignmentRepository, never()).findByClassId(any());
         }
 
         @Test
-        @DisplayName("Whitespace ClassId - lädt alle Assignments")
-        void getDashboard_blankClassId_loadsAllAssignments() {
+        @DisplayName("Whitespace ClassId - keine Aufgaben (ohne Klasse)")
+        void getDashboard_blankClassId_hasNoAssignments() {
             when(schoolClassService.getMyClassId()).thenReturn("   ");
-            when(assignmentRepository.findAll()).thenReturn(new ArrayList<>());
             when(submissionRepository.findByStudentEmail("student@test.ch")).thenReturn(new ArrayList<>());
             when(sessionRepository.findByStudentId("student-123")).thenReturn(new ArrayList<>());
             when(applicationRepository.findByStudentId("student-123")).thenReturn(new ArrayList<>());
 
             studentDashboardService.getDashboardForCurrentStudent();
 
-            verify(assignmentRepository).findAll();
+            verify(assignmentRepository, never()).findAll();
+            verify(assignmentRepository, never()).findByClassId(any());
         }
     }
 

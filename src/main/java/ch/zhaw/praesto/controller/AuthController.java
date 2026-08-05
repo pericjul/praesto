@@ -32,6 +32,13 @@ public class AuthController {
         return toAuthResponse(user);
     }
 
+    // Selbst-Registrierung eines Privat-/B2C-Kontos (ohne Einladung/Schule).
+    @PostMapping("/auth/signup")
+    public AuthResponse signup(@RequestBody RegisterRequest request) {
+        User user = authService.registerIndividual(request);
+        return toAuthResponse(user);
+    }
+
     @GetMapping("/auth/invite/{token}")
     public InviteDetailsDTO inviteDetails(@PathVariable String token) {
         return inviteService.getInviteDetails(token);

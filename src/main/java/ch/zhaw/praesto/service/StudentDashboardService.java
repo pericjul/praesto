@@ -35,12 +35,13 @@ public class StudentDashboardService {
                 // ClassId über SchoolClassService holen
                 String classId = schoolClassService.getMyClassId();
 
-                // Assignments der Klasse holen
+                // Assignments der Klasse holen. Ohne Klasse (z.B. Privat-Konto) gibt es KEINE
+                // Aufgaben – früher lieferte findAll() hier fälschlich alle Aufgaben aller Schulen.
                 List<Assignment> allAssignments;
                 if (classId != null && !classId.isBlank()) {
                         allAssignments = assignmentRepository.findByClassId(classId);
                 } else {
-                        allAssignments = assignmentRepository.findAll();
+                        allAssignments = List.of();
                 }
 
                 // Bereits abgegebene Assignment-IDs holen

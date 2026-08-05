@@ -11,7 +11,8 @@ public record UserDTO(
         String email,
         String role,
         String schoolId,
-        boolean active) {
+        boolean active,
+        String accountType) {
 
     public static UserDTO from(User user) {
         return new UserDTO(
@@ -21,6 +22,7 @@ public record UserDTO(
                 user.getEmail(),
                 user.getRole() != null ? user.getRole().name() : null,
                 user.getSchoolId(),
-                user.isActive());
+                user.isActive(),
+                user.getAccountType() != null ? user.getAccountType().name() : AccountType.SCHOOL.name());
     }
 }

@@ -63,6 +63,22 @@ async function register(token, userData, cookies) {
   return data.user;
 }
 
+// Selbst-Registrierung eines Privat-/B2C-Kontos (ohne Einladungs-Token).
+async function signup(userData, cookies) {
+  const res = await fetch(`${API_BASE}/auth/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(userData)
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res, "Registrierung fehlgeschlagen"));
+  }
+  const data = await res.json();
+  setSession(cookies, data.token, data.user);
+  cookies.delete("demo_mode", { path: "/" });
+  return data.user;
+}
+
 function logout(cookies) {
   cookies.delete("jwt_token", { path: "/" });
   cookies.delete("user_info", { path: "/" });
@@ -86,5 +102,5 @@ export function dashboardForRole(role) {
   }
 }
 
-const auth = { login, register, logout };
+const auth = { login, register, signup, logout };
 export default auth;

@@ -159,6 +159,43 @@ public class AuthService {
         return saved;
     }
 
+    /** Dauer der Gratis-Testphase für neue Privat-Konten. */
+    private static final int TRIAL_DAYS = 7;
+
+    /**
+     * Selbst-Registrierung eines Privat-/B2C-Kontos (ohne Schule/Lehrperson). Rolle bleibt
+     * STUDENT (damit alle Schüler-Funktionen greifen), aber accountType=INDIVIDUAL und eine
+     * eigene, zufällige schoolId (eigener Mandant, ohne echten Schul-Eintrag). Startet mit
+     * einer {@value #TRIAL_DAYS}-tägigen Gratis-Testphase.
+     */
+    public User registerIndividual(RegisterRequest req) {
+        validateRegister(req);
+
+        String email = normalizeEmail(req.email());
+        if (userRepository.existsByEmail(email)) {
+            throw new BadRequestException("Diese Email ist bereits registriert");
+        }
+
+        Instant now = Instant.now();
+        User user = User.builder()
+                .email(email)
+                .passwordHash(passwordEncoder.encode(req.password()))
+                .firstName(req.firstName().trim())
+                .lastName(req.lastName().trim())
+                .role(UserRole.STUDENT)
+                .accountType(AccountType.INDIVIDUAL)
+                .schoolId(java.util.UUID.randomUUID().toString())  // eigener Mandant, kein Schul-Eintrag
+                .isActive(true)
+                .subscriptionStatus("TRIAL")
+                .trialEndsAt(now.plus(Duration.ofDays(TRIAL_DAYS)))
+                .createdAt(now)
+                .build();
+
+        User saved = userRepository.save(user);
+        log.info("Neues Privat-Konto registriert: {} (Testphase bis {})", saved.getEmail(), saved.getTrialEndsAt());
+        return saved;
+    }
+
     /**
      * Demo-Login ohne Passwort. Je nach gewünschter Rolle wird ein echtes (beschreibbares)
      * Konto der Demo-Schule geliefert, damit Besucher:innen wirklich alles ausprobieren können:

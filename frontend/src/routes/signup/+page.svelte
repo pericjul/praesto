@@ -22,8 +22,13 @@
         <p class="hint">
             {$t('signup.hint')}
         </p>
+        <div class="private-cta">
+            <strong>🎓 Privat nutzen – ohne Schule</strong>
+            <p>Du willst Praesto allein nutzen? Erstelle dein eigenes Konto und teste es 7 Tage gratis.</p>
+            <a href="/register" class="btn-primary">Privat-Konto erstellen</a>
+        </div>
         <div class="actions">
-            <a href="/login" class="btn-primary">{$t('signup.toLogin')}</a>
+            <a href="/login" class="btn-ghost">{$t('signup.toLogin')}</a>
             <a href="/demo" class="btn-ghost">{$t('signup.viewDemo')}</a>
         </div>
     </div>
@@ -90,6 +95,17 @@
     .hint {
         font-size: 0.88rem;
     }
+
+    .private-cta {
+        background: #faf8fd;
+        border: 1px solid #e6dcf2;
+        border-radius: 0.75rem;
+        padding: 1rem 1.1rem;
+        margin: 0.5rem 0 1rem;
+        text-align: center;
+    }
+    .private-cta strong { display: block; color: #2d2141; margin-bottom: 0.3rem; }
+    .private-cta p { font-size: 0.85rem; color: #6b647a; margin: 0 0 0.75rem; }
 
     .actions {
         display: flex;

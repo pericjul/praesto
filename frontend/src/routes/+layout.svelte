@@ -37,6 +37,8 @@
 
   let role = $derived(user.role);
   let isStudent = $derived(role === "STUDENT");
+  // Privat-/B2C-Konto: Schüler-Rolle, aber ohne Schule/Aufgaben.
+  let isIndividual = $derived(user.accountType === "INDIVIDUAL");
   let isTeacher = $derived(role === "TEACHER");
   let isSchoolAdmin = $derived(role === "SCHOOL_ADMIN" || role === "DEMO_USER");
   let isSuperAdmin = $derived(role === "SUPER_ADMIN");
@@ -59,7 +61,8 @@
   let navItems = $derived.by(() => {
     if (isStudent) return [
       { href: "/student/dashboard", label: $t("nav.dashboard"), desc: $t("navd.dashboard") },
-      { href: "/student/assignments", label: $t("nav.tasks"), desc: $t("navd.tasks") },
+      // Aufgaben nur im Schulmodell – Privat-Konten haben keine Klasse/Lehrperson.
+      ...(isIndividual ? [] : [{ href: "/student/assignments", label: $t("nav.tasks"), desc: $t("navd.tasks") }]),
       { href: "/student/sessions", label: $t("nav.training"), desc: $t("navd.training") },
       { href: "/student/notes", label: $t("nav.notes"), desc: $t("navd.notes") },
       { href: "/student/applications", label: $t("nav.applications"), desc: $t("navd.applications") },
