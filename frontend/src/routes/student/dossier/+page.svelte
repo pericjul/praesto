@@ -90,6 +90,11 @@
             <span class="ct">{$t('dossier.createLetter')}</span>
             <span class="cq">{clLeft != null ? $t('dossier.leftN').replace('%N', clLeft) : ''}</span>
         </a>
+        <a href="/student/dossier/schnuppern" class="create-btn">
+            <span class="ci">🔍</span>
+            <span class="ct">Schnupperlehre anfragen</span>
+            <span class="cq">E-Mail & Telefon-Spickzettel</span>
+        </a>
     </section>
 
     <p class="disclaimer">⚠️ {$t('dossier.disclaimer')}</p>

@@ -3,6 +3,8 @@ package ch.zhaw.praesto.controller;
 import ch.zhaw.praesto.model.CoverLetterRequest;
 import ch.zhaw.praesto.model.CvRequest;
 import ch.zhaw.praesto.model.DocumentDTO;
+import ch.zhaw.praesto.model.SchnupperReply;
+import ch.zhaw.praesto.model.SchnupperRequest;
 import ch.zhaw.praesto.service.GeneratorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -25,5 +27,10 @@ public class GeneratorController {
     @PostMapping("/cover-letter")
     public DocumentDTO generateCoverLetter(@RequestBody CoverLetterRequest request) {
         return generatorService.generateCoverLetter(request);
+    }
+
+    @PostMapping("/schnupper-request")
+    public SchnupperReply generateSchnupperRequest(@RequestBody SchnupperRequest request) {
+        return generatorService.generateSchnupperRequest(request);
     }
 }

@@ -214,6 +214,71 @@ public class GeneratorService {
     // Intern
     // ============================================================
 
+    // ============================================================
+    // Schnupper-Anfrage-Helfer (E-Mail + Telefon-Spickzettel)
+    // ============================================================
+
+    public SchnupperReply generateSchnupperRequest(SchnupperRequest req) {
+        String name = notBlank(req.getDeinName()) ? req.getDeinName().trim()
+                : userService.getCurrentUser().getFullName();
+        String beruf = notBlank(req.getBeruf()) ? req.getBeruf().trim() : "eine Lehrstelle / einen Schnuppertag";
+        String firma = notBlank(req.getFirma()) ? req.getFirma().trim() : null;
+        String kontakt = notBlank(req.getKontaktperson()) ? req.getKontaktperson().trim() : null;
+
+        String facts = joinNonBlank("\n",
+                "Name: " + name,
+                "Beruf/Interesse: " + beruf,
+                firma != null ? "Firma: " + firma : null,
+                kontakt != null ? "Kontaktperson: " + kontakt : null,
+                notBlank(req.getKlasse()) ? "Schulklasse: " + req.getKlasse().trim() : null,
+                notBlank(req.getZeitraum()) ? "Wunsch-Zeitraum: " + req.getZeitraum().trim() : null);
+
+        String emailPrompt = """
+                Schreibe eine kurze, höfliche und natürliche E-Mail auf Deutsch (Schweiz), mit der ein/e
+                Jugendliche/r bei einer Firma um eine Schnupperlehre (Schnuppertag) bittet. Freundlich,
+                altersgerecht, nicht steif. Max. ca. 120 Wörter. Mit Betreff-Zeile. Verwende NUR die
+                vorhandenen Angaben, erfinde nichts. Ohne Firma/Kontaktperson: allgemeine, aber
+                persönliche Anrede.
+
+                Angaben:
+                %s
+                """.formatted(facts);
+
+        String phonePrompt = """
+                Erstelle einen kurzen, einfachen Telefon-Spickzettel (Gesprächsleitfaden) auf Deutsch
+                (Schweiz) für eine/n Jugendliche/n, der/die bei einer Firma anruft, um nach einer
+                Schnupperlehre zu fragen. Als kurze Stichpunkte/Schritte: Begrüssung & Vorstellen,
+                Anliegen, mögliche Nachfrage, höflicher Abschluss. Ermutigend, nicht steif.
+                Max. ca. 100 Wörter. Nur vorhandene Angaben nutzen.
+
+                Angaben:
+                %s
+                """.formatted(facts);
+
+        String email = callAi(emailPrompt, () -> schnupperEmailFallback(name, beruf, firma, kontakt));
+        String phone = callAi(phonePrompt, () -> schnupperPhoneFallback(name, beruf, firma));
+        return new SchnupperReply(email, phone);
+    }
+
+    private String schnupperEmailFallback(String name, String beruf, String firma, String kontakt) {
+        String anrede = notBlank(kontakt) ? "Guten Tag " + kontakt : "Guten Tag";
+        String firmaTxt = notBlank(firma) ? " bei " + firma : "";
+        return "Betreff: Anfrage für eine Schnupperlehre\n\n" + anrede + "\n\n"
+                + "Ich heisse " + name + " und interessiere mich sehr für den Beruf " + beruf + ". "
+                + "Gerne würde ich" + firmaTxt + " einen Schnuppertag machen, um den Beruf und Ihren Betrieb "
+                + "kennenzulernen.\n\nDarf ich Ihnen dazu meine Unterlagen schicken oder mich telefonisch melden? "
+                + "Über eine Rückmeldung freue ich mich sehr.\n\nFreundliche Grüsse\n" + name;
+    }
+
+    private String schnupperPhoneFallback(String name, String beruf, String firma) {
+        String firmaTxt = notBlank(firma) ? " bei " + firma : "";
+        return "1. Begrüssung: «Guten Tag, mein Name ist " + name + ".»\n"
+                + "2. Anliegen: «Ich interessiere mich für den Beruf " + beruf + " und würde gerne"
+                + firmaTxt + " einen Schnuppertag machen. Ist das möglich?»\n"
+                + "3. Nachfrage: «Wann würde es Ihnen passen? Was soll ich mitbringen?»\n"
+                + "4. Abschluss: «Vielen Dank für Ihre Zeit – ich freue mich auf Ihre Rückmeldung. Auf Wiederhören!»";
+    }
+
     private String callAi(String prompt, java.util.function.Supplier<String> fallback) {
         try {
             String result = AiTimeout.call(() -> chatClient.prompt(prompt).call().content(), 30);
