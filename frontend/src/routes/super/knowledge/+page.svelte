@@ -128,37 +128,38 @@
 
 <style>
 	.wrap { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
-	h1 { font-size: 1.6rem; margin: 0 0 .5rem; }
-	.intro { color: #374151; margin: 0 0 .35rem; }
-	.note { color: #6b7280; font-size: .85rem; margin: 0 0 1.25rem; }
-	.err { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; padding: .6rem .8rem; border-radius: 8px; margin-bottom: 1rem; }
+	h1 { font-size: 1.6rem; margin: 0 0 .5rem; color: #2d2141; }
+	.intro { color: #4b4560; margin: 0 0 .35rem; line-height: 1.55; }
+	.note { color: #8b849a; font-size: .85rem; margin: 0 0 1.25rem; }
+	.err { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; padding: .6rem .8rem; border-radius: 10px; margin-bottom: 1rem; }
 
 	.forms { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-	.card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem; background: #fff; }
-	.card h2 { font-size: 1rem; margin: 0 0 .75rem; }
-	.card form { display: flex; flex-direction: column; gap: .5rem; }
-	input, textarea { border: 1px solid #d1d5db; border-radius: 8px; padding: .5rem .6rem; font: inherit; width: 100%; box-sizing: border-box; }
+	.card { border: 1px solid #ece7f0; border-radius: 1rem; padding: 1.25rem; background: #fff; box-shadow: 0 8px 30px rgba(47,18,77,0.05); }
+	.card h2 { font-size: 1rem; margin: 0 0 .85rem; color: #2d2141; }
+	.card form { display: flex; flex-direction: column; gap: .55rem; }
+	input, textarea { border: 1px solid #d8d2e0; border-radius: .55rem; padding: .55rem .7rem; font: inherit; width: 100%; box-sizing: border-box; }
+	input:focus, textarea:focus { outline: none; border-color: #2F124D; box-shadow: 0 0 0 3px rgba(47,18,77,.1); }
 	textarea { resize: vertical; }
-	.filelabel { display: flex; flex-direction: column; gap: .3rem; font-size: .8rem; color: #6b7280; }
-	button { border: none; border-radius: 8px; padding: .5rem .9rem; font: inherit; cursor: pointer; background: #2563eb; color: #fff; align-self: flex-start; }
-	button:hover { background: #1d4ed8; }
+	.filelabel { display: flex; flex-direction: column; gap: .3rem; font-size: .8rem; color: #8b849a; }
+	button { border: none; border-radius: .55rem; padding: .55rem 1.1rem; font: inherit; font-weight: 600; cursor: pointer; background: #2F124D; color: #fff; align-self: flex-start; }
+	button:hover { background: #4A1C74; }
 
-	.listhead { font-size: 1.15rem; margin: 0 0 .75rem; }
-	.count { background: #eef2ff; color: #4338ca; border-radius: 999px; padding: .1rem .55rem; font-size: .8rem; margin-left: .35rem; }
-	.empty { color: #6b7280; }
+	.listhead { font-size: 1.15rem; margin: 0 0 .75rem; color: #2d2141; }
+	.count { background: #f0e7fa; color: #4A1C74; border-radius: 999px; padding: .1rem .6rem; font-size: .8rem; margin-left: .35rem; font-weight: 600; }
+	.empty { color: #8b849a; }
 
 	.list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .6rem; }
-	.item { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; border: 1px solid #e5e7eb; border-radius: 10px; padding: .8rem 1rem; background: #fff; }
-	.item.off { opacity: .55; background: #f9fafb; }
+	.item { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; border: 1px solid #ece7f0; border-radius: .85rem; padding: .9rem 1.1rem; background: #fff; }
+	.item.off { opacity: .55; background: #faf8fd; }
 	.meta { display: flex; flex-direction: column; gap: .25rem; min-width: 0; }
-	.tag { font-size: .75rem; color: #6b7280; }
-	.itemtitle { font-weight: 600; }
-	.link { font-size: .8rem; color: #2563eb; word-break: break-all; }
-	.sub { font-size: .75rem; color: #9ca3af; }
+	.tag { font-size: .75rem; color: #8b849a; }
+	.itemtitle { font-weight: 600; color: #2d2141; }
+	.link { font-size: .8rem; color: #2F124D; word-break: break-all; }
+	.sub { font-size: .75rem; color: #a49db2; }
 	.actions { display: flex; gap: .4rem; flex-shrink: 0; }
-	.actions button { align-self: auto; }
-	.ghost { background: #f3f4f6; color: #374151; }
-	.ghost:hover { background: #e5e7eb; }
+	.actions button { align-self: auto; font-weight: 500; }
+	.ghost { background: #f3f0f8; color: #4b4560; }
+	.ghost:hover { background: #e8e2f0; }
 	.del { background: #fef2f2; color: #b91c1c; }
 	.del:hover { background: #fee2e2; }
 </style>

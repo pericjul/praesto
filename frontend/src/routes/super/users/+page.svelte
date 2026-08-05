@@ -264,7 +264,8 @@
     .chk { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; color: #4b4060; white-space: nowrap; }
 
     .table-scroll { overflow-x: auto; }
-    .utable { width: 100%; border-collapse: collapse; }
+    .utable { width: 100%; border-collapse: collapse; min-width: 680px; }
+    .utable td:first-child { min-width: 190px; }
     .utable th { text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; color: #9a8b9d; padding: 0.4rem 0.6rem; border-bottom: 2px solid #ece3f5; }
     .utable td { padding: 0.6rem 0.6rem; border-bottom: 1px solid #f0e8f8; vertical-align: top; }
     tr.inactive { background: #fffbeb; }
@@ -273,14 +274,13 @@
     .uschool { color: #2d2141; }
     .ulast { font-size: 0.85rem; color: #4b4060; white-space: nowrap; }
     .flag { display: inline-block; margin-left: 0.3rem; color: #92400e; font-weight: 600; }
-    .uact { text-align: right; white-space: nowrap; }
-    .inline { display: inline; }
+    .uact { display: flex; flex-wrap: wrap; gap: 0.35rem; justify-content: flex-end; align-items: center; min-width: 260px; }
+    .inline { display: inline-flex; }
 
     .btn-ghost { display: inline-block; background: #faf8fc; border: 1px solid #e8e0f0; border-radius: 0.5rem; padding: 0.4rem 0.7rem; cursor: pointer; text-decoration: none; color: #2d2141; font-size: 0.85rem; }
     .btn-danger { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 0.5rem; padding: 0.4rem 0.7rem; cursor: pointer; font-size: 0.85rem; }
     .btn-activate { background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; border-radius: 0.5rem; padding: 0.4rem 0.7rem; cursor: pointer; font-size: 0.85rem; }
     .deact-badge { display: inline-block; margin-left: 0.35rem; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 999px; padding: 0.05rem 0.5rem; font-size: 0.68rem; font-weight: 700; vertical-align: middle; }
-    .inline { display: inline; }
 
     /* Reset-Modal */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(47,18,77,0.4); backdrop-filter: blur(3px); border: none; z-index: 998; cursor: pointer; }
