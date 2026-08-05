@@ -344,6 +344,8 @@ class ApplicationServiceTest {
             when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.ACCEPTED)).thenReturn(1L);
             when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.REJECTED)).thenReturn(0L);
             when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.WITHDRAWN)).thenReturn(0L);
+            when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.TRIAL_PLANNED)).thenReturn(0L);
+            when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.TRIAL_DONE)).thenReturn(0L);
 
             ApplicationStats result = applicationService.getMyStats();
 
@@ -832,6 +834,8 @@ class ApplicationServiceTest {
             when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.ACCEPTED)).thenReturn(0L);
             when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.REJECTED)).thenReturn(0L);
             when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.WITHDRAWN)).thenReturn(0L);
+            when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.TRIAL_PLANNED)).thenReturn(0L);
+            when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.TRIAL_DONE)).thenReturn(0L);
 
             ApplicationStats result = applicationService.getMyStats();
 
@@ -851,6 +855,8 @@ class ApplicationServiceTest {
             when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.ACCEPTED)).thenReturn(1L);
             when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.REJECTED)).thenReturn(1L);
             when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.WITHDRAWN)).thenReturn(1L);
+            when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.TRIAL_PLANNED)).thenReturn(0L);
+            when(applicationRepository.countByStudentIdAndStatus("student-123", ApplicationStatus.TRIAL_DONE)).thenReturn(0L);
 
             ApplicationStats result = applicationService.getMyStats();
 

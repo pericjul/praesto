@@ -181,10 +181,11 @@ export const actions = {
         try {
             let res;
             if (submissionId) {
+                // Der Submission-Endpunkt erwartet den Schlüssel "feedback" (nicht "teacherFeedback")!
                 res = await fetch(`${API_BASE}/submissions/${submissionId}/feedback`, {
                     method: "PUT",
                     headers,
-                    body: JSON.stringify({ teacherFeedback: feedback, grade })
+                    body: JSON.stringify({ feedback, grade })
                 });
             } else {
                 // Freier Übungs-/Schnupper-Chat ohne Abgabe: Feedback direkt an der Session speichern.

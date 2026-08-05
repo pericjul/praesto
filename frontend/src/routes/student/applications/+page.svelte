@@ -36,6 +36,8 @@
     );
 
     let statusOptions = $derived([
+        { value: "TRIAL_PLANNED", label: $t('sapp.statusTrialPlanned'), emoji: "🔍", color: "#14b8a6" },
+        { value: "TRIAL_DONE", label: $t('sapp.statusTrialDone'), emoji: "🤝", color: "#0d9488" },
         { value: "PLANNED", label: $t('sapp.statusPlanned'), emoji: "📝", color: "#6b7280" },
         { value: "APPLIED", label: $t('sapp.statusApplied'), emoji: "📤", color: "#3b82f6" },
         { value: "INVITED", label: $t('sapp.statusInvited'), emoji: "📅", color: "#f59e0b" },
@@ -72,7 +74,7 @@
         } else if (sortBy === "company") {
             filtered.sort((a, b) => (a.companyName || "").localeCompare(b.companyName || ""));
         } else if (sortBy === "status") {
-            const statusOrder = ["ACCEPTED", "INVITED", "INTERVIEW_DONE", "APPLIED", "PLANNED", "REJECTED", "WITHDRAWN"];
+            const statusOrder = ["ACCEPTED", "INVITED", "INTERVIEW_DONE", "APPLIED", "TRIAL_DONE", "TRIAL_PLANNED", "PLANNED", "REJECTED", "WITHDRAWN"];
             filtered.sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status));
         }
 

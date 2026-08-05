@@ -170,6 +170,8 @@ public class ApplicationService {
 
         String studentId = userService.getUserId();
 
+        long trialPlanned = applicationRepository.countByStudentIdAndStatus(studentId, ApplicationStatus.TRIAL_PLANNED);
+        long trialDone = applicationRepository.countByStudentIdAndStatus(studentId, ApplicationStatus.TRIAL_DONE);
         long planned = applicationRepository.countByStudentIdAndStatus(studentId, ApplicationStatus.PLANNED);
         long applied = applicationRepository.countByStudentIdAndStatus(studentId, ApplicationStatus.APPLIED);
         long invited = applicationRepository.countByStudentIdAndStatus(studentId, ApplicationStatus.INVITED);
@@ -178,8 +180,9 @@ public class ApplicationService {
         long rejected = applicationRepository.countByStudentIdAndStatus(studentId, ApplicationStatus.REJECTED);
         long withdrawn = applicationRepository.countByStudentIdAndStatus(studentId, ApplicationStatus.WITHDRAWN);
 
-        long total = planned + applied + invited + interviewDone + accepted + rejected + withdrawn;
-        long active = planned + applied + invited + interviewDone;
+        // Schnupper-Einträge zählen als aktive Bewerbungsphase mit.
+        long total = trialPlanned + trialDone + planned + applied + invited + interviewDone + accepted + rejected + withdrawn;
+        long active = trialPlanned + trialDone + planned + applied + invited + interviewDone;
 
         return ApplicationStats.builder()
                 .total(total)

@@ -17,6 +17,8 @@
     let sharedCount = $derived(students.filter((s) => s.shared).length);
 
     const STATUS = {
+        TRIAL_PLANNED: { label: () => $t("sapp.statusTrialPlanned"), emoji: "🔍", color: "#14b8a6" },
+        TRIAL_DONE: { label: () => $t("sapp.statusTrialDone"), emoji: "🤝", color: "#0d9488" },
         PLANNED: { label: () => $t("sapp.statusPlanned"), emoji: "📝", color: "#6b7280" },
         APPLIED: { label: () => $t("sapp.statusApplied"), emoji: "📤", color: "#3b82f6" },
         INVITED: { label: () => $t("sapp.statusInvited"), emoji: "📅", color: "#f59e0b" },
