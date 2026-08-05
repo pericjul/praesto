@@ -189,36 +189,7 @@
   {/if}
 
   <main class="app-main">
-    {#if isAuthenticated && isDemo}
-      <div class="demo-bar">
-        <span class="demo-tag">🎭 {$t('demo.mode')}</span>
-        <span class="demo-readonly-tag">{$t('demo.readonly')}</span>
-        <span class="demo-switch-label">{$t('demo.switchTo')}</span>
-        <div class="demo-roles">
-          <form method="POST" action="/demo?/role" data-demo-allow>
-            <input type="hidden" name="as" value="student" />
-            <button type="submit" class:active={isStudent}>{$t('demo.rStudent')}</button>
-          </form>
-          <form method="POST" action="/demo?/role" data-demo-allow>
-            <input type="hidden" name="as" value="teacher" />
-            <button type="submit" class:active={isTeacher}>{$t('demo.rTeacher')}</button>
-          </form>
-          <form method="POST" action="/demo?/role" data-demo-allow>
-            <input type="hidden" name="as" value="admin" />
-            <button type="submit" class:active={isSchoolAdmin}>{$t('demo.rAdmin')}</button>
-          </form>
-        </div>
-        <a href="/demo#cta" class="demo-book">📅 {$t('demo.book')}</a>
-      </div>
-    {/if}
     {@render children()}
-
-    {#if demoToast}
-      <div class="demo-toast" role="status">
-        <span>🔒 {$t('demo.locked')}</span>
-        <a href="/demo#cta" onclick={() => (demoToast = false)}>{$t('demo.book')} →</a>
-      </div>
-    {/if}
   </main>
 
   <footer class="app-footer">

@@ -63,19 +63,6 @@ async function register(token, userData, cookies) {
   return data.user;
 }
 
-async function demoLogin(as, cookies) {
-  const url = as ? `${API_BASE}/demo/login?as=${encodeURIComponent(as)}` : `${API_BASE}/demo/login`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(await parseError(res, "Demo-Login fehlgeschlagen"));
-  }
-  const data = await res.json();
-  setSession(cookies, data.token, data.user);
-  // Demo-Modus merken, damit der Rollen-Switcher angezeigt wird
-  cookies.set("demo_mode", "1", COOKIE_OPTIONS);
-  return data.user;
-}
-
 function logout(cookies) {
   cookies.delete("jwt_token", { path: "/" });
   cookies.delete("user_info", { path: "/" });
@@ -99,5 +86,5 @@ export function dashboardForRole(role) {
   }
 }
 
-const auth = { login, register, demoLogin, logout };
+const auth = { login, register, logout };
 export default auth;

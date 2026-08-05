@@ -76,8 +76,6 @@
                     <span>{$t('login.noAccount')}</span>
                     <a href="/signup">{$t('login.register')}</a>
                 </div>
-
-                <a href="/demo" class="demo-link">{$t('login.demo')}</a>
             </div>
         </div>
     </div>

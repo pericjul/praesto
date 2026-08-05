@@ -245,27 +245,7 @@
                 {/if}
             </section>
 
-            <!-- CTA: Rolle wählen und wirklich ausprobieren -->
             <section class="cta" id="cta">
-                <h2>{$t('guide.ctaTitle')}</h2>
-                <p>{$t('demo.chooseRole')}</p>
-                {#if form?.error}
-                    <div class="alert">{form.error}</div>
-                {/if}
-                <div class="role-buttons">
-                    <form method="POST" action="?/role" use:enhance>
-                        <input type="hidden" name="as" value="student" />
-                        <button type="submit" class="cta-btn">{$t('demo.tryStudent')}</button>
-                    </form>
-                    <form method="POST" action="?/role" use:enhance>
-                        <input type="hidden" name="as" value="teacher" />
-                        <button type="submit" class="cta-btn">{$t('demo.tryTeacher')}</button>
-                    </form>
-                    <form method="POST" action="?/role" use:enhance>
-                        <input type="hidden" name="as" value="admin" />
-                        <button type="submit" class="cta-btn">{$t('demo.tryAdmin')}</button>
-                    </form>
-                </div>
                 <a href="/kontakt" class="back">{$t('contact.ctaOffer')} →</a>
                 <a href="/" class="back">{$t('hb.backToStart')}</a>
             </section>

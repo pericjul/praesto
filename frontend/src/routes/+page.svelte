@@ -75,11 +75,10 @@
             <h1>{$t('landing.heroTitle')}</h1>
             <p class="lead">{$t('landing.heroSubtitle')}</p>
             <div class="hero-cta">
-                <a href="/demo#cta" class="btn-primary">▶ {$t('landing.ctaDemo')}</a>
-                <a href="/demo" class="btn-ghost">{$t('landing.ctaGuide')}</a>
-                <a href="/login" class="btn-text">{$t('landing.ctaLogin')}</a>
+                <a href="/login" class="btn-primary">{$t('landing.ctaLogin')}</a>
+                <a href="/demo#booking" class="btn-ghost">📅 {$t('landing.ctaBook')}</a>
+                <a href="/hilfe/anleitung" class="btn-text">{$t('landing.ctaGuide')}</a>
             </div>
-            <p class="demo-hint">🔒 {$t('landing.demoHint')}</p>
         </div>
     </section>
 
@@ -110,7 +109,7 @@
         <h2>{$t('landing.ctaFooterTitle')}</h2>
         <p>{$t('landing.ctaFooterText')}</p>
         <div class="final-actions">
-            <a href="/demo#cta" class="btn-primary large light">▶ {$t('landing.ctaDemo')}</a>
+            <a href="/demo#booking" class="btn-primary large light">📅 {$t('landing.ctaBook')}</a>
             <a href="/kontakt" class="cta-contact">{$t('contact.ctaOffer')} →</a>
         </div>
     </section>
