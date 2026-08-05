@@ -34,6 +34,7 @@ export const actions = {
 		} catch (e) {
 			return fail(400, { error: e.message || 'Registrierung fehlgeschlagen.', firstName, lastName, email });
 		}
-		throw redirect(303, dashboardForRole(user.role));
+		// Nach der Registrierung: kurze Willkommens-Umfrage.
+		throw redirect(303, '/willkommen');
 	}
 };
