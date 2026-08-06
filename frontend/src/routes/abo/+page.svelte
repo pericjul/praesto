@@ -68,7 +68,7 @@
 </div>
 
 <style>
-	.abo-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; background: #faf8f3; }
+	.abo-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; background: #F8F3EB; }
 	.abo-inner { width: 100%; max-width: 640px; text-align: center; }
 	.logo { width: 52px; height: 52px; object-fit: contain; }
 	h1 { font-size: 1.7rem; margin: 0.5rem 0 0.5rem; color: #2d2141; }

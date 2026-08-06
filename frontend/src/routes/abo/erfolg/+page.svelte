@@ -16,7 +16,7 @@
 </div>
 
 <style>
-	.ok-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; background: #faf8f3; }
+	.ok-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; background: #F8F3EB; }
 	.ok-card { background: #fff; border: 1px solid #ece7f0; border-radius: 1rem; padding: 2.5rem 2rem; max-width: 440px; text-align: center; box-shadow: 0 10px 40px rgba(47,18,77,0.08); }
 	.logo { width: 48px; height: 48px; object-fit: contain; }
 	.check { font-size: 2.5rem; margin: 0.5rem 0; }

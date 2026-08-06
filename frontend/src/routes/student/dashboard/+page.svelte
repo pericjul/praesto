@@ -19,8 +19,10 @@
     let classFacts = $derived(dashboard.classFacts ?? null);
     let challenge = $derived(data.challenge ?? null);
     let calendar = $derived(data.calendar ?? []);
+    // Privat-Konto (ohne Schule/Klasse): keine klassenbezogenen Inhalte.
+    let isIndividual = $derived(data?.user?.accountType === "INDIVIDUAL");
 
-    let factOfDay = $derived(buildFactOfDay(classFacts));
+    let factOfDay = $derived(isIndividual ? null : buildFactOfDay(classFacts));
 
     function buildFactOfDay(f) {
         if (!f || f.classmateCount < 1) {
@@ -123,10 +125,12 @@
         </div>
 
         <div class="hero-right">
-            <div class="hero-stat">
-                <span class="hero-stat-label">{$t('sdash.statOpenTasks')}</span>
-                <span class="hero-stat-value">{openAssignmentsCount}</span>
-            </div>
+            {#if !isIndividual}
+                <div class="hero-stat">
+                    <span class="hero-stat-label">{$t('sdash.statOpenTasks')}</span>
+                    <span class="hero-stat-value">{openAssignmentsCount}</span>
+                </div>
+            {/if}
             <div class="hero-stat">
                 <span class="hero-stat-label">{$t('sdash.statTrainings')}</span>
                 <span class="hero-stat-value">{totalSessionsCount}</span>
@@ -222,7 +226,7 @@
 
     /* ===== Fakt des Tages ===== */
     .fact-card {
-        background: linear-gradient(135deg, #2F124D 0%, #5a2d6e 60%, #c97d3c 100%);
+        background: linear-gradient(135deg, #2F124D 0%, #4A1C74 60%, #6b3a8f 100%);
         color: #fff;
         border-radius: 1rem;
         padding: 1rem 1.25rem;
@@ -256,12 +260,12 @@
     .cc-title { font-weight: 700; color: var(--color-primary, #2F124D); }
     .cc-count { font-weight: 800; color: var(--color-primary, #2F124D); }
     .cc-bar { height: 14px; background: #eee; border-radius: 999px; overflow: hidden; margin: 0.6rem 0 0.4rem; }
-    .cc-fill { height: 100%; background: linear-gradient(90deg, #2F124D, #c97d3c); border-radius: 999px; transition: width 0.3s; }
+    .cc-fill { height: 100%; background: linear-gradient(90deg, #2F124D, #6b3a8f); border-radius: 999px; transition: width 0.3s; }
     .cc-sub { margin: 0; font-size: 0.88rem; color: var(--color-text-muted, #5E4C6F); }
 
     /* ===== ORIGINAL HERO ===== */
     .hero {
-        background: linear-gradient(135deg, #2F124D 0%, #5a2d6e 50%, #c97d3c 100%);
+        background: linear-gradient(135deg, #2F124D 0%, #4A1C74 55%, #6b3a8f 100%);
         border-radius: 1.5rem;
         padding: 2rem 2.5rem;
         margin-bottom: 2rem;

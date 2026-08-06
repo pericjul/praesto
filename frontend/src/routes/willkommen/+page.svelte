@@ -95,7 +95,7 @@
 </div>
 
 <style>
-	.wk-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; background: #faf8f3; }
+	.wk-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; background: #F8F3EB; }
 	.wk-card { width: 100%; max-width: 560px; background: #fff; border: 1px solid #ece7f0; border-radius: 1.1rem; padding: 2rem; box-shadow: 0 12px 45px rgba(47,18,77,0.08); }
 	.logo { width: 48px; height: 48px; object-fit: contain; }
 	h1 { font-size: 1.5rem; color: #2d2141; margin: 0.5rem 0 0.35rem; }

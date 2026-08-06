@@ -172,6 +172,9 @@ public class AuthService {
         validateRegister(req);
 
         String email = normalizeEmail(req.email());
+        if (isDisposableEmail(email)) {
+            throw new BadRequestException("Bitte verwende eine echte, persönliche E-Mail-Adresse (keine Wegwerf-Adresse).");
+        }
         if (userRepository.existsByEmail(email)) {
             throw new BadRequestException("Diese Email ist bereits registriert");
         }
@@ -246,5 +249,22 @@ public class AuthService {
 
     private String normalizeEmail(String email) {
         return email == null ? null : email.toLowerCase().trim();
+    }
+
+    // Bekannte Wegwerf-/Temporär-Mail-Domains blockieren (erste Hürde gegen Mehrfach-Trials).
+    // Keine vollständige Liste – die eigentliche Absicherung ist die E-Mail-Verifizierung.
+    private static final java.util.Set<String> DISPOSABLE_DOMAINS = java.util.Set.of(
+            "mailinator.com", "guerrillamail.com", "guerrillamail.info", "sharklasers.com",
+            "10minutemail.com", "tempmail.com", "temp-mail.org", "trashmail.com", "yopmail.com",
+            "getnada.com", "dispostable.com", "maildrop.cc", "fakeinbox.com", "throwawaymail.com",
+            "mohmal.com", "mailnesia.com", "spamgourmet.com", "tempmailo.com", "moakt.com",
+            "emailondeck.com", "mintemail.com", "1secmail.com", "wegwerfmail.de", "trashmail.de");
+
+    private boolean isDisposableEmail(String email) {
+        if (email == null || !email.contains("@")) {
+            return false;
+        }
+        String domain = email.substring(email.lastIndexOf('@') + 1).trim();
+        return DISPOSABLE_DOMAINS.contains(domain);
     }
 }
