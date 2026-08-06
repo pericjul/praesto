@@ -43,6 +43,9 @@ public class PasswordResetService {
     private String baseUrl;
     @Value("${praesto.contact.from:}")
     private String fromAddress;
+    // Fallback-Absender, falls MAIL_FROM nicht gesetzt ist: das authentifizierte SMTP-Postfach.
+    @Value("${spring.mail.username:}")
+    private String mailUsername;
 
     @PostConstruct
     void ensureTable() {
@@ -111,7 +114,9 @@ public class PasswordResetService {
     private void sendMail(User user, String token) {
         JavaMailSender sender = mailSenderProvider.getIfAvailable();
         String link = baseUrl.replaceAll("/+$", "") + "/passwort-neu?token=" + token;
-        if (sender == null || fromAddress == null || fromAddress.isBlank()) {
+        // Absender: MAIL_FROM, sonst das SMTP-Login-Postfach (wie beim Kontaktformular).
+        String effectiveFrom = fromAddress != null && !fromAddress.isBlank() ? fromAddress : mailUsername;
+        if (sender == null || effectiveFrom == null || effectiveFrom.isBlank()) {
             log.warn("Passwort-Reset für {} angefragt, aber kein Mailversand konfiguriert. Link (nur Log): {}",
                     user.getEmail(), link);
             return;
@@ -119,7 +124,7 @@ public class PasswordResetService {
         try {
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setTo(user.getEmail());
-            msg.setFrom(fromAddress);
+            msg.setFrom(effectiveFrom);
             msg.setSubject("Praesto – Passwort zurücksetzen");
             msg.setText("Hallo " + user.getFullName() + ",\n\n"
                     + "du hast angefragt, dein Praesto-Passwort zurückzusetzen. "
