@@ -9,8 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -106,20 +106,48 @@ public class AccountRetentionJob {
             log.warn("Löschungs-Vorwarnung für {} nicht versendet (kein Mailversand konfiguriert).", user.getEmail());
             return;
         }
-        String body = messages.get("mail.retention.body", Map.of(
-                "NAME", user.getFirstName() == null ? "" : user.getFirstName(),
-                "DAYS", String.valueOf(daysLeft),
-                "URL", baseUrl.replaceAll("/+$", "") + "/login"));
+        String link = baseUrl.replaceAll("/+$", "") + "/login";
+        String greeting = messages.get("mail.reset.greeting",
+                Map.of("NAME", user.getFirstName() == null ? "" : user.getFirstName()));
+        String intro = messages.get("mail.retention.intro", Map.of("DAYS", String.valueOf(daysLeft)));
+        String action = messages.get("mail.retention.action");
+        String note = messages.get("mail.retention.note");
+        String plain = greeting + "\n\n" + intro + "\n\n" + action + "\n" + link + "\n\n"
+                + note + "\n\n" + messages.get("mail.reset.signature");
         try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo(user.getEmail());
-            msg.setFrom(effectiveFrom);
-            msg.setSubject(messages.get("mail.retention.subject"));
-            msg.setText(body);
-            sender.send(msg);
+            var mime = sender.createMimeMessage();
+            var helper = new MimeMessageHelper(mime, "UTF-8");
+            helper.setTo(user.getEmail());
+            helper.setFrom(effectiveFrom);
+            helper.setSubject(messages.get("mail.retention.subject"));
+            helper.setText(plain, buildHtml(greeting, intro, action, messages.get("mail.retention.button"), note, link));
+            sender.send(mime);
             log.info("Löschungs-Vorwarnung an {} versendet (in {} Tagen).", user.getEmail(), daysLeft);
         } catch (Exception e) {
             log.error("Löschungs-Vorwarnung konnte nicht versendet werden: {}", e.getMessage());
         }
+    }
+
+    private String buildHtml(String greeting, String intro, String action, String button, String note, String link) {
+        return """
+                <div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:480px;margin:0 auto;color:#2d2141;">
+                  <div style="background:#2F124D;color:#fff;padding:20px 24px;border-radius:12px 12px 0 0;">
+                    <span style="font-size:18px;font-weight:700;">Praesto</span>
+                  </div>
+                  <div style="background:#ffffff;border:1px solid #ece7f0;border-top:none;padding:24px;border-radius:0 0 12px 12px;">
+                    <p style="margin:0 0 12px;">%s</p>
+                    <p style="margin:0 0 16px;line-height:1.5;color:#4b4560;">%s</p>
+                    <p style="margin:0 0 8px;color:#4b4560;">%s</p>
+                    <p style="text-align:center;margin:8px 0 20px;">
+                      <a href="%s" style="background:#2F124D;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;display:inline-block;">%s</a>
+                    </p>
+                    <p style="margin:0;font-size:13px;color:#8b849a;line-height:1.5;">%s</p>
+                  </div>
+                </div>
+                """.formatted(esc(greeting), esc(intro), esc(action), link, esc(button), esc(note));
+    }
+
+    private String esc(String s) {
+        return s == null ? "" : s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 }
