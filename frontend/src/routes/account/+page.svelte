@@ -39,6 +39,8 @@
         try { return new Date(d).toLocaleDateString("de-CH", { day: "2-digit", month: "2-digit", year: "numeric" }); }
         catch { return ""; }
     }
+
+    let showDelete = $state(false);
 </script>
 
 <svelte:head>
@@ -162,6 +164,32 @@
                 <button type="submit" class="btn-primary">{$t('account.save')}</button>
             </form>
         </section>
+
+        <!-- Konto löschen (Gefahrenzone) -->
+        <section class="card danger">
+            <h2>🗑️ Konto löschen</h2>
+            <p class="abo-note">Dein Konto und <strong>alle deine Daten</strong> werden endgültig gelöscht. Das kann nicht rückgängig gemacht werden.</p>
+            {#if isIndividual && hasSub}
+                <p class="abo-note">Falls du ein aktives Abo hast, kündige es vorher im <a href="/abo">Abo-Bereich</a>, damit keine weiteren Zahlungen erfolgen.</p>
+            {/if}
+            {#if form?.deleteError}
+                <div class="alert error">⚠️ {form.deleteError}</div>
+            {/if}
+            {#if !showDelete}
+                <button type="button" class="btn-danger" onclick={() => (showDelete = true)}>Konto löschen …</button>
+            {:else}
+                <form method="POST" action="?/deleteAccount" use:enhance class="form">
+                    <label>
+                        Zur Bestätigung dein Passwort eingeben
+                        <input type="password" name="deletePassword" placeholder="Passwort" required />
+                    </label>
+                    <div class="del-actions">
+                        <button type="button" class="btn-ghost" onclick={() => (showDelete = false)}>Abbrechen</button>
+                        <button type="submit" class="btn-danger">Endgültig löschen</button>
+                    </div>
+                </form>
+            {/if}
+        </section>
     {:else}
         <p>{$t('account.notLoggedIn')}</p>
     {/if}
@@ -215,6 +243,13 @@
     .alert { padding: 0.7rem 1rem; border-radius: 0.5rem; margin-bottom: 0.85rem; font-size: 0.9rem; }
     .alert.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
     .alert.error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+    .card.danger { border-color: #f3c9c9; }
+    .card.danger h2 { color: #b91c1c; }
+    .btn-danger { align-self: flex-start; background: #dc2626; color: #fff; border: none; border-radius: 0.5rem; padding: 0.6rem 1.2rem; font-weight: 600; cursor: pointer; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-ghost { background: #f3f0f8; color: #4b4560; border: 1px solid #e0d8ec; border-radius: 0.5rem; padding: 0.6rem 1.1rem; font-weight: 600; cursor: pointer; }
+    .del-actions { display: flex; gap: 0.6rem; }
 
     .abo-card h2 { margin-top: 0; }
     .abo-lead { font-size: 1rem; margin: 0 0 0.35rem; color: #2d2141; }

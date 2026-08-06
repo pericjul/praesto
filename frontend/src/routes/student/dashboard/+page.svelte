@@ -146,6 +146,19 @@
         </div>
     </section>
 
+    {#if isIndividual}
+        <section class="onboard-cta">
+            <div class="onboard-text">
+                <strong>🧭 Neu hier? So findest du den Einstieg</strong>
+                <span>Noch unsicher, welcher Beruf zu dir passt? Starte mit dem Berufs-Finder – oder übe direkt ein Bewerbungsgespräch. Deine Bewerbungen und Schnupperlehren behältst du im Tracker im Blick.</span>
+            </div>
+            <div class="onboard-actions">
+                <a href="/student/sessions" class="btn btn-primary">🧭 Berufe entdecken / üben</a>
+                <a href="/student/applications" class="btn btn-ghost">📋 Bewerbungen & Schnuppern</a>
+            </div>
+        </section>
+    {/if}
+
     <!-- NEUER HAUPTBEREICH: 2 klare Spalten -->
     <div class="main-grid">
         
@@ -275,6 +288,16 @@
         gap: 2rem;
         flex-wrap: wrap;
     }
+    .onboard-cta {
+        display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; flex-wrap: wrap;
+        background: linear-gradient(135deg, #f0fdfa 0%, #faf8fd 100%);
+        border: 1px solid #cdeee6; border-radius: 1rem; padding: 1.1rem 1.4rem; margin-bottom: 1.5rem;
+    }
+    .onboard-text { display: flex; flex-direction: column; gap: 0.25rem; min-width: 240px; flex: 1; }
+    .onboard-text strong { color: #0f766e; font-size: 1rem; }
+    .onboard-text span { color: #5b6b68; font-size: 0.88rem; line-height: 1.5; }
+    .onboard-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .onboard-actions .btn { text-decoration: none; }
 
     .hero-left { flex: 1; min-width: 280px; }
 

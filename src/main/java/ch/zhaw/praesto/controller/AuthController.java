@@ -5,10 +5,13 @@ import ch.zhaw.praesto.security.JwtService;
 import ch.zhaw.praesto.service.AuthService;
 import ch.zhaw.praesto.service.InviteService;
 import ch.zhaw.praesto.service.PasswordResetService;
+import ch.zhaw.praesto.service.RateLimiterService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.Map;
 
 /**
@@ -24,6 +27,15 @@ public class AuthController {
     private final InviteService inviteService;
     private final JwtService jwtService;
     private final PasswordResetService passwordResetService;
+    private final RateLimiterService rateLimiter;
+
+    private static String clientIp(HttpServletRequest request) {
+        String fwd = request.getHeader("X-Forwarded-For");
+        if (fwd != null && !fwd.isBlank()) {
+            return fwd.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
+    }
 
     @PostMapping("/auth/login")
     public AuthResponse login(@RequestBody LoginRequest request) {
@@ -39,7 +51,8 @@ public class AuthController {
 
     // Selbst-Registrierung eines Privat-/B2C-Kontos (ohne Einladung/Schule).
     @PostMapping("/auth/signup")
-    public AuthResponse signup(@RequestBody RegisterRequest request) {
+    public AuthResponse signup(@RequestBody RegisterRequest request, HttpServletRequest http) {
+        rateLimiter.hit("signup:" + clientIp(http), 5, Duration.ofHours(1));
         User user = authService.registerIndividual(request);
         return toAuthResponse(user);
     }
@@ -52,7 +65,9 @@ public class AuthController {
     // Passwort vergessen: schickt (falls Konto existiert) eine E-Mail mit Reset-Link.
     // Antwortet immer neutral, um nicht zu verraten, ob eine E-Mail registriert ist.
     @PostMapping("/auth/forgot-password")
-    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody Map<String, String> body) {
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody Map<String, String> body,
+                                                              HttpServletRequest http) {
+        rateLimiter.hit("forgot:" + clientIp(http), 5, Duration.ofHours(1));
         passwordResetService.requestReset(body.get("email"));
         return ResponseEntity.ok(Map.of("message",
                 "Falls ein Konto mit dieser E-Mail existiert, haben wir dir einen Link geschickt."));

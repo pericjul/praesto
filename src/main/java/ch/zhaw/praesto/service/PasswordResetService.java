@@ -121,22 +121,45 @@ public class PasswordResetService {
                     user.getEmail(), link);
             return;
         }
+        String plain = "Hallo " + user.getFullName() + ",\n\n"
+                + "du hast angefragt, dein Praesto-Passwort zurückzusetzen. Öffne diesen Link, um ein "
+                + "neues Passwort zu setzen:\n\n" + link + "\n\n"
+                + "Der Link ist 1 Stunde gültig. Falls du das nicht warst, ignoriere diese E-Mail einfach – "
+                + "dein Passwort bleibt unverändert.\n\nFreundliche Grüsse\nDein Praesto-Team";
         try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo(user.getEmail());
-            msg.setFrom(effectiveFrom);
-            msg.setSubject("Praesto – Passwort zurücksetzen");
-            msg.setText("Hallo " + user.getFullName() + ",\n\n"
-                    + "du hast angefragt, dein Praesto-Passwort zurückzusetzen. "
-                    + "Klicke auf den folgenden Link, um ein neues Passwort zu setzen:\n\n"
-                    + link + "\n\n"
-                    + "Der Link ist 1 Stunde gültig. Falls du das nicht warst, ignoriere diese E-Mail einfach – "
-                    + "dein Passwort bleibt unverändert.\n\n"
-                    + "Freundliche Grüsse\nDein Praesto-Team");
-            sender.send(msg);
+            var mime = sender.createMimeMessage();
+            var helper = new org.springframework.mail.javamail.MimeMessageHelper(mime, "UTF-8");
+            helper.setTo(user.getEmail());
+            helper.setFrom(effectiveFrom);
+            helper.setSubject("Praesto – Passwort zurücksetzen");
+            helper.setText(plain, buildHtml(user.getFullName(), link));
+            sender.send(mime);
             log.info("Passwort-Reset-Mail an {} versendet.", user.getEmail());
         } catch (Exception e) {
             log.error("Passwort-Reset-Mail konnte nicht versendet werden: {}", e.getMessage());
         }
+    }
+
+    private String buildHtml(String name, String link) {
+        return """
+                <div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:480px;margin:0 auto;color:#2d2141;">
+                  <div style="background:#2F124D;color:#fff;padding:20px 24px;border-radius:12px 12px 0 0;">
+                    <span style="font-size:18px;font-weight:700;">Praesto</span>
+                  </div>
+                  <div style="background:#ffffff;border:1px solid #ece7f0;border-top:none;padding:24px;border-radius:0 0 12px 12px;">
+                    <p style="margin:0 0 12px;">Hallo %s,</p>
+                    <p style="margin:0 0 20px;line-height:1.5;color:#4b4560;">du hast angefragt, dein Passwort zurückzusetzen. Klicke auf den Button, um ein neues Passwort zu setzen:</p>
+                    <p style="text-align:center;margin:0 0 20px;">
+                      <a href="%s" style="background:#2F124D;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;display:inline-block;">Passwort zurücksetzen</a>
+                    </p>
+                    <p style="margin:0 0 8px;font-size:13px;color:#8b849a;line-height:1.5;">Der Link ist 1 Stunde gültig. Falls du das nicht warst, ignoriere diese E-Mail einfach – dein Passwort bleibt unverändert.</p>
+                    <p style="margin:16px 0 0;font-size:12px;color:#a49db2;word-break:break-all;">Falls der Button nicht geht: %s</p>
+                  </div>
+                </div>
+                """.formatted(escape(name), link, link);
+    }
+
+    private String escape(String s) {
+        return s == null ? "" : s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 }

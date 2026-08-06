@@ -96,6 +96,26 @@ public class SuperUserService {
         if (user.getRole() == UserRole.SUPER_ADMIN) {
             throw new ForbiddenException("Ein SUPER_ADMIN kann nicht gelöscht werden");
         }
+        purge(user);
+    }
+
+    /**
+     * Selbst-Löschung des eigenen Kontos inkl. aller Daten (jede:r darf das eigene Konto löschen,
+     * ausser SUPER_ADMIN).
+     */
+    @Transactional
+    public void deleteOwnAccount() {
+        User user = userRepository.findById(userService.getUserId())
+                .orElseThrow(() -> new NotFoundException("Benutzer nicht gefunden"));
+        if (user.getRole() == UserRole.SUPER_ADMIN) {
+            throw new ForbiddenException("Ein SUPER_ADMIN kann sich nicht selbst löschen");
+        }
+        purge(user);
+    }
+
+    /** Löscht die Person und alle zugehörigen Daten endgültig (ohne Rechte-Check). */
+    private void purge(User user) {
+        String userId = user.getId();
 
         // Persönliche Datensätze
         sessionRepository.deleteByStudentId(userId);

@@ -9,6 +9,7 @@ import ch.zhaw.praesto.repository.UserRepository;
 import ch.zhaw.praesto.service.AdminService;
 import ch.zhaw.praesto.service.ConsentService;
 import ch.zhaw.praesto.service.InviteService;
+import ch.zhaw.praesto.service.SuperUserService;
 import ch.zhaw.praesto.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,7 @@ public class UserController {
     private final SchoolClassRepository schoolClassRepository;
     private final PasswordEncoder passwordEncoder;
     private final ConsentService consentService;
+    private final SuperUserService superUserService;
 
     // ============================================================
     // Aktueller User
@@ -103,6 +105,20 @@ public class UserController {
         });
         user.setEmail(newEmail);
         return UserDTO.from(userRepository.save(user));
+    }
+
+    /**
+     * Eigenes Konto inkl. aller Daten endgültig löschen (mit Passwort-Bestätigung).
+     */
+    @DeleteMapping("/users/me")
+    public ResponseEntity<Void> deleteOwnAccount(@RequestBody(required = false) Map<String, String> body) {
+        User user = userService.getCurrentUser();
+        String password = body == null ? null : body.get("password");
+        if (user.getPasswordHash() == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
+            throw new BadRequestException("Aktuelles Passwort ist falsch.");
+        }
+        superUserService.deleteOwnAccount();
+        return ResponseEntity.noContent().build();
     }
 
     /**

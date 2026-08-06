@@ -45,6 +45,28 @@ export const actions = {
 		return { profileSuccess: true };
 	},
 
+	// Eigenes Konto + alle Daten endgültig löschen (mit Passwort-Bestätigung).
+	deleteAccount: async ({ request, locals, fetch, cookies }) => {
+		const data = await request.formData();
+		const password = data.get("deletePassword");
+		if (!password) {
+			return fail(400, { deleteError: "Bitte bestätige mit deinem Passwort." });
+		}
+		const res = await fetch(`${API_BASE}/users/me`, {
+			method: "DELETE",
+			headers: apiHeaders(locals.jwt_token),
+			body: JSON.stringify({ password })
+		});
+		if (!res.ok) {
+			const msg = await res.text().catch(() => "");
+			return fail(400, { deleteError: msg && msg.length < 300 ? msg : "Konto konnte nicht gelöscht werden." });
+		}
+		cookies.delete("jwt_token", { path: "/" });
+		cookies.delete("user_info", { path: "/" });
+		cookies.delete("demo_mode", { path: "/" });
+		throw redirect(303, "/?geloescht=1");
+	},
+
 	// Stripe-Kundenportal öffnen (Abo verwalten/kündigen).
 	portal: async ({ locals, fetch }) => {
 		const res = await fetch(`${API_BASE}/billing/portal`, {
