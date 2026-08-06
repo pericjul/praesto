@@ -44,8 +44,18 @@ public class AccountRetentionJob {
     private String baseUrl;
     @Value("${praesto.contact.from:}")
     private String fromAddress;
+    // Gleiche verifizierte Absender-Kette wie das Kontaktformular (MAIL_FROM ->
+    // CONTACT_RECIPIENT_EMAIL -> SMTP-Login), damit die Vorwarn-Mail auch ohne MAIL_FROM rausgeht.
+    @Value("${praesto.contact.recipient:}")
+    private String contactRecipient;
     @Value("${spring.mail.username:}")
     private String mailUsername;
+
+    private String effectiveFrom() {
+        if (fromAddress != null && !fromAddress.isBlank()) return fromAddress;
+        if (contactRecipient != null && !contactRecipient.isBlank()) return contactRecipient;
+        return mailUsername;
+    }
 
     // Täglich um 03:30 (Europe/Zurich).
     @Scheduled(cron = "0 30 3 * * *", zone = "Europe/Zurich")
@@ -101,7 +111,7 @@ public class AccountRetentionJob {
 
     private void sendWarning(User user, long daysLeft) {
         JavaMailSender sender = mailSenderProvider.getIfAvailable();
-        String effectiveFrom = fromAddress != null && !fromAddress.isBlank() ? fromAddress : mailUsername;
+        String effectiveFrom = effectiveFrom();
         if (sender == null || effectiveFrom == null || effectiveFrom.isBlank() || user.getEmail() == null) {
             log.warn("Löschungs-Vorwarnung für {} nicht versendet (kein Mailversand konfiguriert).", user.getEmail());
             return;

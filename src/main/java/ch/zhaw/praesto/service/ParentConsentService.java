@@ -41,8 +41,18 @@ public class ParentConsentService {
     private String baseUrl;
     @Value("${praesto.contact.from:}")
     private String fromAddress;
+    // Gleiche verifizierte Absender-Kette wie das Kontaktformular (MAIL_FROM ->
+    // CONTACT_RECIPIENT_EMAIL -> SMTP-Login), damit die Eltern-Mail auch ohne MAIL_FROM rausgeht.
+    @Value("${praesto.contact.recipient:}")
+    private String contactRecipient;
     @Value("${spring.mail.username:}")
     private String mailUsername;
+
+    private String effectiveFrom() {
+        if (fromAddress != null && !fromAddress.isBlank()) return fromAddress;
+        if (contactRecipient != null && !contactRecipient.isBlank()) return contactRecipient;
+        return mailUsername;
+    }
 
     @PostConstruct
     void ensureTable() {
@@ -122,7 +132,7 @@ public class ParentConsentService {
     private void sendMail(String parentEmail, String childName, String token) {
         JavaMailSender sender = mailSenderProvider.getIfAvailable();
         String link = baseUrl.replaceAll("/+$", "") + "/eltern-bestaetigung?token=" + token;
-        String effectiveFrom = fromAddress != null && !fromAddress.isBlank() ? fromAddress : mailUsername;
+        String effectiveFrom = effectiveFrom();
         if (sender == null || effectiveFrom == null || effectiveFrom.isBlank() || parentEmail == null) {
             log.warn("Eltern-Einverständnis für {} angefragt, aber kein Mailversand konfiguriert. Link (nur Log): {}",
                     childName, link);
