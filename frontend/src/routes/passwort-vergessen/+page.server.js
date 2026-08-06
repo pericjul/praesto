@@ -1,12 +1,13 @@
 import { fail } from "@sveltejs/kit";
 import { API_BASE } from "$lib/server/api.js";
+import { tr } from "$lib/server/i18n.js";
 
 export const actions = {
-	default: async ({ request, fetch }) => {
+	default: async ({ request, fetch, locals }) => {
 		const data = await request.formData();
 		const email = data.get("email")?.toString().trim();
 		if (!email || !email.includes("@")) {
-			return fail(400, { error: "Bitte gib eine gültige E-Mail-Adresse ein." });
+			return fail(400, { error: tr(locals.lang, "verr.invalidEmail") });
 		}
 		try {
 			await fetch(`${API_BASE}/auth/forgot-password`, {

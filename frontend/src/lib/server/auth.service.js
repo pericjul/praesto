@@ -64,10 +64,11 @@ async function register(token, userData, cookies) {
 }
 
 // Selbst-Registrierung eines Privat-/B2C-Kontos (ohne Einladungs-Token).
-async function signup(userData, cookies) {
+// lang wird als X-Locale mitgeschickt, damit Backend-Fehler in der UI-Sprache kommen.
+async function signup(userData, cookies, lang) {
   const res = await fetch(`${API_BASE}/auth/signup`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(lang ? { "X-Locale": lang } : {}) },
     body: JSON.stringify(userData)
   });
   if (!res.ok) {

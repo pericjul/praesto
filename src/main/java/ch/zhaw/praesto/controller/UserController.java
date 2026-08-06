@@ -9,6 +9,7 @@ import ch.zhaw.praesto.repository.UserRepository;
 import ch.zhaw.praesto.service.AdminService;
 import ch.zhaw.praesto.service.ConsentService;
 import ch.zhaw.praesto.service.InviteService;
+import ch.zhaw.praesto.service.LocaleMessages;
 import ch.zhaw.praesto.service.SuperUserService;
 import ch.zhaw.praesto.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final ConsentService consentService;
     private final SuperUserService superUserService;
+    private final LocaleMessages messages;
 
     // ============================================================
     // Aktueller User
@@ -70,11 +72,11 @@ public class UserController {
     public ResponseEntity<Void> changePassword(@RequestBody PasswordChangeRequest req) {
         User user = userService.getCurrentUser();
         if (req.newPassword() == null || req.newPassword().length() < 8) {
-            throw new BadRequestException("Passwort muss mindestens 8 Zeichen haben");
+            throw new BadRequestException(messages.get("err.passwordMin8"));
         }
         if (user.getPasswordHash() == null
                 || !passwordEncoder.matches(req.currentPassword(), user.getPasswordHash())) {
-            throw new BadRequestException("Aktuelles Passwort ist falsch");
+            throw new BadRequestException(messages.get("err.currentPasswordWrong"));
         }
         user.setPasswordHash(passwordEncoder.encode(req.newPassword()));
         userRepository.save(user);
@@ -91,17 +93,17 @@ public class UserController {
         User user = userService.getCurrentUser();
         String newEmail = req.newEmail() == null ? null : req.newEmail().toLowerCase().trim();
         if (newEmail == null || !newEmail.contains("@") || newEmail.length() < 5) {
-            throw new BadRequestException("Bitte gib eine gültige E-Mail-Adresse ein.");
+            throw new BadRequestException(messages.get("err.emailInvalid"));
         }
         if (user.getPasswordHash() == null
                 || !passwordEncoder.matches(req.currentPassword(), user.getPasswordHash())) {
-            throw new BadRequestException("Aktuelles Passwort ist falsch.");
+            throw new BadRequestException(messages.get("err.currentPasswordWrong"));
         }
         if (newEmail.equals(user.getEmail())) {
             return UserDTO.from(user); // keine Änderung
         }
         userRepository.findByEmail(newEmail).ifPresent(other -> {
-            throw new BadRequestException("Diese E-Mail-Adresse ist bereits vergeben.");
+            throw new BadRequestException(messages.get("err.emailTaken"));
         });
         user.setEmail(newEmail);
         return UserDTO.from(userRepository.save(user));
@@ -115,7 +117,7 @@ public class UserController {
         User user = userService.getCurrentUser();
         String password = body == null ? null : body.get("password");
         if (user.getPasswordHash() == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
-            throw new BadRequestException("Aktuelles Passwort ist falsch.");
+            throw new BadRequestException(messages.get("err.currentPasswordWrong"));
         }
         superUserService.deleteOwnAccount();
         return ResponseEntity.noContent().build();

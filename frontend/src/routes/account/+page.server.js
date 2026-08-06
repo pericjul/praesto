@@ -1,5 +1,6 @@
 import { redirect, fail } from "@sveltejs/kit";
 import { API_BASE, apiHeaders } from "$lib/server/api.js";
+import { tr } from "$lib/server/i18n.js";
 
 const COOKIE = {
 	path: "/",
@@ -50,7 +51,7 @@ export const actions = {
 		const data = await request.formData();
 		const password = data.get("deletePassword");
 		if (!password) {
-			return fail(400, { deleteError: "Bitte bestätige mit deinem Passwort." });
+			return fail(400, { deleteError: tr(locals.lang, "verr.confirmPassword") });
 		}
 		const res = await fetch(`${API_BASE}/users/me`, {
 			method: "DELETE",
@@ -59,7 +60,7 @@ export const actions = {
 		});
 		if (!res.ok) {
 			const msg = await res.text().catch(() => "");
-			return fail(400, { deleteError: msg && msg.length < 300 ? msg : "Konto konnte nicht gelöscht werden." });
+			return fail(400, { deleteError: msg && msg.length < 300 ? msg : tr(locals.lang, "verr.deleteFailed") });
 		}
 		cookies.delete("jwt_token", { path: "/" });
 		cookies.delete("user_info", { path: "/" });
@@ -88,7 +89,7 @@ export const actions = {
 		const newEmail = data.get("newEmail")?.toString().trim();
 		const currentPassword = data.get("emailPassword");
 		if (!newEmail || !newEmail.includes("@")) {
-			return fail(400, { emailError: "Bitte gib eine gültige E-Mail-Adresse ein." });
+			return fail(400, { emailError: tr(locals.lang, "verr.invalidEmail") });
 		}
 		const res = await fetch(`${API_BASE}/users/me/email`, {
 			method: "PUT",

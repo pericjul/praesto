@@ -1,6 +1,7 @@
 package ch.zhaw.praesto.service;
 
 import ch.zhaw.praesto.exception.BadRequestException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -13,11 +14,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * Mail-Spam) zu bremsen. Bewusst schlank – kein externer Speicher nötig.
  */
 @Service
+@RequiredArgsConstructor
 public class RateLimiterService {
 
     private record Window(int count, Instant start) {}
 
     private final ConcurrentHashMap<String, Window> counters = new ConcurrentHashMap<>();
+    private final LocaleMessages messages;
 
     /**
      * Registriert einen Treffer für {@code key}. Überschreitet die Anzahl innerhalb des
@@ -33,7 +36,7 @@ public class RateLimiterService {
         });
         Window w = counters.get(key);
         if (w != null && w.count() > max) {
-            throw new BadRequestException("Zu viele Versuche. Bitte versuche es in einer Weile erneut.");
+            throw new BadRequestException(messages.get("err.tooManyAttempts"));
         }
     }
 }

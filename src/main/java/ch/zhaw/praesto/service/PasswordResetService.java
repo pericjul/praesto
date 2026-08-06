@@ -38,6 +38,7 @@ public class PasswordResetService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ObjectProvider<JavaMailSender> mailSenderProvider;
+    private final LocaleMessages messages;
 
     @Value("${praesto.base-url:https://praesto.ch}")
     private String baseUrl;
@@ -84,27 +85,27 @@ public class PasswordResetService {
     /** Neues Passwort per Token setzen. */
     public void resetPassword(String token, String newPassword) {
         if (newPassword == null || newPassword.length() < 8) {
-            throw new BadRequestException("Passwort muss mindestens 8 Zeichen haben.");
+            throw new BadRequestException(messages.get("err.passwordMin8"));
         }
         if (token == null || token.isBlank()) {
-            throw new BadRequestException("Ungültiger Link.");
+            throw new BadRequestException(messages.get("err.resetLinkInvalid"));
         }
         List<Map<String, Object>> rows = jdbc.queryForList(
                 "SELECT user_id, expires_at, used FROM password_reset_token WHERE token = ?", token);
         if (rows.isEmpty()) {
-            throw new BadRequestException("Dieser Link ist ungültig.");
+            throw new BadRequestException(messages.get("err.resetLinkInvalid"));
         }
         Map<String, Object> row = rows.get(0);
         if (Boolean.TRUE.equals(row.get("used"))) {
-            throw new BadRequestException("Dieser Link wurde bereits verwendet.");
+            throw new BadRequestException(messages.get("err.resetLinkUsed"));
         }
         Timestamp expires = (Timestamp) row.get("expires_at");
         if (expires == null || expires.toInstant().isBefore(Instant.now())) {
-            throw new BadRequestException("Dieser Link ist abgelaufen. Bitte fordere einen neuen an.");
+            throw new BadRequestException(messages.get("err.resetLinkExpired"));
         }
         String userId = (String) row.get("user_id");
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException("Konto nicht gefunden."));
+                .orElseThrow(() -> new BadRequestException(messages.get("err.accountNotFound")));
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         jdbc.update("UPDATE password_reset_token SET used = true WHERE token = ?", token);
@@ -121,18 +122,18 @@ public class PasswordResetService {
                     user.getEmail(), link);
             return;
         }
-        String plain = "Hallo " + user.getFullName() + ",\n\n"
-                + "du hast angefragt, dein Praesto-Passwort zurückzusetzen. Öffne diesen Link, um ein "
-                + "neues Passwort zu setzen:\n\n" + link + "\n\n"
-                + "Der Link ist 1 Stunde gültig. Falls du das nicht warst, ignoriere diese E-Mail einfach – "
-                + "dein Passwort bleibt unverändert.\n\nFreundliche Grüsse\nDein Praesto-Team";
+        var nameVar = Map.of("NAME", user.getFullName());
+        String greeting = messages.get("mail.reset.greeting", nameVar);
+        String plain = greeting + "\n\n"
+                + messages.get("mail.reset.introPlain") + "\n\n" + link + "\n\n"
+                + messages.get("mail.reset.validity") + "\n\n" + messages.get("mail.reset.signature");
         try {
             var mime = sender.createMimeMessage();
             var helper = new org.springframework.mail.javamail.MimeMessageHelper(mime, "UTF-8");
             helper.setTo(user.getEmail());
             helper.setFrom(effectiveFrom);
-            helper.setSubject("Praesto – Passwort zurücksetzen");
-            helper.setText(plain, buildHtml(user.getFullName(), link));
+            helper.setSubject(messages.get("mail.reset.subject"));
+            helper.setText(plain, buildHtml(greeting, link));
             sender.send(mime);
             log.info("Passwort-Reset-Mail an {} versendet.", user.getEmail());
         } catch (Exception e) {
@@ -140,23 +141,25 @@ public class PasswordResetService {
         }
     }
 
-    private String buildHtml(String name, String link) {
+    private String buildHtml(String greeting, String link) {
         return """
                 <div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:480px;margin:0 auto;color:#2d2141;">
                   <div style="background:#2F124D;color:#fff;padding:20px 24px;border-radius:12px 12px 0 0;">
                     <span style="font-size:18px;font-weight:700;">Praesto</span>
                   </div>
                   <div style="background:#ffffff;border:1px solid #ece7f0;border-top:none;padding:24px;border-radius:0 0 12px 12px;">
-                    <p style="margin:0 0 12px;">Hallo %s,</p>
-                    <p style="margin:0 0 20px;line-height:1.5;color:#4b4560;">du hast angefragt, dein Passwort zurückzusetzen. Klicke auf den Button, um ein neues Passwort zu setzen:</p>
+                    <p style="margin:0 0 12px;">%s</p>
+                    <p style="margin:0 0 20px;line-height:1.5;color:#4b4560;">%s</p>
                     <p style="text-align:center;margin:0 0 20px;">
-                      <a href="%s" style="background:#2F124D;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;display:inline-block;">Passwort zurücksetzen</a>
+                      <a href="%s" style="background:#2F124D;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;display:inline-block;">%s</a>
                     </p>
-                    <p style="margin:0 0 8px;font-size:13px;color:#8b849a;line-height:1.5;">Der Link ist 1 Stunde gültig. Falls du das nicht warst, ignoriere diese E-Mail einfach – dein Passwort bleibt unverändert.</p>
-                    <p style="margin:16px 0 0;font-size:12px;color:#a49db2;word-break:break-all;">Falls der Button nicht geht: %s</p>
+                    <p style="margin:0 0 8px;font-size:13px;color:#8b849a;line-height:1.5;">%s</p>
+                    <p style="margin:16px 0 0;font-size:12px;color:#a49db2;word-break:break-all;">%s %s</p>
                   </div>
                 </div>
-                """.formatted(escape(name), link, link);
+                """.formatted(escape(greeting), escape(messages.get("mail.reset.introHtml")), link,
+                escape(messages.get("mail.reset.button")), escape(messages.get("mail.reset.validity")),
+                escape(messages.get("mail.reset.fallback")), link);
     }
 
     private String escape(String s) {

@@ -38,6 +38,7 @@ public class AuthService {
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
     private final InviteService inviteService;
+    private final LocaleMessages messages;
 
     private record Attempt(int count, Instant windowStart) {
     }
@@ -118,7 +119,7 @@ public class AuthService {
 
         String email = normalizeEmail(req.email());
         if (userRepository.existsByEmail(email)) {
-            throw new BadRequestException("Diese Email ist bereits registriert");
+            throw new BadRequestException(messages.get("err.emailExists"));
         }
 
         UserRole role = roleForInvite(invite.getType());
@@ -173,10 +174,10 @@ public class AuthService {
 
         String email = normalizeEmail(req.email());
         if (isDisposableEmail(email)) {
-            throw new BadRequestException("Bitte verwende eine echte, persönliche E-Mail-Adresse (keine Wegwerf-Adresse).");
+            throw new BadRequestException(messages.get("err.disposableEmail"));
         }
         if (userRepository.existsByEmail(email)) {
-            throw new BadRequestException("Diese Email ist bereits registriert");
+            throw new BadRequestException(messages.get("err.emailExists"));
         }
 
         Instant now = Instant.now();
@@ -234,16 +235,16 @@ public class AuthService {
 
     private void validateRegister(RegisterRequest req) {
         if (req.firstName() == null || req.firstName().isBlank()) {
-            throw new BadRequestException("Vorname ist erforderlich");
+            throw new BadRequestException(messages.get("err.firstNameRequired"));
         }
         if (req.lastName() == null || req.lastName().isBlank()) {
-            throw new BadRequestException("Nachname ist erforderlich");
+            throw new BadRequestException(messages.get("err.lastNameRequired"));
         }
         if (req.email() == null || !req.email().contains("@")) {
-            throw new BadRequestException("Ungültige Email-Adresse");
+            throw new BadRequestException(messages.get("err.invalidEmail"));
         }
         if (req.password() == null || req.password().length() < 8) {
-            throw new BadRequestException("Passwort muss mindestens 8 Zeichen haben");
+            throw new BadRequestException(messages.get("err.passwordMin8"));
         }
     }
 

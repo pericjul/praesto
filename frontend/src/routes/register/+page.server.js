@@ -1,38 +1,41 @@
 import { redirect, fail } from '@sveltejs/kit';
-import auth, { dashboardForRole } from '$lib/server/auth.service.js';
+import auth from '$lib/server/auth.service.js';
+import { tr } from '$lib/server/i18n.js';
 
 // Selbst-Registrierung eines Privat-Kontos (ohne Schule/Einladung). Startet mit
 // einer 7-tägigen Gratis-Testphase.
 export const actions = {
-	default: async ({ request, cookies }) => {
+	default: async ({ request, cookies, locals }) => {
 		const data = await request.formData();
 		const firstName = data.get('firstName');
 		const lastName = data.get('lastName');
 		const email = data.get('email');
 		const password = data.get('password');
 		const passwordConfirm = data.get('passwordConfirm');
+		const lang = locals.lang;
+		const back = { firstName, lastName, email };
 
 		if (!firstName || !lastName || !email || !password) {
-			return fail(400, { error: 'Bitte fülle alle Felder aus.', firstName, lastName, email });
+			return fail(400, { error: tr(lang, 'verr.fillAll'), ...back });
 		}
 		if (data.get('acceptTerms') !== 'on') {
-			return fail(400, { error: 'Bitte akzeptiere die Datenschutzerklärung und die AGB.', firstName, lastName, email });
+			return fail(400, { error: tr(lang, 'verr.acceptTerms'), ...back });
 		}
 		if (data.get('parentConsent') !== 'on') {
-			return fail(400, { error: 'Bitte bestätige das Einverständnis eines Elternteils (bei unter 18-Jährigen).', firstName, lastName, email });
+			return fail(400, { error: tr(lang, 'verr.parentConsent'), ...back });
 		}
 		if (password.length < 8) {
-			return fail(400, { error: 'Das Passwort muss mindestens 8 Zeichen haben.', firstName, lastName, email });
+			return fail(400, { error: tr(lang, 'verr.pwMin8'), ...back });
 		}
 		if (password !== passwordConfirm) {
-			return fail(400, { error: 'Die Passwörter stimmen nicht überein.', firstName, lastName, email });
+			return fail(400, { error: tr(lang, 'verr.pwMismatch'), ...back });
 		}
 
 		let user;
 		try {
-			user = await auth.signup({ firstName, lastName, email, password }, cookies);
+			user = await auth.signup({ firstName, lastName, email, password }, cookies, lang);
 		} catch (e) {
-			return fail(400, { error: e.message || 'Registrierung fehlgeschlagen.', firstName, lastName, email });
+			return fail(400, { error: e.message || tr(lang, 'verr.registerFailed'), ...back });
 		}
 		// Nach der Registrierung: kurze Willkommens-Umfrage.
 		throw redirect(303, '/willkommen');

@@ -1,5 +1,6 @@
 import { redirect, fail } from "@sveltejs/kit";
 import { API_BASE, apiHeaders } from "$lib/server/api.js";
+import { tr } from "$lib/server/i18n.js";
 
 export async function load({ locals }) {
 	if (!locals.isAuthenticated) {
@@ -16,7 +17,7 @@ export const actions = {
 		const d = await request.formData();
 		const beruf = d.get("beruf")?.toString().trim();
 		if (!beruf) {
-			return fail(400, { error: "Bitte gib einen Beruf ein." });
+			return fail(400, { error: tr(locals.lang, "schn.needBeruf") });
 		}
 		const payload = {
 			beruf,
