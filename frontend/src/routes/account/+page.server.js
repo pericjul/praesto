@@ -60,6 +60,28 @@ export const actions = {
 		throw redirect(303, url);
 	},
 
+	// Login-E-Mail ändern (mit aktuellem Passwort).
+	email: async ({ request, locals, fetch, cookies }) => {
+		const data = await request.formData();
+		const newEmail = data.get("newEmail")?.toString().trim();
+		const currentPassword = data.get("emailPassword");
+		if (!newEmail || !newEmail.includes("@")) {
+			return fail(400, { emailError: "Bitte gib eine gültige E-Mail-Adresse ein." });
+		}
+		const res = await fetch(`${API_BASE}/users/me/email`, {
+			method: "PUT",
+			headers: apiHeaders(locals.jwt_token),
+			body: JSON.stringify({ newEmail, currentPassword })
+		});
+		if (!res.ok) {
+			const msg = await res.text().catch(() => "");
+			return fail(400, { emailError: msg && msg.length < 300 ? msg : "E-Mail konnte nicht geändert werden." });
+		}
+		const user = await res.json();
+		cookies.set("user_info", encodeURIComponent(JSON.stringify(user)), COOKIE);
+		return { emailSuccess: true };
+	},
+
 	password: async ({ request, locals, fetch }) => {
 		const data = await request.formData();
 		const currentPassword = data.get("currentPassword");

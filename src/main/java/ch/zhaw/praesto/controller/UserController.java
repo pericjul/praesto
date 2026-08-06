@@ -80,6 +80,32 @@ public class UserController {
     }
 
     /**
+     * Eigene Login-E-Mail ändern (aktuelles Passwort wird geprüft, Eindeutigkeit sichergestellt).
+     * Das Login-Token hängt an der User-ID, daher bleibt man eingeloggt; nur die Anmeldung
+     * erfolgt danach mit der neuen E-Mail.
+     */
+    @PutMapping("/users/me/email")
+    public UserDTO changeEmail(@RequestBody EmailChangeRequest req) {
+        User user = userService.getCurrentUser();
+        String newEmail = req.newEmail() == null ? null : req.newEmail().toLowerCase().trim();
+        if (newEmail == null || !newEmail.contains("@") || newEmail.length() < 5) {
+            throw new BadRequestException("Bitte gib eine gültige E-Mail-Adresse ein.");
+        }
+        if (user.getPasswordHash() == null
+                || !passwordEncoder.matches(req.currentPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("Aktuelles Passwort ist falsch.");
+        }
+        if (newEmail.equals(user.getEmail())) {
+            return UserDTO.from(user); // keine Änderung
+        }
+        userRepository.findByEmail(newEmail).ifPresent(other -> {
+            throw new BadRequestException("Diese E-Mail-Adresse ist bereits vergeben.");
+        });
+        user.setEmail(newEmail);
+        return UserDTO.from(userRepository.save(user));
+    }
+
+    /**
      * Einzelnen User auflösen (z.B. Lehrer schaut Schüler-Session an). Nur innerhalb
      * der eigenen Schule (SUPER_ADMIN darf alle).
      */

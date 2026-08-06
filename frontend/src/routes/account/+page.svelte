@@ -114,6 +114,29 @@
             </form>
         </section>
 
+        <!-- E-Mail (Login) ändern -->
+        <section class="card">
+            <h2>📧 E-Mail-Adresse ändern</h2>
+            <p class="abo-note">Mit dieser E-Mail meldest du dich an. Zur Sicherheit bestätige dein aktuelles Passwort.</p>
+            {#if form?.emailSuccess}
+                <div class="alert success">✓ E-Mail-Adresse geändert. Beim nächsten Login gilt die neue Adresse.</div>
+            {/if}
+            {#if form?.emailError}
+                <div class="alert error">⚠️ {form.emailError}</div>
+            {/if}
+            <form method="POST" action="?/email" use:enhance={handleProfile} class="form">
+                <label>
+                    Neue E-Mail-Adresse
+                    <input name="newEmail" type="email" value={user.email ?? ""} required />
+                </label>
+                <label>
+                    Aktuelles Passwort
+                    <input name="emailPassword" type="password" placeholder="zur Bestätigung" required />
+                </label>
+                <button type="submit" class="btn-primary">E-Mail ändern</button>
+            </form>
+        </section>
+
         <!-- Passwort ändern -->
         <section class="card">
             <h2>{$t('account.changePassword')}</h2>
