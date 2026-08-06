@@ -121,6 +121,15 @@ public class LocaleMessages {
         put("err.parentEmailRequired",
                 "Bitte gib die E-Mail-Adresse eines Elternteils an.", "Please provide a parent's email address.",
                 "Merci d'indiquer l'adresse e-mail d'un parent.", "Indica l'indirizzo e-mail di un genitore.");
+        // Vorwarn-Mail vor automatischer Löschung
+        put("mail.retention.subject",
+                "Praesto – dein Konto wird bald gelöscht", "Praesto – your account will be deleted soon",
+                "Praesto – ton compte sera bientôt supprimé", "Praesto – il tuo account sarà presto eliminato");
+        put("mail.retention.body",
+                "Hallo %NAME,\n\ndeine Praesto-Testphase ist abgelaufen und dein Konto ist seit einer Weile inaktiv. In %DAYS Tagen löschen wir dein Konto und alle deine Daten automatisch.\n\nWenn du dein Konto behalten möchtest, melde dich einfach an oder löse ein Abo: %URL\n\nFalls du nichts unternimmst, ist keine weitere Aktion nötig – dein Konto wird dann gelöscht.\n\nFreundliche Grüsse\nDein Praesto-Team",
+                "Hi %NAME,\n\nyour Praesto trial has ended and your account has been inactive for a while. In %DAYS days we will automatically delete your account and all your data.\n\nIf you'd like to keep your account, simply log in or subscribe: %URL\n\nIf you do nothing, no further action is needed – your account will then be deleted.\n\nBest regards\nYour Praesto team",
+                "Bonjour %NAME,\n\nta période d'essai Praesto est terminée et ton compte est inactif depuis un moment. Dans %DAYS jours, nous supprimerons automatiquement ton compte et toutes tes données.\n\nSi tu souhaites conserver ton compte, connecte-toi simplement ou souscris un abonnement : %URL\n\nSi tu ne fais rien, aucune action n'est nécessaire – ton compte sera alors supprimé.\n\nCordialement\nTon équipe Praesto",
+                "Ciao %NAME,\n\nla tua prova Praesto è terminata e il tuo account è inattivo da un po'. Tra %DAYS giorni elimineremo automaticamente il tuo account e tutti i tuoi dati.\n\nSe vuoi mantenere il tuo account, accedi semplicemente o abbonati: %URL\n\nSe non fai nulla, non serve alcuna azione – il tuo account verrà quindi eliminato.\n\nCordiali saluti\nIl tuo team Praesto");
         put("err.parentEmailSame",
                 "Die Eltern-E-Mail muss sich von deiner eigenen unterscheiden.",
                 "The parent's email must differ from your own.",

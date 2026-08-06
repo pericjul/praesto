@@ -59,6 +59,7 @@ public class User {
     private Instant subscriptionEndsAt;   // Zugang bezahlt bis (nur INDIVIDUAL)
     private String parentEmail;           // E-Mail des Elternteils (nur INDIVIDUAL)
     private Boolean parentConsentConfirmed; // Eltern-Einverständnis bestätigt? (nur INDIVIDUAL)
+    private Instant deletionWarnedAt;     // Vorwarn-Mail vor Auto-Löschung verschickt (nur INDIVIDUAL)
 
     private Instant createdAt;
     private Instant lastLoginAt;

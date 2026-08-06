@@ -113,6 +113,18 @@ public class SuperUserService {
         purge(user);
     }
 
+    /**
+     * System-Löschung (z.B. automatische Aufbewahrungs-Regel): Person + alle Daten löschen,
+     * ohne Rechte-Check. Nicht für SUPER_ADMIN.
+     */
+    @Transactional
+    public void deleteAccountAndData(User user) {
+        if (user == null || user.getRole() == UserRole.SUPER_ADMIN) {
+            return;
+        }
+        purge(user);
+    }
+
     /** Löscht die Person und alle zugehörigen Daten endgültig (ohne Rechte-Check). */
     private void purge(User user) {
         String userId = user.getId();

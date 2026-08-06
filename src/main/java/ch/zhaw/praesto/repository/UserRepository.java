@@ -1,5 +1,6 @@
 package ch.zhaw.praesto.repository;
 
+import ch.zhaw.praesto.model.AccountType;
 import ch.zhaw.praesto.model.User;
 import ch.zhaw.praesto.model.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, String> {
     long countBySchoolIdAndRole(String schoolId, UserRole role);
 
     Optional<User> findByRole(UserRole role);
+
+    java.util.List<User> findByAccountType(AccountType accountType);
 
     /**
      * Schüler einer Schule per Freitext-Suche (Vorname / Nachname / Email).

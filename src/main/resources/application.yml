@@ -61,6 +61,12 @@ spring:
 praesto:
   # Öffentliche Basis-URL der App (für Links in E-Mails, z.B. Passwort-Reset).
   base-url: ${APP_BASE_URL:https://praesto.ch}
+  # Aufbewahrung: nicht bezahlte, inaktive Privat-Konten nach X Tagen automatisch löschen
+  # (Datenminimierung). Vorwarn-Mail warn-days vorher. Schul-Konten sind nie betroffen.
+  retention:
+    enabled: ${RETENTION_ENABLED:true}
+    individual-days: ${RETENTION_INDIVIDUAL_DAYS:180}   # ~6 Monate nach Testphasen-/Abo-Ende
+    warn-days: ${RETENTION_WARN_DAYS:14}
   # KI-Wissensbasis (RAG): Quellen werden in Häppchen zerlegt, als Vektoren (Embeddings)
   # in PostgreSQL (pgvector) gespeichert und pro Schülerfrage werden nur die relevantesten
   # Häppchen an die KI geschickt. Voraussetzung in Prod: Extension "vector" aktiviert +
