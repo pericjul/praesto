@@ -105,10 +105,16 @@ public class User {
         return subscriptionEndsAt != null && now.isBefore(subscriptionEndsAt);
     }
 
-    /** Privat-Konto, dessen Eltern-Einverständnis noch aussteht. */
+    /**
+     * Privat-Konto, dessen Eltern-Einverständnis noch aussteht. Gilt nur für Konten, die den
+     * neuen Registrierungs-Ablauf durchlaufen haben (mit hinterlegter Eltern-E-Mail). Alt-Konten
+     * ohne parentEmail sind ausgenommen (grandfathered) und werden nicht gesperrt.
+     */
     @Transient
     public boolean needsParentConsent() {
-        return accountType == AccountType.INDIVIDUAL && !Boolean.TRUE.equals(parentConsentConfirmed);
+        return accountType == AccountType.INDIVIDUAL
+                && parentEmail != null && !parentEmail.isBlank()
+                && !Boolean.TRUE.equals(parentConsentConfirmed);
     }
 
     /**
