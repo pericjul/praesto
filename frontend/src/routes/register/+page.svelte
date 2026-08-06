@@ -36,6 +36,12 @@
 				<input id="email" name="email" type="email" placeholder="deine@email.ch" value={form?.email ?? ""} required />
 			</div>
 
+			<div class="field">
+				<label for="parentEmail">{$t('reg.parentEmail')}</label>
+				<input id="parentEmail" name="parentEmail" type="email" placeholder={$t('reg.parentEmailPlaceholder')} value={form?.parentEmail ?? ""} required />
+				<span class="parent-hint">{$t('reg.parentHint')}</span>
+			</div>
+
 			<div class="row">
 				<div class="field">
 					<label for="password">{$t('reg.password')}</label>
@@ -129,6 +135,7 @@
 		line-height: 1.4;
 		cursor: pointer;
 	}
+	.parent-hint { font-size: 0.78rem; color: #8b849a; line-height: 1.45; }
 	.check input { margin-top: 0.15rem; flex-shrink: 0; }
 	.check a { color: #2F124D; }
 	.btn-primary {

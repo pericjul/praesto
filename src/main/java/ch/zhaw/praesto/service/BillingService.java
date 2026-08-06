@@ -127,6 +127,8 @@ public class BillingService {
         out.put("hasAccess", user.hasSubscriptionAccess(Instant.now()));
         boolean trialActive = individual && user.getTrialEndsAt() != null && Instant.now().isBefore(user.getTrialEndsAt());
         out.put("trialActive", trialActive);
+        out.put("parentConsentPending", user.needsParentConsent());
+        out.put("parentEmail", user.getParentEmail());
         return out;
     }
 

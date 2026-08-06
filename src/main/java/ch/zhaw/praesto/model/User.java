@@ -53,10 +53,12 @@ public class User {
     @Builder.Default
     private AccountType accountType = AccountType.SCHOOL;
 
-    private String subscriptionStatus;   // z.B. TRIAL, ACTIVE, CANCELED, EXPIRED (nur INDIVIDUAL)
+    private String subscriptionStatus;   // z.B. PENDING_CONSENT, TRIAL, ACTIVE, CANCELED, EXPIRED (nur INDIVIDUAL)
     private Instant trialEndsAt;          // Ende der Gratis-Testphase (nur INDIVIDUAL)
     private String stripeCustomerId;      // Stripe-Kunden-ID (nur INDIVIDUAL, nach erster Zahlung)
     private Instant subscriptionEndsAt;   // Zugang bezahlt bis (nur INDIVIDUAL)
+    private String parentEmail;           // E-Mail des Elternteils (nur INDIVIDUAL)
+    private Boolean parentConsentConfirmed; // Eltern-Einverständnis bestätigt? (nur INDIVIDUAL)
 
     private Instant createdAt;
     private Instant lastLoginAt;
@@ -90,12 +92,22 @@ public class User {
         if (accountType != AccountType.INDIVIDUAL) {
             return true;
         }
+        // Ohne Eltern-Einverständnis kein Zugang.
+        if (needsParentConsent()) {
+            return false;
+        }
         // Gratis-Testphase noch aktiv?
         if (trialEndsAt != null && now.isBefore(trialEndsAt)) {
             return true;
         }
         // Bezahlte Periode läuft noch? (bleibt bei Kündigung bis Periodenende bestehen)
         return subscriptionEndsAt != null && now.isBefore(subscriptionEndsAt);
+    }
+
+    /** Privat-Konto, dessen Eltern-Einverständnis noch aussteht. */
+    @Transient
+    public boolean needsParentConsent() {
+        return accountType == AccountType.INDIVIDUAL && !Boolean.TRUE.equals(parentConsentConfirmed);
     }
 
     /**

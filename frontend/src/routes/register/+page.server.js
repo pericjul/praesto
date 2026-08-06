@@ -12,11 +12,15 @@ export const actions = {
 		const email = data.get('email');
 		const password = data.get('password');
 		const passwordConfirm = data.get('passwordConfirm');
+		const parentEmail = data.get('parentEmail');
 		const lang = locals.lang;
-		const back = { firstName, lastName, email };
+		const back = { firstName, lastName, email, parentEmail };
 
 		if (!firstName || !lastName || !email || !password) {
 			return fail(400, { error: tr(lang, 'verr.fillAll'), ...back });
+		}
+		if (!parentEmail || !parentEmail.includes('@')) {
+			return fail(400, { error: tr(lang, 'verr.parentEmailRequired'), ...back });
 		}
 		if (data.get('acceptTerms') !== 'on') {
 			return fail(400, { error: tr(lang, 'verr.acceptTerms'), ...back });
@@ -31,13 +35,12 @@ export const actions = {
 			return fail(400, { error: tr(lang, 'verr.pwMismatch'), ...back });
 		}
 
-		let user;
 		try {
-			user = await auth.signup({ firstName, lastName, email, password }, cookies, lang);
+			await auth.signup({ firstName, lastName, email, password, parentEmail }, cookies, lang);
 		} catch (e) {
 			return fail(400, { error: e.message || tr(lang, 'verr.registerFailed'), ...back });
 		}
-		// Nach der Registrierung: kurze Willkommens-Umfrage.
-		throw redirect(303, '/willkommen');
+		// Zugang erst nach Eltern-Bestätigung -> Warte-Seite.
+		throw redirect(303, '/eltern-warten');
 	}
 };

@@ -39,6 +39,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final InviteService inviteService;
     private final LocaleMessages messages;
+    private final ParentConsentService parentConsentService;
 
     private record Attempt(int count, Instant windowStart) {
     }
@@ -179,8 +180,16 @@ public class AuthService {
         if (userRepository.existsByEmail(email)) {
             throw new BadRequestException(messages.get("err.emailExists"));
         }
+        String parentEmail = normalizeEmail(req.parentEmail());
+        if (parentEmail == null || !parentEmail.contains("@")) {
+            throw new BadRequestException(messages.get("err.parentEmailRequired"));
+        }
+        if (parentEmail.equals(email)) {
+            throw new BadRequestException(messages.get("err.parentEmailSame"));
+        }
 
         Instant now = Instant.now();
+        // Zugang erst nach Eltern-Bestätigung: noch keine Testphase, Status PENDING_CONSENT.
         User user = User.builder()
                 .email(email)
                 .passwordHash(passwordEncoder.encode(req.password()))
@@ -190,13 +199,15 @@ public class AuthService {
                 .accountType(AccountType.INDIVIDUAL)
                 .schoolId(java.util.UUID.randomUUID().toString())  // eigener Mandant, kein Schul-Eintrag
                 .isActive(true)
-                .subscriptionStatus("TRIAL")
-                .trialEndsAt(now.plus(Duration.ofDays(TRIAL_DAYS)))
+                .subscriptionStatus("PENDING_CONSENT")
+                .parentEmail(parentEmail)
+                .parentConsentConfirmed(false)
                 .createdAt(now)
                 .build();
 
         User saved = userRepository.save(user);
-        log.info("Neues Privat-Konto registriert: {} (Testphase bis {})", saved.getEmail(), saved.getTrialEndsAt());
+        parentConsentService.createAndSend(saved, parentEmail);
+        log.info("Neues Privat-Konto registriert: {} (Eltern-Bestätigung ausstehend)", saved.getEmail());
         return saved;
     }
 

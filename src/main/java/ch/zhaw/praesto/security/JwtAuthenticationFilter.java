@@ -101,10 +101,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // Billing-Endpunkte müssen auch ohne aktives Abo erreichbar sein (damit man bezahlen kann).
+    // Billing- und Consent-Endpunkte müssen auch ohne aktiven Zugang erreichbar sein
+    // (damit man bezahlen bzw. die Eltern-Bestätigung erneut anfordern kann).
     private boolean isBillingPath(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path != null && path.startsWith("/api/billing");
+        return path != null && (path.startsWith("/api/billing") || path.startsWith("/api/consent"));
     }
 
     private boolean isMutating(HttpServletRequest request) {

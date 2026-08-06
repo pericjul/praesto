@@ -92,6 +92,40 @@ public class LocaleMessages {
         put("mail.reset.signature",
                 "Freundliche Grüsse\nDein Praesto-Team", "Best regards\nYour Praesto team",
                 "Cordialement\nTon équipe Praesto", "Cordiali saluti\nIl tuo team Praesto");
+
+        // Eltern-Einverständnis-Mail
+        put("mail.consent.subject",
+                "Praesto – Einverständnis für Ihr Kind", "Praesto – consent for your child",
+                "Praesto – consentement pour votre enfant", "Praesto – consenso per suo figlio");
+        put("mail.consent.greeting", "Guten Tag,", "Hello,", "Bonjour,", "Buongiorno,");
+        put("mail.consent.intro",
+                "%NAME möchte Praesto nutzen – eine Schweizer Plattform, auf der Jugendliche mit einem KI-Coach Bewerbungsgespräche üben und Bewerbungsunterlagen erstellen. Für die Nutzung durch Minderjährige benötigen wir das Einverständnis eines Elternteils bzw. der erziehungsberechtigten Person.",
+                "%NAME would like to use Praesto – a Swiss platform where young people practise job interviews with an AI coach and create application documents. For use by minors, we need the consent of a parent or legal guardian.",
+                "%NAME souhaite utiliser Praesto – une plateforme suisse où les jeunes s'entraînent aux entretiens d'embauche avec un coach IA et créent des dossiers de candidature. Pour une utilisation par des mineurs, nous avons besoin du consentement d'un parent ou du représentant légal.",
+                "%NAME vorrebbe usare Praesto – una piattaforma svizzera dove i giovani si allenano ai colloqui di lavoro con un coach IA e creano documenti di candidatura. Per l'uso da parte di minori serve il consenso di un genitore o del tutore legale.");
+        put("mail.consent.action",
+                "Bitte bestätigen Sie das Einverständnis hier:", "Please confirm your consent here:",
+                "Merci de confirmer votre consentement ici :", "Confermi il consenso qui:");
+        put("mail.consent.button",
+                "Einverständnis bestätigen", "Confirm consent", "Confirmer le consentement", "Conferma il consenso");
+        put("mail.consent.note",
+                "Ohne Bestätigung wird kein Zugang freigeschaltet. Falls Sie diese E-Mail irrtümlich erhalten haben, ignorieren Sie sie einfach.",
+                "Without confirmation, no access is granted. If you received this email by mistake, simply ignore it.",
+                "Sans confirmation, aucun accès n'est accordé. Si vous avez reçu cet e-mail par erreur, ignorez-le simplement.",
+                "Senza conferma non viene attivato alcun accesso. Se ha ricevuto questa e-mail per errore, la ignori.");
+        put("err.consentLinkInvalid",
+                "Dieser Bestätigungslink ist ungültig oder wurde bereits verwendet.",
+                "This confirmation link is invalid or has already been used.",
+                "Ce lien de confirmation n'est pas valide ou a déjà été utilisé.",
+                "Questo link di conferma non è valido o è già stato usato.");
+        put("err.parentEmailRequired",
+                "Bitte gib die E-Mail-Adresse eines Elternteils an.", "Please provide a parent's email address.",
+                "Merci d'indiquer l'adresse e-mail d'un parent.", "Indica l'indirizzo e-mail di un genitore.");
+        put("err.parentEmailSame",
+                "Die Eltern-E-Mail muss sich von deiner eigenen unterscheiden.",
+                "The parent's email must differ from your own.",
+                "L'e-mail du parent doit être différent du tien.",
+                "L'e-mail del genitore deve essere diverso dal tuo.");
     }
 
     private void put(String key, String de, String en, String fr, String it) {
