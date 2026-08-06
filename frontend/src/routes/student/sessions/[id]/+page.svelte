@@ -221,9 +221,6 @@
             </div>
         {/if}
 
-        <!-- Datenschutz-Hinweis: keine sensiblen Daten nötig, Fragen dürfen abgelehnt werden -->
-        <div class="privacy-note"><span class="privacy-ico">🔒</span><span>{$t('common.aiChatNotice')}</span></div>
-
         {#if form?.error}
             <div class="alert alert-danger">
                 {form.error}
@@ -263,6 +260,7 @@
         <!-- Input Area -->
         {#if isOpen && !isSubmittedAsAssignment}
             <div class="chat-input-area">
+                <p class="input-hint">🔒 {$t('common.aiChatNotice')}</p>
                 <form
                     method="POST"
                     action="?/send"
@@ -667,6 +665,14 @@
         border-top: 1px solid #E6D9CC;
         border-radius: 0 0 1rem 1rem;
         flex-shrink: 0;
+    }
+
+    .input-hint {
+        margin: 0 0 0.5rem;
+        font-size: 0.72rem;
+        line-height: 1.4;
+        color: #9a93a8;
+        text-align: center;
     }
 
     .input-form {

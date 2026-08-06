@@ -298,6 +298,11 @@
     .onboard-text span { color: #5b6b68; font-size: 0.88rem; line-height: 1.5; }
     .onboard-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
     .onboard-actions .btn { text-decoration: none; }
+    /* Buttons auf der hellen Einstiegs-Karte sichtbar machen (Hero-Ghost ist weiss). */
+    .onboard-actions .btn-primary { background: #0d9488; color: #fff; box-shadow: none; }
+    .onboard-actions .btn-primary:hover { background: #0f766e; }
+    .onboard-actions .btn-ghost { background: #fff; border: 1px solid #99f6e4; color: #0f766e; }
+    .onboard-actions .btn-ghost:hover { background: #f0fdfa; }
 
     .hero-left { flex: 1; min-width: 280px; }
 
