@@ -25,6 +25,12 @@ public class SuperUserController {
         return superUserService.search(q);
     }
 
+    // Kennzahlen zu Privat-/B2C-Konten (Registrierung -> Bezahlung).
+    @GetMapping("/b2c-stats")
+    public Map<String, Object> b2cStats() {
+        return superUserService.individualStats();
+    }
+
     @GetMapping("/{id}/export")
     public Map<String, Object> export(@PathVariable String id) {
         return superUserService.exportUserData(id);

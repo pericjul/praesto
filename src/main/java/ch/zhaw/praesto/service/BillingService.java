@@ -125,8 +125,12 @@ public class BillingService {
         out.put("trialEndsAt", user.getTrialEndsAt() != null ? user.getTrialEndsAt().toString() : null);
         out.put("subscriptionEndsAt", user.getSubscriptionEndsAt() != null ? user.getSubscriptionEndsAt().toString() : null);
         out.put("hasAccess", user.hasSubscriptionAccess(Instant.now()));
-        boolean trialActive = individual && user.getTrialEndsAt() != null && Instant.now().isBefore(user.getTrialEndsAt());
+        Instant now = Instant.now();
+        boolean paid = individual && user.getSubscriptionEndsAt() != null && now.isBefore(user.getSubscriptionEndsAt());
+        // Wer bezahlt hat, ist NICHT (mehr) in der Testphase – bezahlt schlägt Testphase.
+        boolean trialActive = individual && !paid && user.getTrialEndsAt() != null && now.isBefore(user.getTrialEndsAt());
         out.put("trialActive", trialActive);
+        out.put("paying", paid);
         out.put("parentConsentPending", user.needsParentConsent());
         out.put("parentEmail", user.getParentEmail());
         return out;

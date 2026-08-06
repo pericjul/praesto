@@ -163,7 +163,7 @@
     <div class="app-header-right">
       <select class="lang-select" value={lang} onchange={changeLang} title="Sprache / Language" aria-label="Language">
         {#each LANGUAGES as l}
-          <option value={l.code}>{l.flag} {l.code.toUpperCase()}</option>
+          <option value={l.code}>{l.label}</option>
         {/each}
       </select>
       {#if isAuthenticated}

@@ -173,6 +173,43 @@ public class SuperUserService {
 
     // ============================================================
 
+    /** Kennzahlen zu Privat-/B2C-Konten (Registrierung -> Bezahlung). Nur Super-Admin. */
+    public java.util.Map<String, Object> individualStats() {
+        requireSuper();
+        java.util.List<User> users = userRepository.findByAccountType(ch.zhaw.praesto.model.AccountType.INDIVIDUAL);
+        java.time.Instant now = java.time.Instant.now();
+        long total = users.size();
+        long pending = 0;
+        long trial = 0;
+        long paying = 0;
+        long expired = 0;
+        for (User u : users) {
+            if (u.needsParentConsent()) {
+                pending++;
+                continue;
+            }
+            boolean paid = u.getSubscriptionEndsAt() != null && now.isBefore(u.getSubscriptionEndsAt());
+            boolean trialActive = u.getTrialEndsAt() != null && now.isBefore(u.getTrialEndsAt());
+            if (paid) {
+                paying++;
+            } else if (trialActive) {
+                trial++;
+            } else {
+                expired++;
+            }
+        }
+        long confirmed = total - pending;   // Konten mit freigeschaltetem Zugang
+        double conversion = confirmed > 0 ? Math.round(paying * 1000.0 / confirmed) / 10.0 : 0.0;
+        java.util.Map<String, Object> m = new java.util.HashMap<>();
+        m.put("total", total);
+        m.put("pendingConsent", pending);
+        m.put("trial", trial);
+        m.put("paying", paying);
+        m.put("expired", expired);
+        m.put("conversionRate", conversion);   // % zahlend von den freigeschalteten Konten
+        return m;
+    }
+
     private boolean matches(User u, String query) {
         String full = ((u.getFirstName() == null ? "" : u.getFirstName()) + " "
                 + (u.getLastName() == null ? "" : u.getLastName())).toLowerCase();

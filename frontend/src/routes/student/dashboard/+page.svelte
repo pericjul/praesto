@@ -22,6 +22,16 @@
     // Privat-Konto (ohne Schule/Klasse): keine klassenbezogenen Inhalte.
     let isIndividual = $derived(data?.user?.accountType === "INDIVIDUAL");
 
+    // Einstiegs-Karte lässt sich ausblenden (bleibt danach weg).
+    let onboardDismissed = $state(false);
+    $effect(() => {
+        try { onboardDismissed = localStorage.getItem("praesto_onboard_dismissed") === "1"; } catch { /* ignore */ }
+    });
+    function dismissOnboard() {
+        onboardDismissed = true;
+        try { localStorage.setItem("praesto_onboard_dismissed", "1"); } catch { /* ignore */ }
+    }
+
     let factOfDay = $derived(isIndividual ? null : buildFactOfDay(classFacts));
 
     function buildFactOfDay(f) {
@@ -146,8 +156,9 @@
         </div>
     </section>
 
-    {#if isIndividual}
+    {#if isIndividual && !onboardDismissed}
         <section class="onboard-cta">
+            <button type="button" class="onboard-close" onclick={dismissOnboard} aria-label="Ausblenden">✕</button>
             <div class="onboard-text">
                 <strong>{$t('dbo.title')}</strong>
                 <span>{$t('dbo.text')}</span>
@@ -289,10 +300,17 @@
         flex-wrap: wrap;
     }
     .onboard-cta {
+        position: relative;
         display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; flex-wrap: wrap;
         background: linear-gradient(135deg, #f0fdfa 0%, #faf8fd 100%);
         border: 1px solid #cdeee6; border-radius: 1rem; padding: 1.1rem 1.4rem; margin-bottom: 1.5rem;
     }
+    .onboard-close {
+        position: absolute; top: 0.5rem; right: 0.6rem;
+        background: none; border: none; color: #8ba7a0; font-size: 0.95rem; cursor: pointer; line-height: 1;
+        padding: 0.2rem 0.35rem; border-radius: 0.4rem;
+    }
+    .onboard-close:hover { background: rgba(0,0,0,0.05); color: #4b6b64; }
     .onboard-text { display: flex; flex-direction: column; gap: 0.25rem; min-width: 240px; flex: 1; }
     .onboard-text strong { color: #0f766e; font-size: 1rem; }
     .onboard-text span { color: #5b6b68; font-size: 0.88rem; line-height: 1.5; }

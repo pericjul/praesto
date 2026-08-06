@@ -17,6 +17,7 @@
     let stats = $derived(data.stats ?? null);
     let totalUsers = $derived(stats?.totalUsers ?? (data.schools ?? []).reduce((s, x) => s + (x.userCount ?? 0), 0));
     let activeSchools = $derived(stats?.activeSchools ?? (data.schools ?? []).filter((s) => s.active).length);
+    let b2c = $derived(data.b2c ?? null);
 
     function daysSince(ts) {
         if (!ts) return null;
@@ -107,6 +108,19 @@
                 <div class="total"><span class="t-num">{stats.totalSubmissions}</span><span class="t-lbl">{$t('sadmin.totalSubmissions')}</span></div>
             {/if}
         </section>
+
+        {#if b2c && b2c.total > 0}
+            <section class="b2c">
+                <h2>👤 Privat-Konten <span class="b2c-conv">{b2c.conversionRate}% zahlend</span></h2>
+                <div class="b2c-grid">
+                    <div class="b2c-item"><span class="b-num">{b2c.total}</span><span class="b-lbl">Registriert</span></div>
+                    <div class="b2c-item"><span class="b-num paying">{b2c.paying}</span><span class="b-lbl">Zahlend</span></div>
+                    <div class="b2c-item"><span class="b-num trial">{b2c.trial}</span><span class="b-lbl">Testphase</span></div>
+                    <div class="b2c-item"><span class="b-num pending">{b2c.pendingConsent}</span><span class="b-lbl">Eltern-Bestätigung offen</span></div>
+                    <div class="b2c-item"><span class="b-num expired">{b2c.expired}</span><span class="b-lbl">Abgelaufen</span></div>
+                </div>
+            </section>
+        {/if}
 
         {#if quietCount > 0}
             <button type="button" class="quiet-banner" class:on={onlyInactive} onclick={() => (onlyInactive = !onlyInactive)}>
@@ -213,6 +227,18 @@
     .page { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
     .page-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
     h1 { margin: 0; color: #2F124D; font-size: 1.6rem; }
+
+    .b2c { background: #fff; border: 1px solid #e8e0f0; border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+    .b2c h2 { font-size: 1rem; margin: 0 0 0.85rem; color: #2d2141; display: flex; align-items: center; gap: 0.6rem; }
+    .b2c-conv { font-size: 0.78rem; font-weight: 600; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; border-radius: 999px; padding: 0.1rem 0.6rem; }
+    .b2c-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.75rem; }
+    .b2c-item { text-align: center; }
+    .b-num { display: block; font-size: 1.5rem; font-weight: 700; color: #2d2141; }
+    .b-num.paying { color: #16a34a; }
+    .b-num.trial { color: #0d9488; }
+    .b-num.pending { color: #b45309; }
+    .b-num.expired { color: #9a8b9d; }
+    .b-lbl { display: block; font-size: 0.72rem; color: #6b647a; margin-top: 0.15rem; }
 
     .totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
     .total { background: #fff; border: 1px solid #e8e0f0; border-radius: 1rem; padding: 1.1rem; text-align: center; }

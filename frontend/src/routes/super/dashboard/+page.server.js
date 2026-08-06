@@ -11,8 +11,18 @@ export async function load({ locals, fetch, url }) {
 
 	const res = await fetch(`${API_BASE}/super/stats`, { headers: apiHeaders(locals.jwt_token) });
 	const stats = res.ok ? await res.json() : null;
+
+	let b2c = null;
+	try {
+		const r2 = await fetch(`${API_BASE}/super/users/b2c-stats`, { headers: apiHeaders(locals.jwt_token) });
+		if (r2.ok) b2c = await r2.json();
+	} catch {
+		b2c = null;
+	}
+
 	return {
 		stats,
+		b2c,
 		schools: stats?.schools ?? [],
 		origin: url.origin
 	};
