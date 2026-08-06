@@ -138,7 +138,8 @@ public class PasswordResetService {
                 + messages.get("mail.reset.validity") + "\n\n" + messages.get("mail.reset.signature");
         try {
             var mime = sender.createMimeMessage();
-            var helper = new org.springframework.mail.javamail.MimeMessageHelper(mime, "UTF-8");
+            // multipart=true nötig, weil wir Text + HTML (setText(plain, html)) senden.
+            var helper = new org.springframework.mail.javamail.MimeMessageHelper(mime, true, "UTF-8");
             helper.setTo(user.getEmail());
             helper.setFrom(effectiveFrom);
             helper.setSubject(messages.get("mail.reset.subject"));

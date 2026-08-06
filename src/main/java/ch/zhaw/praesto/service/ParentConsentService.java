@@ -145,7 +145,8 @@ public class ParentConsentService {
                 + messages.get("mail.consent.note") + "\n\n" + messages.get("mail.reset.signature");
         try {
             var mime = sender.createMimeMessage();
-            var helper = new MimeMessageHelper(mime, "UTF-8");
+            // multipart=true nötig, weil wir Text + HTML (setText(plain, html)) senden.
+            var helper = new MimeMessageHelper(mime, true, "UTF-8");
             helper.setTo(parentEmail);
             helper.setFrom(effectiveFrom);
             helper.setSubject(messages.get("mail.consent.subject"));

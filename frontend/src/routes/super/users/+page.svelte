@@ -292,7 +292,8 @@
     .admin-toggle:hover { background: #ebe0f7; }
     .admin-form { display: flex; flex-direction: column; gap: 0.6rem; max-width: 420px; background: #fff; border: 1px solid #e8e0f0; border-radius: 0.8rem; padding: 1rem; }
     .admin-row { display: flex; gap: 0.6rem; }
-    .admin-form input { flex: 1; padding: 0.55rem 0.7rem; border: 1px solid #d8d2e0; border-radius: 0.5rem; font: inherit; }
+    .admin-form input { width: 100%; box-sizing: border-box; padding: 0.55rem 0.7rem; border: 1px solid #d8d2e0; border-radius: 0.5rem; font: inherit; }
+    .admin-row input { flex: 1; min-width: 0; }
     .admin-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
     .admin-form .btn-primary { background: #2F124D; color: #fff; border: none; border-radius: 0.5rem; padding: 0.55rem 1.1rem; font: inherit; font-weight: 600; cursor: pointer; }
     .admin-form .btn-ghost { background: #f3f0f8; color: #4b4560; border: 1px solid #e0d8ec; border-radius: 0.5rem; padding: 0.55rem 1rem; font: inherit; cursor: pointer; }
