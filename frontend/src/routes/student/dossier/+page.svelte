@@ -92,8 +92,8 @@
         </a>
         <a href="/student/dossier/schnuppern" class="create-btn">
             <span class="ci">🔍</span>
-            <span class="ct">Schnupperlehre anfragen</span>
-            <span class="cq">E-Mail & Telefon-Spickzettel</span>
+            <span class="ct">{$t('dcard.schnupperTitle')}</span>
+            <span class="cq">{$t('dcard.schnupperSub')}</span>
         </a>
     </section>
 

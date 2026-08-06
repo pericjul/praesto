@@ -29,6 +29,7 @@ import { badgeNames } from "./messages/badgeNames.js";
 import { agb } from "./messages/agb.js";
 import { superUsers } from "./messages/superUsers.js";
 import { superKnowledge } from "./messages/superKnowledge.js";
+import { b2c } from "./messages/b2c.js";
 import { help } from "./messages/help.js";
 
 export const LANGUAGES = [
@@ -830,5 +831,6 @@ export const translations = deepMerge([
 	badgeNames,
 	agb,
 	superUsers,
-	superKnowledge
+	superKnowledge,
+	b2c
 ]);

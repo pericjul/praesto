@@ -1,5 +1,6 @@
 <script>
 	import logo from "$lib/assets/praesto-logo.png";
+	import { t } from "$lib/i18n";
 	let { form } = $props();
 </script>
 
@@ -8,23 +9,23 @@
 <div class="pw-page">
 	<div class="pw-card">
 		<img src={logo} alt="Praesto" class="logo" />
-		<h1>Passwort vergessen?</h1>
+		<h1>{$t('pwf.title')}</h1>
 
 		{#if form?.sent}
-			<div class="ok">✓ Falls ein Konto mit dieser E-Mail existiert, haben wir dir einen Link zum Zurücksetzen geschickt. Schau in dein Postfach (auch im Spam-Ordner).</div>
-			<a href="/login" class="btn">Zurück zum Login</a>
+			<div class="ok">{$t('pwf.sent')}</div>
+			<a href="/login" class="btn">{$t('pwf.back')}</a>
 		{:else}
-			<p class="sub">Gib deine E-Mail-Adresse ein. Wir schicken dir einen Link, mit dem du ein neues Passwort setzen kannst.</p>
+			<p class="sub">{$t('pwf.sub')}</p>
 			{#if form?.error}
 				<div class="alert">⚠️ {form.error}</div>
 			{/if}
 			<form method="POST" class="form">
-				<label>E-Mail
+				<label>{$t('pwf.email')}
 					<input name="email" type="email" placeholder="deine@email.ch" required />
 				</label>
-				<button type="submit" class="btn">Link senden</button>
+				<button type="submit" class="btn">{$t('pwf.send')}</button>
 			</form>
-			<p class="foot"><a href="/login">Zurück zum Login</a></p>
+			<p class="foot"><a href="/login">{$t('pwf.back')}</a></p>
 		{/if}
 	</div>
 </div>

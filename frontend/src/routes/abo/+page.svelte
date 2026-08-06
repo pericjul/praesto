@@ -1,5 +1,6 @@
 <script>
 	import logo from "$lib/assets/praesto-logo.png";
+	import { t } from "$lib/i18n";
 	let { data, form } = $props();
 
 	let status = $derived(data?.status ?? {});
@@ -18,14 +19,14 @@
 <div class="abo-page">
 	<div class="abo-inner">
 		<img src={logo} alt="Praesto" class="logo" />
-		<h1>Praesto weiter nutzen</h1>
+		<h1>{$t('abo.title')}</h1>
 
 		{#if trialActive}
-			<p class="lead">Deine Gratis-Testphase läuft noch bis <strong>{fmt(status.trialEndsAt)}</strong>. Sichere dir den vollen Zugang:</p>
+			<p class="lead">{$t('abo.trialLead').replace('%DATE', fmt(status.trialEndsAt))}</p>
 		{:else if hasSub}
-			<p class="lead">Dein Zugang ist aktiv bis <strong>{fmt(status.subscriptionEndsAt)}</strong>.</p>
+			<p class="lead">{$t('abo.activeLead').replace('%DATE', fmt(status.subscriptionEndsAt))}</p>
 		{:else}
-			<p class="lead">Deine Testphase ist abgelaufen. Wähle, wie du Praesto weiter nutzen möchtest:</p>
+			<p class="lead">{$t('abo.expiredLead')}</p>
 		{/if}
 
 		{#if form?.error}
@@ -35,35 +36,35 @@
 		<div class="plans">
 			<form method="POST" action="?/checkout" class="plan">
 				<input type="hidden" name="plan" value="monthly" />
-				<div class="plan-name">Monatlich</div>
-				<div class="plan-price">CHF 4.90<span>/Monat</span></div>
-				<div class="plan-note">Jederzeit kündbar</div>
-				<button type="submit" class="btn">Monatsabo wählen</button>
+				<div class="plan-name">{$t('abo.monthly')}</div>
+				<div class="plan-price">CHF 4.90<span>{$t('abo.perMonth')}</span></div>
+				<div class="plan-note">{$t('abo.monthlyNote')}</div>
+				<button type="submit" class="btn">{$t('abo.chooseMonthly')}</button>
 			</form>
 
 			<form method="POST" action="?/checkout" class="plan featured">
 				<input type="hidden" name="plan" value="yearly" />
-				<div class="badge">Günstiger</div>
-				<div class="plan-name">Jährlich</div>
-				<div class="plan-price">CHF 49<span>/Jahr</span></div>
-				<div class="plan-note">Spart über 40% gegenüber monatlich</div>
-				<button type="submit" class="btn btn-primary">Jahresabo wählen</button>
+				<div class="badge">{$t('abo.cheaper')}</div>
+				<div class="plan-name">{$t('abo.yearly')}</div>
+				<div class="plan-price">CHF 49<span>{$t('abo.perYear')}</span></div>
+				<div class="plan-note">{$t('abo.yearlyNote')}</div>
+				<button type="submit" class="btn btn-primary">{$t('abo.chooseYearly')}</button>
 			</form>
 		</div>
 
 		<div class="school-box">
-			<strong>🏫 Deine Schule zahlt vielleicht mit!</strong>
-			<p>Sag deiner Lehrperson oder Schule von Praesto – oft übernimmt die Schule die Kosten für die ganze Klasse. Die Schule darf sich einfach bei uns melden:</p>
+			<strong>{$t('abo.schoolTitle')}</strong>
+			<p>{$t('abo.schoolText')}</p>
 			<a href="mailto:info@praesto.ch?subject=Praesto%20f%C3%BCr%20unsere%20Schule">info@praesto.ch</a>
 		</div>
 
 		{#if hasSub}
 			<form method="POST" action="?/portal" class="portal">
-				<button type="submit" class="link-btn">Abo verwalten / kündigen</button>
+				<button type="submit" class="link-btn">{$t('abo.manage')}</button>
 			</form>
 		{/if}
 
-		<p class="foot"><a href="/login">Zurück zum Login</a></p>
+		<p class="foot"><a href="/login">{$t('abo.backLogin')}</a></p>
 	</div>
 </div>
 

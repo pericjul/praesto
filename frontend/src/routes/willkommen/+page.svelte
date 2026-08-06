@@ -1,8 +1,27 @@
 <script>
 	import logo from "$lib/assets/praesto-logo.png";
+	import { t } from "$lib/i18n";
 	let { data } = $props();
 	let role = $derived(data?.role ?? "STUDENT");
 	let name = $derived(data?.firstName ?? "");
+
+	// Werte (v) bleiben stabil (sprachunabhängig gespeichert), Labels (k) werden übersetzt.
+	const interests = [
+		{ v: "Technik/Handwerk", k: "wk.i1" }, { v: "Gesundheit/Soziales", k: "wk.i2" },
+		{ v: "Büro/KV", k: "wk.i3" }, { v: "Verkauf", k: "wk.i4" },
+		{ v: "Gestaltung/Kreativ", k: "wk.i5" }, { v: "Natur/Tiere", k: "wk.i6" },
+		{ v: "IT/Computer", k: "wk.i7" }, { v: "Gastronomie", k: "wk.i8" }, { v: "Noch unklar", k: "wk.i9" }
+	];
+	const teacherGoals = [
+		{ v: "Bewerbungstraining", k: "wk.tg1" }, { v: "Aufgaben stellen", k: "wk.tg2" },
+		{ v: "Fortschritt verfolgen", k: "wk.tg3" }, { v: "Bewerbungsunterlagen", k: "wk.tg4" },
+		{ v: "Berufswahl begleiten", k: "wk.tg5" }
+	];
+	const adminGoals = [
+		{ v: "Berufswahl stärken", k: "wk.ag1" }, { v: "Bewerbungskompetenz", k: "wk.ag2" },
+		{ v: "Lehrpersonen entlasten", k: "wk.ag3" }, { v: "Digitalisierung", k: "wk.ag4" },
+		{ v: "Chancengleichheit", k: "wk.ag5" }
+	];
 </script>
 
 <svelte:head><title>Willkommen – Praesto</title></svelte:head>
@@ -10,85 +29,85 @@
 <div class="wk-page">
 	<div class="wk-card">
 		<img src={logo} alt="Praesto" class="logo" />
-		<h1>Willkommen{name ? `, ${name}` : ""}! 👋</h1>
-		<p class="lead">Beantworte kurz ein paar Fragen – so können wir Praesto besser auf dich abstimmen. Dauert nur eine Minute.</p>
+		<h1>{$t('wk.welcome')}{name ? `, ${name}` : ""}! 👋</h1>
+		<p class="lead">{$t('wk.lead')}</p>
 
 		<form method="POST" class="wk-form">
 			{#if role === "STUDENT"}
 				<fieldset>
-					<legend>Wo stehst du gerade?</legend>
-					<label class="opt"><input type="radio" name="situation" value="weiss-nicht" required /> <span>Ich weiss noch nicht, welcher Beruf zu mir passt</span></label>
-					<label class="opt"><input type="radio" name="situation" value="schnuppern" /> <span>Ich suche eine Schnupperlehre</span></label>
-					<label class="opt"><input type="radio" name="situation" value="bewerben" /> <span>Ich bewerbe mich gerade</span></label>
-					<label class="opt"><input type="radio" name="situation" value="lehrstelle" /> <span>Ich habe schon eine Lehrstelle 🎉</span></label>
+					<legend>{$t('wk.sWhere')}</legend>
+					<label class="opt"><input type="radio" name="situation" value="weiss-nicht" required /> <span>{$t('wk.sWhere1')}</span></label>
+					<label class="opt"><input type="radio" name="situation" value="schnuppern" /> <span>{$t('wk.sWhere2')}</span></label>
+					<label class="opt"><input type="radio" name="situation" value="bewerben" /> <span>{$t('wk.sWhere3')}</span></label>
+					<label class="opt"><input type="radio" name="situation" value="lehrstelle" /> <span>{$t('wk.sWhere4')}</span></label>
 				</fieldset>
 
 				<fieldset>
-					<legend>Welche Bereiche interessieren dich? <span class="opt-hint">(Mehrfachauswahl, optional)</span></legend>
+					<legend>{$t('wk.sInterests')} <span class="opt-hint">{$t('wk.multiOptional')}</span></legend>
 					<div class="chips">
-						{#each ["Technik/Handwerk","Gesundheit/Soziales","Büro/KV","Verkauf","Gestaltung/Kreativ","Natur/Tiere","IT/Computer","Gastronomie","Noch unklar"] as area}
-							<label class="chip"><input type="checkbox" name="interessen" value={area} /> <span>{area}</span></label>
+						{#each interests as o}
+							<label class="chip"><input type="checkbox" name="interessen" value={o.v} /> <span>{$t(o.k)}</span></label>
 						{/each}
 					</div>
 				</fieldset>
 
 				<fieldset>
-					<legend>Hast du schon geschnuppert?</legend>
-					<label class="opt"><input type="radio" name="geschnuppert" value="ja" /> <span>Ja</span></label>
-					<label class="opt"><input type="radio" name="geschnuppert" value="dabei" /> <span>Bin gerade dabei</span></label>
-					<label class="opt"><input type="radio" name="geschnuppert" value="nein" /> <span>Noch nicht</span></label>
+					<legend>{$t('wk.sTried')}</legend>
+					<label class="opt"><input type="radio" name="geschnuppert" value="ja" /> <span>{$t('wk.tried1')}</span></label>
+					<label class="opt"><input type="radio" name="geschnuppert" value="dabei" /> <span>{$t('wk.tried2')}</span></label>
+					<label class="opt"><input type="radio" name="geschnuppert" value="nein" /> <span>{$t('wk.tried3')}</span></label>
 				</fieldset>
 
 			{:else if role === "TEACHER"}
 				<fieldset>
-					<legend>Welche Stufe / Klasse unterrichtest du?</legend>
-					<input type="text" name="stufe" placeholder="z.B. Sek B, 3a" />
+					<legend>{$t('wk.tLevel')}</legend>
+					<input type="text" name="stufe" placeholder={$t('wk.tLevelPlaceholder')} />
 				</fieldset>
 				<fieldset>
-					<legend>Was möchtest du mit Praesto vor allem tun? <span class="opt-hint">(Mehrfachauswahl)</span></legend>
+					<legend>{$t('wk.tGoals')} <span class="opt-hint">{$t('wk.multi')}</span></legend>
 					<div class="chips">
-						{#each ["Bewerbungstraining","Aufgaben stellen","Fortschritt verfolgen","Bewerbungsunterlagen","Berufswahl begleiten"] as g}
-							<label class="chip"><input type="checkbox" name="ziele" value={g} /> <span>{g}</span></label>
+						{#each teacherGoals as o}
+							<label class="chip"><input type="checkbox" name="ziele" value={o.v} /> <span>{$t(o.k)}</span></label>
 						{/each}
 					</div>
 				</fieldset>
 				<fieldset>
-					<legend>Wie viele Schüler:innen ungefähr?</legend>
+					<legend>{$t('wk.tCount')}</legend>
 					<select name="anzahl">
-						<option value="">Bitte wählen</option>
-						<option>1 Klasse (bis ~25)</option>
-						<option>2–3 Klassen</option>
-						<option>4+ Klassen</option>
+						<option value="">{$t('wk.choose')}</option>
+						<option>{$t('wk.tCount1')}</option>
+						<option>{$t('wk.tCount2')}</option>
+						<option>{$t('wk.tCount3')}</option>
 					</select>
 				</fieldset>
 
 			{:else}
 				<fieldset>
-					<legend>Was ist euer Ziel mit Praesto? <span class="opt-hint">(Mehrfachauswahl)</span></legend>
+					<legend>{$t('wk.aGoals')} <span class="opt-hint">{$t('wk.multi')}</span></legend>
 					<div class="chips">
-						{#each ["Berufswahl stärken","Bewerbungskompetenz","Lehrpersonen entlasten","Digitalisierung","Chancengleichheit"] as g}
-							<label class="chip"><input type="checkbox" name="ziele" value={g} /> <span>{g}</span></label>
+						{#each adminGoals as o}
+							<label class="chip"><input type="checkbox" name="ziele" value={o.v} /> <span>{$t(o.k)}</span></label>
 						{/each}
 					</div>
 				</fieldset>
 				<fieldset>
-					<legend>Wie gross ist eure Schule ungefähr?</legend>
+					<legend>{$t('wk.aSize')}</legend>
 					<select name="groesse">
-						<option value="">Bitte wählen</option>
-						<option>bis 50 Schüler:innen</option>
-						<option>50–200</option>
-						<option>über 200</option>
+						<option value="">{$t('wk.choose')}</option>
+						<option>{$t('wk.aSize1')}</option>
+						<option>{$t('wk.aSize2')}</option>
+						<option>{$t('wk.aSize3')}</option>
 					</select>
 				</fieldset>
 				<fieldset>
-					<legend>Gibt es etwas, das wir wissen sollten? <span class="opt-hint">(optional)</span></legend>
-					<textarea name="notiz" rows="3" placeholder="Wünsche, Fragen, Kontext …"></textarea>
+					<legend>{$t('wk.aNote')} <span class="opt-hint">{$t('wk.optional')}</span></legend>
+					<textarea name="notiz" rows="3" placeholder={$t('wk.aNotePlaceholder')}></textarea>
 				</fieldset>
 			{/if}
 
 			<div class="actions">
-				<button type="submit" name="skipped" value="true" class="skip">Überspringen</button>
-				<button type="submit" class="btn-primary">Los geht's</button>
+				<button type="submit" name="skipped" value="true" class="skip">{$t('wk.skip')}</button>
+				<button type="submit" class="btn-primary">{$t('wk.start')}</button>
 			</div>
 		</form>
 	</div>

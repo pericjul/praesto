@@ -1,5 +1,6 @@
 <script>
 	import logo from "$lib/assets/praesto-logo.png";
+	import { t } from "$lib/i18n";
 	let { form } = $props();
 </script>
 
@@ -10,9 +11,9 @@
 <div class="reg-page">
 	<div class="reg-card">
 		<img src={logo} alt="Praesto" class="reg-logo" />
-		<h1>Konto erstellen</h1>
-		<p class="sub">Übe Bewerbungsgespräche mit deinem persönlichen KI-Coach – ganz ohne Schule.</p>
-		<div class="trial-badge">✨ 7 Tage gratis testen</div>
+		<h1>{$t('reg.title')}</h1>
+		<p class="sub">{$t('reg.sub')}</p>
+		<div class="trial-badge">{$t('reg.trial')}</div>
 
 		{#if form?.error}
 			<div class="alert">⚠️ {form.error}</div>
@@ -21,45 +22,45 @@
 		<form method="POST" class="reg-form">
 			<div class="row">
 				<div class="field">
-					<label for="firstName">Vorname</label>
+					<label for="firstName">{$t('reg.firstName')}</label>
 					<input id="firstName" name="firstName" type="text" value={form?.firstName ?? ""} required />
 				</div>
 				<div class="field">
-					<label for="lastName">Nachname</label>
+					<label for="lastName">{$t('reg.lastName')}</label>
 					<input id="lastName" name="lastName" type="text" value={form?.lastName ?? ""} required />
 				</div>
 			</div>
 
 			<div class="field">
-				<label for="email">E-Mail</label>
+				<label for="email">{$t('reg.email')}</label>
 				<input id="email" name="email" type="email" placeholder="deine@email.ch" value={form?.email ?? ""} required />
 			</div>
 
 			<div class="row">
 				<div class="field">
-					<label for="password">Passwort</label>
-					<input id="password" name="password" type="password" placeholder="mind. 8 Zeichen" required />
+					<label for="password">{$t('reg.password')}</label>
+					<input id="password" name="password" type="password" placeholder={$t('reg.pwPlaceholder')} required />
 				</div>
 				<div class="field">
-					<label for="passwordConfirm">Passwort wiederholen</label>
+					<label for="passwordConfirm">{$t('reg.passwordConfirm')}</label>
 					<input id="passwordConfirm" name="passwordConfirm" type="password" required />
 				</div>
 			</div>
 
 			<label class="check">
 				<input type="checkbox" name="parentConsent" />
-				<span>Ich bin über 18 – oder ein Elternteil ist mit meiner Anmeldung einverstanden.</span>
+				<span>{$t('reg.consent')}</span>
 			</label>
 
 			<label class="check">
 				<input type="checkbox" name="acceptTerms" />
-				<span>Ich akzeptiere die <a href="/datenschutz" target="_blank" rel="noopener">Datenschutzerklärung</a> und die <a href="/agb" target="_blank" rel="noopener">AGB</a>.</span>
+				<span>{$t('reg.termsText1')}<a href="/datenschutz" target="_blank" rel="noopener">{$t('reg.termsPrivacy')}</a>{$t('reg.termsAnd')}<a href="/agb" target="_blank" rel="noopener">{$t('reg.termsAgb')}</a>.</span>
 			</label>
 
-			<button type="submit" class="btn-primary">Konto erstellen</button>
+			<button type="submit" class="btn-primary">{$t('reg.submit')}</button>
 		</form>
 
-		<p class="foot">Schon ein Konto? <a href="/login">Anmelden</a></p>
+		<p class="foot">{$t('reg.haveAccount')} <a href="/login">{$t('reg.login')}</a></p>
 	</div>
 </div>
 

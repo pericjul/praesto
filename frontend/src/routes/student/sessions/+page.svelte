@@ -101,12 +101,12 @@
 
     <div class="career-cta">
         <div class="career-text">
-            <strong>🧭 Weisst du noch nicht, welcher Beruf zu dir passt?</strong>
-            <span>Finde es mit dem KI-Berufs-Coach heraus – ein paar lockere Fragen, dann bekommst du Vorschläge.</span>
+            <strong>{$t('sc.title')}</strong>
+            <span>{$t('sc.text')}</span>
         </div>
         <form method="POST" action="?/start" use:enhance={handleStartEnhance}>
             <input type="hidden" name="career" value="on" />
-            <button type="submit" class="btn btn-career" disabled={starting}>Berufe entdecken</button>
+            <button type="submit" class="btn btn-career" disabled={starting}>{$t('sc.btn')}</button>
         </form>
     </div>
 

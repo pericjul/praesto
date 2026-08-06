@@ -1,5 +1,6 @@
 <script>
 	import { enhance } from "$app/forms";
+	import { t } from "$lib/i18n";
 	let { data, form } = $props();
 
 	let prefillName = $derived(
@@ -28,9 +29,9 @@
 <svelte:head><title>Schnupper-Anfrage – Praesto</title></svelte:head>
 
 <div class="wrap">
-	<a href="/student/dossier" class="back">← Zurück zum Dossier</a>
-	<h1>🔍 Schnupperlehre anfragen</h1>
-	<p class="intro">Du willst bei einer Firma schnuppern, weisst aber nicht, wie du fragen sollst? Fülle kurz aus – der KI-Coach schreibt dir eine freundliche E-Mail und einen Telefon-Spickzettel, die du anpassen und verwenden kannst.</p>
+	<a href="/student/dossier" class="back">{$t('schn.back')}</a>
+	<h1>{$t('schn.title')}</h1>
+	<p class="intro">{$t('schn.intro')}</p>
 
 	{#if form?.error}
 		<div class="alert">⚠️ {form.error}</div>
@@ -38,31 +39,31 @@
 
 	<form method="POST" use:enhance={submitEnhance} class="form">
 		<div class="row">
-			<label>Beruf / Interesse *
-				<input name="beruf" type="text" placeholder="z.B. Fachmann Betriebsunterhalt" value={form?.beruf ?? ""} required />
+			<label>{$t('schn.beruf')}
+				<input name="beruf" type="text" placeholder={$t('schn.berufPlaceholder')} value={form?.beruf ?? ""} required />
 			</label>
-			<label>Firma (optional)
-				<input name="firma" type="text" placeholder="z.B. Gemeinde Musterwil" />
-			</label>
-		</div>
-		<div class="row">
-			<label>Kontaktperson (optional)
-				<input name="kontaktperson" type="text" placeholder="z.B. Frau Meier" />
-			</label>
-			<label>Wunsch-Zeitraum (optional)
-				<input name="zeitraum" type="text" placeholder="z.B. in den Frühlingsferien" />
+			<label>{$t('schn.firma')}
+				<input name="firma" type="text" placeholder={$t('schn.firmaPlaceholder')} />
 			</label>
 		</div>
 		<div class="row">
-			<label>Dein Name
-				<input name="deinName" type="text" value={prefillName} placeholder="Dein Vor- und Nachname" />
+			<label>{$t('schn.kontakt')}
+				<input name="kontaktperson" type="text" placeholder={$t('schn.kontaktPlaceholder')} />
 			</label>
-			<label>Schulklasse (optional)
-				<input name="klasse" type="text" placeholder="z.B. 3. Sek B" />
+			<label>{$t('schn.zeitraum')}
+				<input name="zeitraum" type="text" placeholder={$t('schn.zeitraumPlaceholder')} />
+			</label>
+		</div>
+		<div class="row">
+			<label>{$t('schn.deinName')}
+				<input name="deinName" type="text" value={prefillName} placeholder={$t('schn.deinNamePlaceholder')} />
+			</label>
+			<label>{$t('schn.klasse')}
+				<input name="klasse" type="text" placeholder={$t('schn.klassePlaceholder')} />
 			</label>
 		</div>
 		<button type="submit" class="btn" disabled={loading}>
-			{loading ? "Wird erstellt …" : "Anfrage erstellen"}
+			{loading ? $t('schn.creating') : $t('schn.create')}
 		</button>
 	</form>
 
@@ -70,23 +71,23 @@
 		<div class="results">
 			<div class="result-card">
 				<div class="result-head">
-					<h2>✉️ E-Mail</h2>
+					<h2>{$t('schn.emailTitle')}</h2>
 					<button type="button" class="copy" onclick={() => copy(form.reply.email, "email")}>
-						{copied === "email" ? "✓ Kopiert" : "Kopieren"}
+						{copied === "email" ? $t('schn.copied') : $t('schn.copy')}
 					</button>
 				</div>
 				<pre>{form.reply.email}</pre>
 			</div>
 			<div class="result-card">
 				<div class="result-head">
-					<h2>📞 Telefon-Spickzettel</h2>
+					<h2>{$t('schn.phoneTitle')}</h2>
 					<button type="button" class="copy" onclick={() => copy(form.reply.phone, "phone")}>
-						{copied === "phone" ? "✓ Kopiert" : "Kopieren"}
+						{copied === "phone" ? $t('schn.copied') : $t('schn.copy')}
 					</button>
 				</div>
 				<pre>{form.reply.phone}</pre>
 			</div>
-			<p class="tip">💡 Tipp: Pass die Texte an dich an, bevor du sie verschickst oder anrufst. Und trag die Firma nachher in deinem <a href="/student/applications">Bewerbungs-Tracker</a> unter „Schnuppern geplant" ein.</p>
+			<p class="tip">{$t('schn.tipPre')}<a href="/student/applications">{$t('schn.tipLink')}</a>{$t('schn.tipPost')}</p>
 		</div>
 	{/if}
 </div>

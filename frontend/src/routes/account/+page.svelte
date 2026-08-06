@@ -61,34 +61,30 @@
 
         <!-- Abo & Zugang -->
         <section class="card abo-card">
-            <h2>⭐ Abo & Zugang</h2>
+            <h2>{$t('acc2.aboTitle')}</h2>
 
             {#if form?.portalError}
                 <div class="alert error">⚠️ {form.portalError}</div>
             {/if}
 
             {#if !isIndividual}
-                <!-- Schul-/Bestandskonto -->
-                <p class="abo-lead">🏫 <b>Deine Schule zahlt für dich.</b></p>
-                <p class="abo-note">Du nutzt Praesto kostenlos über deine Schule – alles inklusive, kein eigenes Abo nötig. 🎉</p>
+                <p class="abo-lead">{$t('acc2.schoolPays')}</p>
+                <p class="abo-note">{$t('acc2.schoolPaysText')}</p>
             {:else if trialActive}
-                <!-- Privat-Konto in der Testphase -->
-                <p class="abo-lead">✨ <b>Gratis-Testphase</b> – noch bis {fmtDate(billing.trialEndsAt)}.</p>
-                <p class="abo-note">Damit es danach ohne Unterbruch weitergeht, kannst du jetzt schon ein Abo lösen.</p>
-                <p class="abo-tip">💡 Tipp: Sag deiner Schule von Praesto – oft übernimmt die Schule die Kosten für die ganze Klasse!</p>
-                <a href="/abo" class="btn-primary">Abo abschliessen</a>
+                <p class="abo-lead">{$t('acc2.trialLead').replace('%DATE', fmtDate(billing.trialEndsAt))}</p>
+                <p class="abo-note">{$t('acc2.trialText')}</p>
+                <p class="abo-tip">{$t('acc2.schoolTip')}</p>
+                <a href="/abo" class="btn-primary">{$t('acc2.subscribe')}</a>
             {:else if hasSub}
-                <!-- Privat-Konto mit aktivem Abo -->
-                <p class="abo-lead">✅ <b>Abo aktiv</b> – Zugang bis {fmtDate(billing.subscriptionEndsAt)}.</p>
-                <p class="abo-note">Du kannst dein Abo jederzeit verwalten oder kündigen. Bei einer Kündigung bleibt der Zugang bis zum Ende der bezahlten Periode bestehen.</p>
+                <p class="abo-lead">{$t('acc2.activeLead').replace('%DATE', fmtDate(billing.subscriptionEndsAt))}</p>
+                <p class="abo-note">{$t('acc2.activeText')}</p>
                 <form method="POST" action="?/portal">
-                    <button type="submit" class="btn-primary">Abo verwalten / kündigen</button>
+                    <button type="submit" class="btn-primary">{$t('acc2.manage')}</button>
                 </form>
             {:else}
-                <!-- Privat-Konto ohne Zugang -->
-                <p class="abo-lead">⏳ <b>Kein aktiver Zugang.</b></p>
-                <p class="abo-note">Schliesse ein Abo ab, um Praesto weiter zu nutzen – oder sag deiner Schule Bescheid, vielleicht übernimmt sie die Kosten.</p>
-                <a href="/abo" class="btn-primary">Zu den Abos</a>
+                <p class="abo-lead">{$t('acc2.noAccessLead')}</p>
+                <p class="abo-note">{$t('acc2.noAccessText')}</p>
+                <a href="/abo" class="btn-primary">{$t('acc2.toAbos')}</a>
             {/if}
         </section>
 
@@ -118,24 +114,24 @@
 
         <!-- E-Mail (Login) ändern -->
         <section class="card">
-            <h2>📧 E-Mail-Adresse ändern</h2>
-            <p class="abo-note">Mit dieser E-Mail meldest du dich an. Zur Sicherheit bestätige dein aktuelles Passwort.</p>
+            <h2>{$t('acc2.emailTitle')}</h2>
+            <p class="abo-note">{$t('acc2.emailNote')}</p>
             {#if form?.emailSuccess}
-                <div class="alert success">✓ E-Mail-Adresse geändert. Beim nächsten Login gilt die neue Adresse.</div>
+                <div class="alert success">{$t('acc2.emailSuccess')}</div>
             {/if}
             {#if form?.emailError}
                 <div class="alert error">⚠️ {form.emailError}</div>
             {/if}
             <form method="POST" action="?/email" use:enhance={handleProfile} class="form">
                 <label>
-                    Neue E-Mail-Adresse
+                    {$t('acc2.emailNew')}
                     <input name="newEmail" type="email" value={user.email ?? ""} required />
                 </label>
                 <label>
-                    Aktuelles Passwort
-                    <input name="emailPassword" type="password" placeholder="zur Bestätigung" required />
+                    {$t('acc2.emailPassword')}
+                    <input name="emailPassword" type="password" placeholder={$t('acc2.emailPwPlaceholder')} required />
                 </label>
-                <button type="submit" class="btn-primary">E-Mail ändern</button>
+                <button type="submit" class="btn-primary">{$t('acc2.emailBtn')}</button>
             </form>
         </section>
 
@@ -167,25 +163,25 @@
 
         <!-- Konto löschen (Gefahrenzone) -->
         <section class="card danger">
-            <h2>🗑️ Konto löschen</h2>
-            <p class="abo-note">Dein Konto und <strong>alle deine Daten</strong> werden endgültig gelöscht. Das kann nicht rückgängig gemacht werden.</p>
+            <h2>{$t('acc2.delTitle')}</h2>
+            <p class="abo-note">{$t('acc2.delText')}</p>
             {#if isIndividual && hasSub}
-                <p class="abo-note">Falls du ein aktives Abo hast, kündige es vorher im <a href="/abo">Abo-Bereich</a>, damit keine weiteren Zahlungen erfolgen.</p>
+                <p class="abo-note">{$t('acc2.delSubHint')}</p>
             {/if}
             {#if form?.deleteError}
                 <div class="alert error">⚠️ {form.deleteError}</div>
             {/if}
             {#if !showDelete}
-                <button type="button" class="btn-danger" onclick={() => (showDelete = true)}>Konto löschen …</button>
+                <button type="button" class="btn-danger" onclick={() => (showDelete = true)}>{$t('acc2.delBtn')}</button>
             {:else}
                 <form method="POST" action="?/deleteAccount" use:enhance class="form">
                     <label>
-                        Zur Bestätigung dein Passwort eingeben
-                        <input type="password" name="deletePassword" placeholder="Passwort" required />
+                        {$t('acc2.delConfirmLabel')}
+                        <input type="password" name="deletePassword" placeholder={$t('acc2.delPwPlaceholder')} required />
                     </label>
                     <div class="del-actions">
-                        <button type="button" class="btn-ghost" onclick={() => (showDelete = false)}>Abbrechen</button>
-                        <button type="submit" class="btn-danger">Endgültig löschen</button>
+                        <button type="button" class="btn-ghost" onclick={() => (showDelete = false)}>{$t('acc2.cancel')}</button>
+                        <button type="submit" class="btn-danger">{$t('acc2.delFinal')}</button>
                     </div>
                 </form>
             {/if}

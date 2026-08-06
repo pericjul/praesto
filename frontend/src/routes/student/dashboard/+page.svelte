@@ -149,12 +149,12 @@
     {#if isIndividual}
         <section class="onboard-cta">
             <div class="onboard-text">
-                <strong>🧭 Neu hier? So findest du den Einstieg</strong>
-                <span>Noch unsicher, welcher Beruf zu dir passt? Starte mit dem Berufs-Finder – oder übe direkt ein Bewerbungsgespräch. Deine Bewerbungen und Schnupperlehren behältst du im Tracker im Blick.</span>
+                <strong>{$t('dbo.title')}</strong>
+                <span>{$t('dbo.text')}</span>
             </div>
             <div class="onboard-actions">
-                <a href="/student/sessions" class="btn btn-primary">🧭 Berufe entdecken / üben</a>
-                <a href="/student/applications" class="btn btn-ghost">📋 Bewerbungen & Schnuppern</a>
+                <a href="/student/sessions" class="btn btn-primary">{$t('dbo.discover')}</a>
+                <a href="/student/applications" class="btn btn-ghost">{$t('dbo.applications')}</a>
             </div>
         </section>
     {/if}

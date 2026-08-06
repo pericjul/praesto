@@ -1,5 +1,6 @@
 <script>
 	import logo from "$lib/assets/praesto-logo.png";
+	import { t } from "$lib/i18n";
 </script>
 
 <svelte:head><title>Danke – Praesto</title></svelte:head>
@@ -8,10 +9,10 @@
 	<div class="ok-card">
 		<img src={logo} alt="Praesto" class="logo" />
 		<div class="check">✅</div>
-		<h1>Vielen Dank!</h1>
-		<p>Deine Zahlung war erfolgreich. Dein Zugang wird gerade aktiviert – das dauert nur einen Moment.</p>
-		<a href="/student/dashboard" class="btn">Zum Dashboard</a>
-		<p class="hint">Falls dein Zugang noch nicht frei ist, lade die Seite in ein paar Sekunden neu.</p>
+		<h1>{$t('aboOk.thanks')}</h1>
+		<p>{$t('aboOk.text')}</p>
+		<a href="/student/dashboard" class="btn">{$t('aboOk.toDashboard')}</a>
+		<p class="hint">{$t('aboOk.hint')}</p>
 	</div>
 </div>
 

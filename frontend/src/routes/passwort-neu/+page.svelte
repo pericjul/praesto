@@ -1,5 +1,6 @@
 <script>
 	import logo from "$lib/assets/praesto-logo.png";
+	import { t } from "$lib/i18n";
 	let { data, form } = $props();
 </script>
 
@@ -8,28 +9,28 @@
 <div class="pw-page">
 	<div class="pw-card">
 		<img src={logo} alt="Praesto" class="logo" />
-		<h1>Neues Passwort setzen</h1>
+		<h1>{$t('pwn.title')}</h1>
 
 		{#if form?.done}
-			<div class="ok">✓ Dein Passwort wurde geändert. Du kannst dich jetzt mit dem neuen Passwort anmelden.</div>
-			<a href="/login" class="btn">Zum Login</a>
+			<div class="ok">{$t('pwn.done')}</div>
+			<a href="/login" class="btn">{$t('pwn.toLogin')}</a>
 		{:else if !data.token}
-			<div class="alert">⚠️ Dieser Link ist ungültig. Bitte fordere über „Passwort vergessen" einen neuen an.</div>
-			<a href="/passwort-vergessen" class="btn">Neuen Link anfordern</a>
+			<div class="alert">{$t('pwn.invalid')}</div>
+			<a href="/passwort-vergessen" class="btn">{$t('pwn.requestNew')}</a>
 		{:else}
-			<p class="sub">Wähle ein neues Passwort für dein Konto.</p>
+			<p class="sub">{$t('pwn.sub')}</p>
 			{#if form?.error}
 				<div class="alert">⚠️ {form.error}</div>
 			{/if}
 			<form method="POST" class="form">
 				<input type="hidden" name="token" value={data.token} />
-				<label>Neues Passwort
-					<input name="newPassword" type="password" placeholder="mind. 8 Zeichen" required />
+				<label>{$t('pwn.newPw')}
+					<input name="newPassword" type="password" placeholder={$t('reg.pwPlaceholder')} required />
 				</label>
-				<label>Passwort wiederholen
+				<label>{$t('pwn.confirm')}
 					<input name="confirm" type="password" required />
 				</label>
-				<button type="submit" class="btn">Passwort speichern</button>
+				<button type="submit" class="btn">{$t('pwn.save')}</button>
 			</form>
 		{/if}
 	</div>
