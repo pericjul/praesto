@@ -82,8 +82,27 @@
         </div>
     </section>
 
+    <!-- Auswahl: Schule vs. Privat -->
+    <section class="chooser">
+        <h2 class="chooser-title">{$t('home.chooseTitle')}</h2>
+        <div class="chooser-tiles">
+            <a href="#angebot" class="tile tile-school">
+                <span class="tile-emoji">🏫</span>
+                <span class="tile-name">{$t('home.schoolTile')}</span>
+                <span class="tile-desc">{$t('home.schoolTileDesc')}</span>
+                <span class="tile-cta">{$t('home.schoolTileCta')} →</span>
+            </a>
+            <a href="/privat" class="tile tile-private">
+                <span class="tile-emoji">🎓</span>
+                <span class="tile-name">{$t('home.privateTile')}</span>
+                <span class="tile-desc">{$t('home.privateTileDesc')}</span>
+                <span class="tile-cta">{$t('home.privateTileCta')} →</span>
+            </a>
+        </div>
+    </section>
+
     <!-- Rollen -->
-    <div class="roles">
+    <div class="roles" id="angebot">
         {#each roleSections as section}
             <section class="role-block">
                 <header class="role-head">
@@ -217,6 +236,21 @@
     }
 
     /* ===== Rollen ===== */
+    .chooser { margin: 0 auto 3rem; max-width: 860px; }
+    .chooser-title { text-align: center; font-size: 1.3rem; color: #2d2141; margin: 0 0 1.25rem; }
+    .chooser-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .tile { display: flex; flex-direction: column; gap: 0.4rem; text-decoration: none; padding: 1.5rem 1.4rem; border-radius: 1.1rem; border: 1px solid #ece7f0; background: #fff; transition: transform .15s, box-shadow .15s; }
+    .tile:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(47,18,77,0.1); }
+    .tile-emoji { font-size: 2rem; }
+    .tile-name { font-size: 1.15rem; font-weight: 700; color: #2d2141; }
+    .tile-desc { color: #6b647a; font-size: 0.92rem; line-height: 1.5; flex: 1; }
+    .tile-cta { font-weight: 600; margin-top: 0.4rem; }
+    .tile-school { border-top: 4px solid #c97d3c; }
+    .tile-school .tile-cta { color: #b45309; }
+    .tile-private { border-top: 4px solid #8b5cf6; }
+    .tile-private .tile-cta { color: #7c3aed; }
+    @media (max-width: 620px) { .chooser-tiles { grid-template-columns: 1fr; } }
+
     .roles { display: flex; flex-direction: column; gap: 2.5rem; margin-bottom: 3rem; }
 
     .role-head {
