@@ -41,7 +41,9 @@ public class KnowledgeSource {
 
     private String fileName;         // nur bei DOCUMENT (Original-Name)
 
-    @Lob
+    // Kein @Lob: auf PostgreSQL würde @Lob den String als Large Object (oid) binden,
+    // die Spalte ist aber "text" -> jedes INSERT scheitert. columnDefinition="text"
+    // erzeugt die Spalte und bindet den Wert als normalen Text (H2 + Postgres).
     @Column(columnDefinition = "text")
     private String content;          // extrahierter Text (was die KI nutzt)
 
