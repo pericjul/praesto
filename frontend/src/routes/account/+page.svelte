@@ -70,17 +70,17 @@
             {#if !isIndividual}
                 <p class="abo-lead">{$t('acc2.schoolPays')}</p>
                 <p class="abo-note">{$t('acc2.schoolPaysText')}</p>
-            {:else if trialActive}
-                <p class="abo-lead">{$t('acc2.trialLead').replace('%DATE', fmtDate(billing.trialEndsAt))}</p>
-                <p class="abo-note">{$t('acc2.trialText')}</p>
-                <p class="abo-tip">{$t('acc2.schoolTip')}</p>
-                <a href="/abo" class="btn-primary">{$t('acc2.subscribe')}</a>
             {:else if hasSub}
                 <p class="abo-lead">{$t('acc2.activeLead').replace('%DATE', fmtDate(billing.subscriptionEndsAt))}</p>
                 <p class="abo-note">{$t('acc2.activeText')}</p>
                 <form method="POST" action="?/portal">
                     <button type="submit" class="btn-primary">{$t('acc2.manage')}</button>
                 </form>
+            {:else if trialActive}
+                <p class="abo-lead">{$t('acc2.trialLead').replace('%DATE', fmtDate(billing.trialEndsAt))}</p>
+                <p class="abo-note">{$t('acc2.trialText')}</p>
+                <p class="abo-tip">{$t('acc2.schoolTip')}</p>
+                <a href="/abo" class="btn-primary">{$t('acc2.subscribe')}</a>
             {:else}
                 <p class="abo-lead">{$t('acc2.noAccessLead')}</p>
                 <p class="abo-note">{$t('acc2.noAccessText')}</p>

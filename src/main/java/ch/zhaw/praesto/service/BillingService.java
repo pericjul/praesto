@@ -150,7 +150,9 @@ public class BillingService {
         }
 
         switch (event.getType()) {
-            case "checkout.session.completed" -> onCheckoutCompleted(event);
+            // async_payment_succeeded: bei verzögerten Zahlungsarten wie TWINT.
+            case "checkout.session.completed",
+                 "checkout.session.async_payment_succeeded" -> onCheckoutCompleted(event);
             case "customer.subscription.created",
                  "customer.subscription.updated",
                  "customer.subscription.deleted" -> onSubscriptionEvent(event);
@@ -177,11 +179,22 @@ public class BillingService {
         if (user.getStripeCustomerId() == null && session.getCustomer() != null) {
             user.setStripeCustomerId(session.getCustomer());
         }
-        // Enddatum kommt zuverlässig über das anschliessende subscription-Event; hier
-        // schon mal als aktiv markieren.
         user.setSubscriptionStatus("ACTIVE");
+        // Enddatum direkt aus dem Abo holen, damit der Zugang auch dann korrekt ist,
+        // wenn das separate subscription-Event mal ausbleibt.
+        if (session.getSubscription() != null) {
+            try {
+                Subscription sub = Subscription.retrieve(session.getSubscription());
+                Long periodEnd = currentPeriodEnd(sub);
+                if (periodEnd != null) {
+                    user.setSubscriptionEndsAt(Instant.ofEpochSecond(periodEnd));
+                }
+            } catch (Exception e) {
+                log.warn("Abo-Enddatum konnte beim Checkout nicht geladen werden: {}", e.getMessage());
+            }
+        }
         userRepository.save(user);
-        log.info("Abo aktiviert (Checkout) für {}", user.getEmail());
+        log.info("Abo aktiviert (Checkout) für {} (bis {})", user.getEmail(), user.getSubscriptionEndsAt());
     }
 
     private void onSubscriptionEvent(Event event) {

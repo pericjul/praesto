@@ -21,10 +21,10 @@
 		<img src={logo} alt="Praesto" class="logo" />
 		<h1>{$t('abo.title')}</h1>
 
-		{#if trialActive}
-			<p class="lead">{$t('abo.trialLead').replace('%DATE', fmt(status.trialEndsAt))}</p>
-		{:else if hasSub}
+		{#if hasSub}
 			<p class="lead">{$t('abo.activeLead').replace('%DATE', fmt(status.subscriptionEndsAt))}</p>
+		{:else if trialActive}
+			<p class="lead">{$t('abo.trialLead').replace('%DATE', fmt(status.trialEndsAt))}</p>
 		{:else}
 			<p class="lead">{$t('abo.expiredLead')}</p>
 		{/if}
