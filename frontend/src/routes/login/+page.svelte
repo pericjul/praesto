@@ -72,6 +72,10 @@
                     </button>
                 </form>
 
+                <div class="login-forgot">
+                    <a href="/passwort-vergessen">{$t('login.forgot')}</a>
+                </div>
+
                 <div class="login-footer">
                     <span>{$t('login.noAccount')}</span>
                     <a href="/register">{$t('login.register')}</a>
@@ -260,8 +264,19 @@
         box-shadow: 0 4px 12px rgba(47, 18, 77, 0.3);
     }
 
+    .login-forgot {
+        margin-top: 0.9rem;
+        text-align: center;
+        font-size: 0.85rem;
+    }
+    .login-forgot a {
+        color: #6b647a;
+        text-decoration: underline;
+    }
+    .login-forgot a:hover { color: #2F124D; }
+
     .login-footer {
-        margin-top: 1.5rem;
+        margin-top: 1rem;
         text-align: center;
         font-size: 0.9rem;
         color: #6b647a;

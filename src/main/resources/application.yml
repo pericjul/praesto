@@ -59,6 +59,8 @@ spring:
             enable: true
 
 praesto:
+  # Öffentliche Basis-URL der App (für Links in E-Mails, z.B. Passwort-Reset).
+  base-url: ${APP_BASE_URL:https://praesto.ch}
   # KI-Wissensbasis (RAG): Quellen werden in Häppchen zerlegt, als Vektoren (Embeddings)
   # in PostgreSQL (pgvector) gespeichert und pro Schülerfrage werden nur die relevantesten
   # Häppchen an die KI geschickt. Voraussetzung in Prod: Extension "vector" aktiviert +

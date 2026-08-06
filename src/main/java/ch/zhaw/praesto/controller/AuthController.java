@@ -4,8 +4,12 @@ import ch.zhaw.praesto.model.*;
 import ch.zhaw.praesto.security.JwtService;
 import ch.zhaw.praesto.service.AuthService;
 import ch.zhaw.praesto.service.InviteService;
+import ch.zhaw.praesto.service.PasswordResetService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
  * Authentifizierung: Login, Registrierung über Invite-Token, Invite-Vorschau und Demo-Login.
@@ -19,6 +23,7 @@ public class AuthController {
     private final AuthService authService;
     private final InviteService inviteService;
     private final JwtService jwtService;
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/auth/login")
     public AuthResponse login(@RequestBody LoginRequest request) {
@@ -42,6 +47,22 @@ public class AuthController {
     @GetMapping("/auth/invite/{token}")
     public InviteDetailsDTO inviteDetails(@PathVariable String token) {
         return inviteService.getInviteDetails(token);
+    }
+
+    // Passwort vergessen: schickt (falls Konto existiert) eine E-Mail mit Reset-Link.
+    // Antwortet immer neutral, um nicht zu verraten, ob eine E-Mail registriert ist.
+    @PostMapping("/auth/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody Map<String, String> body) {
+        passwordResetService.requestReset(body.get("email"));
+        return ResponseEntity.ok(Map.of("message",
+                "Falls ein Konto mit dieser E-Mail existiert, haben wir dir einen Link geschickt."));
+    }
+
+    // Neues Passwort per Reset-Token setzen.
+    @PostMapping("/auth/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String, String> body) {
+        passwordResetService.resetPassword(body.get("token"), body.get("newPassword"));
+        return ResponseEntity.ok(Map.of("message", "Passwort wurde geändert."));
     }
 
     @GetMapping("/demo/login")

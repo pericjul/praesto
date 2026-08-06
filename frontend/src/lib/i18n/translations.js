@@ -80,6 +80,7 @@ const core = {
 		"login.submit": "Anmelden",
 		"login.noAccount": "Noch kein Konto?",
 		"login.register": "Jetzt registrieren",
+		"login.forgot": "Passwort vergessen?",
 		"login.error": "Login fehlgeschlagen. Bitte überprüfe deine Zugangsdaten.",
 		"login.demo": "▶ Demo & Anleitung ansehen",
 
@@ -266,6 +267,7 @@ const core = {
 		"login.submit": "Sign in",
 		"login.noAccount": "No account yet?",
 		"login.register": "Register now",
+		"login.forgot": "Forgot password?",
 		"login.error": "Login failed. Please check your credentials.",
 		"login.demo": "▶ View demo & guide",
 
@@ -452,6 +454,7 @@ const core = {
 		"login.submit": "Se connecter",
 		"login.noAccount": "Pas encore de compte ?",
 		"login.register": "S'inscrire",
+		"login.forgot": "Mot de passe oublié ?",
 		"login.error": "Échec de la connexion. Vérifie tes identifiants.",
 		"login.demo": "▶ Voir la démo et le guide",
 
@@ -638,6 +641,7 @@ const core = {
 		"login.submit": "Accedi",
 		"login.noAccount": "Non hai un account?",
 		"login.register": "Registrati ora",
+		"login.forgot": "Password dimenticata?",
 		"login.error": "Accesso non riuscito. Controlla le tue credenziali.",
 		"login.demo": "▶ Vedi demo e guida",
 
