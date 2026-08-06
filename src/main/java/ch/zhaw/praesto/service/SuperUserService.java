@@ -35,6 +35,8 @@ public class SuperUserService {
     private final UserBadgeRepository userBadgeRepository;
     private final SchoolClassRepository schoolClassRepository;
     private final AssignmentRepository assignmentRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final LocaleMessages messages;
     private final UserService userService;
 
     /**
@@ -172,6 +174,33 @@ public class SuperUserService {
     }
 
     // ============================================================
+
+    /** Legt einen weiteren SUPER_ADMIN an (nur durch bestehenden Super-Admin). */
+    public User createAdmin(String email, String firstName, String lastName, String password) {
+        requireSuper();
+        String e = email == null ? null : email.toLowerCase().trim();
+        if (e == null || !e.contains("@")) {
+            throw new ch.zhaw.praesto.exception.BadRequestException(messages.get("err.invalidEmail"));
+        }
+        if (password == null || password.length() < 8) {
+            throw new ch.zhaw.praesto.exception.BadRequestException(messages.get("err.passwordMin8"));
+        }
+        if (userRepository.existsByEmail(e)) {
+            throw new ch.zhaw.praesto.exception.BadRequestException(messages.get("err.emailExists"));
+        }
+        User admin = User.builder()
+                .email(e)
+                .passwordHash(passwordEncoder.encode(password))
+                .firstName(firstName == null ? "" : firstName.trim())
+                .lastName(lastName == null ? "" : lastName.trim())
+                .role(UserRole.SUPER_ADMIN)
+                .isActive(true)
+                .createdAt(Instant.now())
+                .build();
+        User saved = userRepository.save(admin);
+        log.info("Neuer Super-Admin angelegt: {}", saved.getEmail());
+        return saved;
+    }
 
     /** Kennzahlen zu Privat-/B2C-Konten (Registrierung -> Bezahlung). Nur Super-Admin. */
     public java.util.Map<String, Object> individualStats() {

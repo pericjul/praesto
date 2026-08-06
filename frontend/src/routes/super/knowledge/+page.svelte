@@ -47,6 +47,9 @@
 	{#if form?.error}
 		<p class="err">{form.error}</p>
 	{/if}
+	{#if form?.success}
+		<p class="ok">✓ Gespeichert.</p>
+	{/if}
 
 	<div class="forms">
 		<!-- Link -->
@@ -132,6 +135,7 @@
 	.intro { color: #4b4560; margin: 0 0 .35rem; line-height: 1.55; }
 	.note { color: #8b849a; font-size: .85rem; margin: 0 0 1.25rem; }
 	.err { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; padding: .6rem .8rem; border-radius: 10px; margin-bottom: 1rem; }
+	.ok { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; padding: .6rem .8rem; border-radius: 10px; margin-bottom: 1rem; }
 
 	.forms { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
 	.card { border: 1px solid #ece7f0; border-radius: 1rem; padding: 1.25rem; background: #fff; box-shadow: 0 8px 30px rgba(47,18,77,0.05); }

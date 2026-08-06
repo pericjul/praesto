@@ -31,6 +31,13 @@ public class SuperUserController {
         return superUserService.individualStats();
     }
 
+    // Weiteren Super-Admin anlegen (nur Super-Admin).
+    @PostMapping("/admins")
+    public UserDTO createAdmin(@RequestBody Map<String, String> body) {
+        return UserDTO.from(superUserService.createAdmin(
+                body.get("email"), body.get("firstName"), body.get("lastName"), body.get("password")));
+    }
+
     @GetMapping("/{id}/export")
     public Map<String, Object> export(@PathVariable String id) {
         return superUserService.exportUserData(id);

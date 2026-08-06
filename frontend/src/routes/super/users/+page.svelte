@@ -8,6 +8,17 @@
     let allUsers = $derived(data.users ?? []);
     let confirmId = $state(null);
 
+    let showAdmin = $state(false);
+    function handleAdmin() {
+        return async ({ result, update }) => {
+            if (result.type === "success") {
+                showAdmin = false;
+                await invalidateAll();
+            }
+            await update({ reset: true });
+        };
+    }
+
     // Filter
     let schoolFilter = $state("ALL");
     let roleFilter = $state("ALL");
@@ -134,6 +145,28 @@
         {/if}
     </div>
 
+    <div class="admin-box">
+        {#if form?.adminCreated}<div class="alert success">✓ Zweiter Admin wurde angelegt.</div>{/if}
+        {#if form?.adminError}<div class="alert error">⚠️ {form.adminError}</div>{/if}
+        {#if !showAdmin}
+            <button type="button" class="admin-toggle" onclick={() => (showAdmin = true)}>➕ Zweiten Admin anlegen</button>
+        {:else}
+            <form method="POST" action="?/createAdmin" use:enhance={handleAdmin} class="admin-form">
+                <div class="admin-row">
+                    <input name="firstName" type="text" placeholder="Vorname" required />
+                    <input name="lastName" type="text" placeholder="Nachname" required />
+                </div>
+                <input name="email" type="email" placeholder="admin@email.ch" required />
+                <input name="password" type="password" placeholder="Passwort (min. 8 Zeichen)" required minlength="8" />
+                <div class="admin-actions">
+                    <button type="button" class="btn-ghost" onclick={() => (showAdmin = false)}>Abbrechen</button>
+                    <button type="submit" class="btn-primary">Admin anlegen</button>
+                </div>
+                <p class="admin-hint">Der neue Admin sieht alles wie du (Super-Admin) und hat ein eigenes Login/Profil.</p>
+            </form>
+        {/if}
+    </div>
+
     <div class="filters">
         <select bind:value={schoolFilter}>
             <option value="ALL">{$t('su.allSchools')}</option>
@@ -253,6 +286,17 @@
     .page { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
     h1 { margin: 0 0 0.4rem; color: #2F124D; font-size: 1.6rem; }
     .lead { margin: 0 0 1.25rem; color: #6b647a; }
+
+    .admin-box { margin-bottom: 1.25rem; }
+    .admin-toggle { background: #f3eefb; border: 1px solid #e0d2f0; color: #5b2a86; border-radius: 0.6rem; padding: 0.55rem 1rem; font: inherit; font-weight: 600; cursor: pointer; }
+    .admin-toggle:hover { background: #ebe0f7; }
+    .admin-form { display: flex; flex-direction: column; gap: 0.6rem; max-width: 420px; background: #fff; border: 1px solid #e8e0f0; border-radius: 0.8rem; padding: 1rem; }
+    .admin-row { display: flex; gap: 0.6rem; }
+    .admin-form input { flex: 1; padding: 0.55rem 0.7rem; border: 1px solid #d8d2e0; border-radius: 0.5rem; font: inherit; }
+    .admin-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+    .admin-form .btn-primary { background: #2F124D; color: #fff; border: none; border-radius: 0.5rem; padding: 0.55rem 1.1rem; font: inherit; font-weight: 600; cursor: pointer; }
+    .admin-form .btn-ghost { background: #f3f0f8; color: #4b4560; border: 1px solid #e0d8ec; border-radius: 0.5rem; padding: 0.55rem 1rem; font: inherit; cursor: pointer; }
+    .admin-hint { font-size: 0.78rem; color: #8b849a; margin: 0; }
 
     .stats { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
     .stat { background: #faf8fc; border: 1px solid #e8e0f0; border-radius: 999px; padding: 0.35rem 0.85rem; font-size: 0.85rem; color: #4b4060; }

@@ -121,8 +121,22 @@ public class KnowledgeService {
     /** Speichert eine Quelle und indexiert sie (best-effort) für die Vektorsuche. */
     private KnowledgeSource saveAndIndex(KnowledgeSource source) {
         KnowledgeSource saved = repository.save(source);
-        ragService.reindex(saved);
+        reindexInBackground(saved);
         return saved;
+    }
+
+    /**
+     * Indexierung (Embedding + Vektorsuche) im Hintergrund, damit das Speichern sofort
+     * zurückkommt und nie am (evtl. langsamen) KI-Aufruf hängt. Best-effort.
+     */
+    private void reindexInBackground(KnowledgeSource source) {
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                ragService.reindex(source);
+            } catch (Exception e) {
+                log.error("Hintergrund-Indexierung fehlgeschlagen: {}", e.getMessage());
+            }
+        });
     }
 
     public void setEnabled(String id, boolean enabled) {
@@ -133,7 +147,7 @@ public class KnowledgeService {
         repository.save(src);
         // Vektor-Index nachziehen: aktivieren -> (neu) indexieren, deaktivieren -> Häppchen entfernen.
         if (enabled) {
-            ragService.reindex(src);
+            reindexInBackground(src);
         } else {
             ragService.remove(id);
         }

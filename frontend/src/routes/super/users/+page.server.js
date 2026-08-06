@@ -22,6 +22,25 @@ export async function load({ locals, fetch }) {
 }
 
 export const actions = {
+	createAdmin: async ({ request, locals, fetch }) => {
+		const d = await request.formData();
+		const res = await fetch(`${API_BASE}/super/users/admins`, {
+			method: "POST",
+			headers: apiHeaders(locals.jwt_token),
+			body: JSON.stringify({
+				email: d.get("email"),
+				firstName: d.get("firstName"),
+				lastName: d.get("lastName"),
+				password: d.get("password")
+			})
+		});
+		if (!res.ok) {
+			const msg = await res.text().catch(() => "");
+			return { adminError: msg && msg.length < 300 ? msg : "Admin konnte nicht angelegt werden." };
+		}
+		return { adminCreated: true };
+	},
+
 	delete: async ({ request, locals, fetch }) => {
 		const data = await request.formData();
 		const id = data.get("id");
