@@ -82,15 +82,14 @@
                                         {#each s.applications as a (a.id)}
                                             {@const st = statusOf(a.status)}
                                             <div class="app">
-                                                <div class="app-main">
-                                                    <span class="company">{a.companyName}</span>
-                                                    {#if a.position}<span class="position">· {a.position}</span>{/if}
-                                                </div>
-                                                <div class="app-meta">
-                                                    <span class="status" style="--c: {st.color}">{st.emoji} {st.label()}</span>
+                                                <span class="status-pill" style="--c: {st.color}">{st.emoji} {st.label()}</span>
+                                                <span class="app-main">
+                                                    <span class="company">{a.companyName}</span>{#if a.position}<span class="position"> · {a.position}</span>{/if}
+                                                </span>
+                                                <span class="app-dates">
                                                     {#if a.appliedAt}<span class="date">{$t('tapp.applied')} {fmtDate(a.appliedAt)}</span>{/if}
                                                     {#if a.interviewDate}<span class="date">🗓️ {fmtDate(a.interviewDate)}</span>{/if}
-                                                </div>
+                                                </span>
                                             </div>
                                         {/each}
                                     </div>
@@ -132,12 +131,24 @@
     .none { margin: 0.5rem 0 0; font-size: 0.85rem; color: #6b647a; }
     .none.muted { color: #9a8b9d; }
 
-    .apps { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.7rem; }
-    .app { border: 1px solid #f0ebf5; border-radius: 0.6rem; padding: 0.55rem 0.75rem; }
-    .app-main { font-size: 0.92rem; }
+    .apps { display: flex; flex-direction: column; margin-top: 0.7rem; border: 1px solid #f0ebf5; border-radius: 0.7rem; overflow: hidden; }
+    .app {
+        display: flex; align-items: center; gap: 0.75rem;
+        padding: 0.6rem 0.85rem; font-size: 0.9rem;
+    }
+    .app:not(:last-child) { border-bottom: 1px solid #f3eff8; }
+    .status-pill {
+        flex-shrink: 0; font-size: 0.76rem; font-weight: 600;
+        color: var(--c); background: color-mix(in srgb, var(--c) 12%, #fff);
+        border: 1px solid color-mix(in srgb, var(--c) 30%, #fff);
+        border-radius: 999px; padding: 0.15rem 0.6rem; white-space: nowrap;
+    }
+    .app-main { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .company { font-weight: 600; color: #2d2141; }
-    .position { color: #6b647a; }
-    .app-meta { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.25rem; font-size: 0.8rem; }
-    .status { font-weight: 600; color: var(--c); }
-    .date { color: #8a7f9a; }
+    .position { color: #6b647a; font-weight: 400; }
+    .app-dates { display: flex; gap: 0.7rem; flex-shrink: 0; font-size: 0.78rem; color: #8a7f9a; white-space: nowrap; }
+    @media (max-width: 560px) {
+        .app { flex-wrap: wrap; gap: 0.4rem 0.6rem; }
+        .app-main { flex-basis: 100%; white-space: normal; }
+    }
 </style>
