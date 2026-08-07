@@ -62,19 +62,20 @@
             {#if filtered.length === 0}
                 <p class="empty">{$t('tapp.noStudents')}</p>
             {:else}
-                <div class="list">
-                    {#each filtered as s (s.studentId)}
-                        <article class="student">
-                            <div class="student-head">
-                                <span class="s-name">{s.name}</span>
-                                {#if s.shared}
-                                    <span class="s-badge shared">✓ {$t('tapp.shared')}</span>
-                                {:else}
-                                    <span class="s-badge notshared">🔒 {$t('tapp.notShared')}</span>
-                                {/if}
-                            </div>
+                {@const sharedStudents = filtered.filter((s) => s.shared)}
+                {@const notSharedStudents = filtered.filter((s) => !s.shared)}
 
-                            {#if s.shared}
+                {#if sharedStudents.length === 0}
+                    <p class="empty">{$t('tapp.noneShared')}</p>
+                {:else}
+                    <div class="list">
+                        {#each sharedStudents as s (s.studentId)}
+                            <article class="student">
+                                <div class="student-head">
+                                    <span class="s-name">{s.name}</span>
+                                    <span class="s-badge shared">✓ {$t('tapp.shared')}</span>
+                                </div>
+
                                 {#if s.applications.length === 0}
                                     <p class="none">{$t('tapp.noApplications')}</p>
                                 {:else}
@@ -94,12 +95,21 @@
                                         {/each}
                                     </div>
                                 {/if}
-                            {:else}
-                                <p class="none muted">{$t('tapp.notSharedHint')}</p>
-                            {/if}
-                        </article>
-                    {/each}
-                </div>
+                            </article>
+                        {/each}
+                    </div>
+                {/if}
+
+                {#if notSharedStudents.length > 0}
+                    <div class="ns-panel">
+                        <span class="ns-title">🔒 {$t('tapp.notSharedTitle')} <span class="ns-count">{notSharedStudents.length}</span></span>
+                        <div class="ns-chips">
+                            {#each notSharedStudents as s (s.studentId)}
+                                <span class="ns-chip">{s.name}</span>
+                            {/each}
+                        </div>
+                    </div>
+                {/if}
             {/if}
         {/if}
     {/if}
@@ -130,6 +140,13 @@
 
     .none { margin: 0.5rem 0 0; font-size: 0.85rem; color: #6b647a; }
     .none.muted { color: #9a8b9d; }
+
+    /* Nicht-freigegebene Schüler:innen kompakt als Chips (statt grosser Leerkarten) */
+    .ns-panel { margin-top: 1.25rem; background: #faf8fc; border: 1px solid #ece3f5; border-radius: 0.9rem; padding: 0.9rem 1.1rem; }
+    .ns-title { font-size: 0.85rem; font-weight: 600; color: #6b647a; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .ns-count { background: #ece3f5; color: #5b2a86; border-radius: 999px; padding: 0.05rem 0.5rem; font-size: 0.75rem; }
+    .ns-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+    .ns-chip { background: #fff; border: 1px solid #e8e0f0; color: #6b647a; border-radius: 999px; padding: 0.2rem 0.7rem; font-size: 0.82rem; }
 
     .apps { display: flex; flex-direction: column; margin-top: 0.7rem; border: 1px solid #f0ebf5; border-radius: 0.7rem; overflow: hidden; }
     .app {
