@@ -31,6 +31,7 @@ import { superUsers } from "./messages/superUsers.js";
 import { superKnowledge } from "./messages/superKnowledge.js";
 import { b2c } from "./messages/b2c.js";
 import { help } from "./messages/help.js";
+import { privatHelp } from "./messages/privatHelp.js";
 
 export const LANGUAGES = [
 	{ code: "de", label: "Deutsch", flag: "🇩🇪" },
@@ -832,5 +833,6 @@ export const translations = deepMerge([
 	agb,
 	superUsers,
 	superKnowledge,
-	b2c
+	b2c,
+	privatHelp
 ]);

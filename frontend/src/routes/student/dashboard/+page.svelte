@@ -166,6 +166,7 @@
             <div class="onboard-actions">
                 <a href="/student/sessions" class="btn btn-primary">{$t('dbo.discover')}</a>
                 <a href="/student/applications" class="btn btn-ghost">{$t('dbo.applications')}</a>
+                <a href="/privat/hilfe" class="btn btn-ghost">❓ {$t('phelp.nav')}</a>
             </div>
         </section>
     {/if}

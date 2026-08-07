@@ -134,6 +134,17 @@
     {#if data.loadError}<div class="alert error">⚠️ {data.loadError}</div>{/if}
     {#if form?.deleted}<div class="alert success">✓ {$t('su.deleted')}</div>{/if}
     {#if form?.error}<div class="alert error">⚠️ {$t('contact.error')}</div>{/if}
+    {#if form?.granted}<div class="alert success">✓ Zugang freigeschaltet (Testphase gestartet, falls noch keine lief).</div>{/if}
+    {#if form?.synced}
+        <div class="alert success">
+            {#if form.syncInfo?.found}
+                ✓ Abo synchronisiert: {form.syncInfo.status}{form.syncInfo.paying ? " — zahlend ✓" : ""}
+            {:else}
+                ℹ️ {form.syncInfo?.message ?? "Kein Abo bei Stripe gefunden."}
+            {/if}
+        </div>
+    {/if}
+    {#if form?.actionError}<div class="alert error">⚠️ {form.actionError}</div>{/if}
 
     <div class="stats">
         <span class="stat">{allUsers.length} {$t('su.usersTotal')}</span>
@@ -232,6 +243,19 @@
                                                 <button type="submit" class="btn-ghost">{$t('su.deactivate')}</button>
                                             </form>
                                         {/if}
+                                    {/if}
+                                    {#if u.consentPending}
+                                        <form method="POST" action="?/grantAccess" use:enhance={handleActive} class="inline"
+                                            onsubmit={(e) => { if (!confirm('Dieses Privat-Konto OHNE Eltern-Bestätigung freischalten? Die 7-Tage-Testphase startet (falls noch keine läuft).')) e.preventDefault(); }}>
+                                            <input type="hidden" name="id" value={u.id} />
+                                            <button type="submit" class="btn-activate">✅ Freischalten</button>
+                                        </form>
+                                    {/if}
+                                    {#if u.accountType === "INDIVIDUAL"}
+                                        <form method="POST" action="?/resyncSub" use:enhance={handleActive} class="inline">
+                                            <input type="hidden" name="id" value={u.id} />
+                                            <button type="submit" class="btn-ghost">🔄 Abo-Sync</button>
+                                        </form>
                                     {/if}
                                     <a href={`/super/users/${u.id}/export`} class="btn-ghost" download>{$t('su.export')}</a>
                                     {#if u.role !== "SUPER_ADMIN"}

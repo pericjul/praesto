@@ -211,6 +211,13 @@ public class BillingService {
             log.warn("Subscription-Event ohne passenden User (Kunde {})", sub.getCustomer());
             return;
         }
+        applySubscriptionState(user, sub);
+        userRepository.save(user);
+        log.info("Abo-Status aktualisiert für {}: {} (bis {})", user.getEmail(), sub.getStatus(), user.getSubscriptionEndsAt());
+    }
+
+    /** Schreibt Enddatum + Status aus einer Stripe-Subscription ins Konto (ohne save). */
+    private void applySubscriptionState(User user, Subscription sub) {
         String status = sub.getStatus();  // active, trialing, past_due, canceled, unpaid, ...
         boolean paidThrough = "active".equals(status) || "trialing".equals(status) || "past_due".equals(status);
         Long periodEnd = currentPeriodEnd(sub);
@@ -222,8 +229,82 @@ public class BillingService {
         } else if (paidThrough) {
             user.setSubscriptionStatus("ACTIVE");
         }
-        userRepository.save(user);
-        log.info("Abo-Status aktualisiert für {}: {} (bis {})", user.getEmail(), status, user.getSubscriptionEndsAt());
+    }
+
+    /**
+     * Super-Admin: gleicht den Abo-Status eines Privat-Kontos direkt mit Stripe ab (falls ein
+     * Webhook-Event verpasst wurde). Findet den Kunden über die gespeicherte customerId oder die
+     * E-Mail, nimmt das „beste" Abo und schreibt Enddatum + Status in die DB.
+     */
+    public Map<String, Object> resyncForUser(String userId) {
+        if (!userService.userHasRole(ch.zhaw.praesto.model.UserRole.SUPER_ADMIN)) {
+            throw new ForbiddenException("Nur der Super-Admin darf Abos synchronisieren.");
+        }
+        if (!isEnabled()) {
+            throw new BadRequestException("Stripe ist nicht konfiguriert.");
+        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("Konto nicht gefunden."));
+        if (user.getAccountType() != AccountType.INDIVIDUAL) {
+            throw new BadRequestException("Abo-Sync ist nur für Privat-Konten möglich.");
+        }
+        Map<String, Object> out = new HashMap<>();
+        try {
+            String customerId = user.getStripeCustomerId();
+            if (customerId == null || customerId.isBlank()) {
+                var customers = com.stripe.model.Customer.list(
+                        com.stripe.param.CustomerListParams.builder()
+                                .setEmail(user.getEmail()).setLimit(1L).build());
+                if (customers.getData().isEmpty()) {
+                    out.put("found", false);
+                    out.put("message", "Kein Stripe-Kunde zu dieser E-Mail gefunden.");
+                    return out;
+                }
+                customerId = customers.getData().get(0).getId();
+                user.setStripeCustomerId(customerId);
+            }
+            var subs = Subscription.list(com.stripe.param.SubscriptionListParams.builder()
+                    .setCustomer(customerId)
+                    .setStatus(com.stripe.param.SubscriptionListParams.Status.ALL)
+                    .setLimit(10L).build());
+            Subscription best = null;
+            for (Subscription s : subs.getData()) {
+                if (best == null || rank(s.getStatus()) > rank(best.getStatus())) {
+                    best = s;
+                }
+            }
+            if (best == null) {
+                userRepository.save(user);   // ggf. neu gefundene customerId sichern
+                out.put("found", false);
+                out.put("message", "Kunde hat (noch) kein Abo bei Stripe.");
+                return out;
+            }
+            applySubscriptionState(user, best);
+            userRepository.save(user);
+            boolean paying = user.getSubscriptionEndsAt() != null
+                    && Instant.now().isBefore(user.getSubscriptionEndsAt());
+            out.put("found", true);
+            out.put("status", best.getStatus());
+            out.put("subscriptionEndsAt", user.getSubscriptionEndsAt() != null
+                    ? user.getSubscriptionEndsAt().toString() : null);
+            out.put("paying", paying);
+            log.info("Abo per Super-Admin synchronisiert für {}: {} (bis {})",
+                    user.getEmail(), best.getStatus(), user.getSubscriptionEndsAt());
+            return out;
+        } catch (com.stripe.exception.StripeException e) {
+            log.error("Abo-Sync fehlgeschlagen für {}: {}", user.getEmail(), e.getMessage());
+            throw new BadRequestException("Stripe-Abgleich fehlgeschlagen: " + e.getMessage());
+        }
+    }
+
+    /** Priorität fürs „beste" Abo bei mehreren: aktiv/trial > past_due > sonstiges > gekündigt. */
+    private int rank(String status) {
+        return switch (status == null ? "" : status) {
+            case "active", "trialing" -> 4;
+            case "past_due" -> 3;
+            case "canceled", "unpaid", "incomplete_expired" -> 1;
+            default -> 2;
+        };
     }
 
     // ============================================================

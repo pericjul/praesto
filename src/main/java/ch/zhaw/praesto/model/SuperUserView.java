@@ -15,5 +15,8 @@ public record SuperUserView(
         String schoolName,
         boolean active,
         Instant lastLoginAt,
-        Instant createdAt) {
+        Instant createdAt,
+        String accountType,        // SCHOOL | INDIVIDUAL
+        boolean consentPending,    // Privat-Konto wartet auf Eltern-Bestätigung
+        String subscriptionStatus) { // z.B. PENDING_CONSENT, TRIAL, ACTIVE, CANCELED
 }

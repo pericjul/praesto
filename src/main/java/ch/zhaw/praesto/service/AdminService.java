@@ -197,7 +197,10 @@ public class AdminService {
                         u.getSchoolId() != null ? schoolNames.getOrDefault(u.getSchoolId(), "—") : "—",
                         u.isActive(),
                         u.getLastLoginAt(),
-                        u.getCreatedAt()))
+                        u.getCreatedAt(),
+                        u.getAccountType() != null ? u.getAccountType().name() : "SCHOOL",
+                        u.needsParentConsent(),
+                        u.getSubscriptionStatus()))
                 .sorted(Comparator
                         .comparing((SuperUserView v) -> v.schoolName() == null ? "" : v.schoolName())
                         .thenComparing(v -> v.name() == null ? "" : v.name()))

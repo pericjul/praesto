@@ -1,6 +1,7 @@
 package ch.zhaw.praesto.controller;
 
 import ch.zhaw.praesto.model.UserDTO;
+import ch.zhaw.praesto.service.BillingService;
 import ch.zhaw.praesto.service.SuperUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,19 @@ import java.util.Map;
 public class SuperUserController {
 
     private final SuperUserService superUserService;
+    private final BillingService billingService;
+
+    // Privat-Konto ohne Eltern-Bestätigung freischalten (startet ggf. die Testphase).
+    @PostMapping("/{id}/grant-access")
+    public Map<String, Object> grantAccess(@PathVariable String id) {
+        return superUserService.grantIndividualAccess(id);
+    }
+
+    // Abo eines Privat-Kontos direkt mit Stripe abgleichen (falls ein Webhook verpasst wurde).
+    @PostMapping("/{id}/resync-subscription")
+    public Map<String, Object> resyncSubscription(@PathVariable String id) {
+        return billingService.resyncForUser(id);
+    }
 
     @GetMapping("/search")
     public List<UserDTO> search(@RequestParam(required = false) String q) {

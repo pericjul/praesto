@@ -239,6 +239,34 @@ public class SuperUserService {
         return m;
     }
 
+    /**
+     * Super-Admin schaltet ein Privat-Konto frei, ohne auf die Eltern-Bestätigung zu warten
+     * (z.B. wenn die Zustimmung nachweislich vorliegt). Startet – falls das Konto noch keinen
+     * aktiven Zugang hat – die 7-tägige Gratis-Testphase.
+     */
+    public Map<String, Object> grantIndividualAccess(String userId) {
+        requireSuper();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Konto nicht gefunden."));
+        if (user.getAccountType() != AccountType.INDIVIDUAL) {
+            throw new ch.zhaw.praesto.exception.BadRequestException("Das ist kein Privat-Konto.");
+        }
+        Instant now = Instant.now();
+        user.setParentConsentConfirmed(true);
+        boolean hasTrial = user.getTrialEndsAt() != null && now.isBefore(user.getTrialEndsAt());
+        boolean hasPaid = user.getSubscriptionEndsAt() != null && now.isBefore(user.getSubscriptionEndsAt());
+        if (!hasTrial && !hasPaid) {
+            user.setSubscriptionStatus("TRIAL");
+            user.setTrialEndsAt(now.plus(java.time.Duration.ofDays(7)));
+        }
+        userRepository.save(user);
+        log.info("Privat-Konto {} per Super-Admin ohne Eltern-Bestätigung freigeschaltet.", user.getEmail());
+        Map<String, Object> out = new java.util.HashMap<>();
+        out.put("status", user.getSubscriptionStatus());
+        out.put("trialEndsAt", user.getTrialEndsAt() != null ? user.getTrialEndsAt().toString() : null);
+        return out;
+    }
+
     private boolean matches(User u, String query) {
         String full = ((u.getFirstName() == null ? "" : u.getFirstName()) + " "
                 + (u.getLastName() == null ? "" : u.getLastName())).toLowerCase();

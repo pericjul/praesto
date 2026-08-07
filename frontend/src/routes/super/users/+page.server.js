@@ -41,6 +41,33 @@ export const actions = {
 		return { adminCreated: true };
 	},
 
+	grantAccess: async ({ request, locals, fetch }) => {
+		const id = (await request.formData()).get("id");
+		const res = await fetch(`${API_BASE}/super/users/${id}/grant-access`, {
+			method: "POST",
+			headers: apiHeaders(locals.jwt_token)
+		});
+		if (!res.ok) {
+			const msg = await res.text().catch(() => "");
+			return { actionError: msg && msg.length < 300 ? msg : "Freischalten fehlgeschlagen." };
+		}
+		return { granted: true };
+	},
+
+	resyncSub: async ({ request, locals, fetch }) => {
+		const id = (await request.formData()).get("id");
+		const res = await fetch(`${API_BASE}/super/users/${id}/resync-subscription`, {
+			method: "POST",
+			headers: apiHeaders(locals.jwt_token)
+		});
+		if (!res.ok) {
+			const msg = await res.text().catch(() => "");
+			return { actionError: msg && msg.length < 300 ? msg : "Abo-Sync fehlgeschlagen." };
+		}
+		const info = await res.json().catch(() => ({}));
+		return { synced: true, syncInfo: info };
+	},
+
 	delete: async ({ request, locals, fetch }) => {
 		const data = await request.formData();
 		const id = data.get("id");

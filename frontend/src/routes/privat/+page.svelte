@@ -63,6 +63,7 @@
 		<a href="/register" class="btn-primary big">{$t('priv.cta')} – {$t('priv.trial')}</a>
 	</section>
 
+	<p class="help-link"><a href="/privat/hilfe">❓ {$t('phelp.title')}</a></p>
 	<p class="back"><span>{$t('priv.backSchool')}</span> <a href="/">{$t('priv.backSchoolLink')}</a></p>
 </div>
 
@@ -98,6 +99,8 @@
 	.p-note { font-size: 0.82rem; color: #8b849a; }
 	.big { padding: 0.9rem 2rem; }
 
-	.back { text-align: center; margin: 2rem 0 0; font-size: 0.9rem; color: #6b647a; }
+	.help-link { text-align: center; margin: 2rem 0 0; }
+	.help-link a { color: #2F124D; font-weight: 600; text-decoration: none; }
+	.back { text-align: center; margin: 0.75rem 0 0; font-size: 0.9rem; color: #6b647a; }
 	.back a { color: #2F124D; font-weight: 600; text-decoration: none; }
 </style>
