@@ -34,6 +34,12 @@ public class SuperUserController {
         return billingService.resyncForUser(id);
     }
 
+    // Alle Privat-Abos in einem Rutsch mit Stripe abgleichen (ein Klick).
+    @PostMapping("/resync-subscriptions")
+    public Map<String, Object> resyncAllSubscriptions() {
+        return billingService.resyncAllIndividuals();
+    }
+
     @GetMapping("/search")
     public List<UserDTO> search(@RequestParam(required = false) String q) {
         return superUserService.search(q);

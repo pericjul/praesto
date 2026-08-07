@@ -135,13 +135,9 @@
     {#if form?.deleted}<div class="alert success">✓ {$t('su.deleted')}</div>{/if}
     {#if form?.error}<div class="alert error">⚠️ {$t('contact.error')}</div>{/if}
     {#if form?.granted}<div class="alert success">✓ Zugang freigeschaltet (Testphase gestartet, falls noch keine lief).</div>{/if}
-    {#if form?.synced}
+    {#if form?.syncedAll}
         <div class="alert success">
-            {#if form.syncInfo?.found}
-                ✓ Abo synchronisiert: {form.syncInfo.status}{form.syncInfo.paying ? " — zahlend ✓" : ""}
-            {:else}
-                ℹ️ {form.syncInfo?.message ?? "Kein Abo bei Stripe gefunden."}
-            {/if}
+            ✓ Abgleich fertig: {form.syncInfo?.checked ?? 0} Privat-Konten geprüft · {form.syncInfo?.paying ?? 0} zahlend · {form.syncInfo?.noSubscription ?? 0} ohne Abo{form.syncInfo?.errors ? ` · ${form.syncInfo.errors} Fehler` : ""}
         </div>
     {/if}
     {#if form?.actionError}<div class="alert error">⚠️ {form.actionError}</div>{/if}
@@ -176,6 +172,13 @@
                 <p class="admin-hint">Der neue Admin sieht alles wie du (Super-Admin) und hat ein eigenes Login/Profil.</p>
             </form>
         {/if}
+    </div>
+
+    <div class="sync-box">
+        <form method="POST" action="?/resyncAll" use:enhance={handleActive}>
+            <button type="submit" class="sync-btn">🔄 Alle Privat-Abos mit Stripe abgleichen</button>
+        </form>
+        <span class="sync-hint">Läuft normal automatisch (Webhook) – dieser Knopf holt Altfälle/verpasste Events nach.</span>
     </div>
 
     <div class="filters">
@@ -251,12 +254,6 @@
                                             <button type="submit" class="btn-activate">✅ Freischalten</button>
                                         </form>
                                     {/if}
-                                    {#if u.accountType === "INDIVIDUAL"}
-                                        <form method="POST" action="?/resyncSub" use:enhance={handleActive} class="inline">
-                                            <input type="hidden" name="id" value={u.id} />
-                                            <button type="submit" class="btn-ghost">🔄 Abo-Sync</button>
-                                        </form>
-                                    {/if}
                                     <a href={`/super/users/${u.id}/export`} class="btn-ghost" download>{$t('su.export')}</a>
                                     {#if u.role !== "SUPER_ADMIN"}
                                         <button type="button" class="btn-danger" onclick={() => (confirmId = u.id)}>{$t('su.delete')}</button>
@@ -326,6 +323,11 @@
     .stats { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
     .stat { background: #faf8fc; border: 1px solid #e8e0f0; border-radius: 999px; padding: 0.35rem 0.85rem; font-size: 0.85rem; color: #4b4060; }
     .warnstat { cursor: pointer; background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+
+    .sync-box { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 1.25rem; }
+    .sync-btn { background: #f3eefb; border: 1px solid #e0d2f0; color: #5b2a86; border-radius: 0.6rem; padding: 0.55rem 1rem; font: inherit; font-weight: 600; cursor: pointer; }
+    .sync-btn:hover { background: #ebe0f7; }
+    .sync-hint { font-size: 0.8rem; color: #8b849a; }
 
     .filters { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.25rem; align-items: center; }
     .filters select, .filters input { padding: 0.55rem 0.75rem; border: 1px solid #e8e0f0; border-radius: 0.5rem; background: #faf8fc; font: inherit; }

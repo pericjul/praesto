@@ -54,9 +54,8 @@ export const actions = {
 		return { granted: true };
 	},
 
-	resyncSub: async ({ request, locals, fetch }) => {
-		const id = (await request.formData()).get("id");
-		const res = await fetch(`${API_BASE}/super/users/${id}/resync-subscription`, {
+	resyncAll: async ({ locals, fetch }) => {
+		const res = await fetch(`${API_BASE}/super/users/resync-subscriptions`, {
 			method: "POST",
 			headers: apiHeaders(locals.jwt_token)
 		});
@@ -65,7 +64,7 @@ export const actions = {
 			return { actionError: msg && msg.length < 300 ? msg : "Abo-Sync fehlgeschlagen." };
 		}
 		const info = await res.json().catch(() => ({}));
-		return { synced: true, syncInfo: info };
+		return { syncedAll: true, syncInfo: info };
 	},
 
 	delete: async ({ request, locals, fetch }) => {
