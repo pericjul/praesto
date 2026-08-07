@@ -35,6 +35,12 @@
         try { return new Date(d).toLocaleDateString("de-CH", { day: "2-digit", month: "2-digit", year: "numeric" }); }
         catch { return ""; }
     }
+
+    // Wichtiges zuerst: laufende Gespräche/Einladungen vor Absagen.
+    const ORDER = { INVITED: 0, INTERVIEW_DONE: 1, ACCEPTED: 2, APPLIED: 3, TRIAL_DONE: 4, PLANNED: 5, TRIAL_PLANNED: 6, REJECTED: 7, WITHDRAWN: 8 };
+    function sortedApps(apps) {
+        return [...(apps ?? [])].sort((a, b) => (ORDER[a.status] ?? 9) - (ORDER[b.status] ?? 9));
+    }
 </script>
 
 <svelte:head><title>{$t('tapp.title')} – Praesto</title></svelte:head>
@@ -68,35 +74,37 @@
                 {#if sharedStudents.length === 0}
                     <p class="empty">{$t('tapp.noneShared')}</p>
                 {:else}
-                    <div class="list">
-                        {#each sharedStudents as s (s.studentId)}
-                            <article class="student">
-                                <div class="student-head">
-                                    <span class="s-name">{s.name}</span>
-                                    <span class="s-badge shared">✓ {$t('tapp.shared')}</span>
-                                </div>
-
-                                {#if s.applications.length === 0}
-                                    <p class="none">{$t('tapp.noApplications')}</p>
-                                {:else}
-                                    <div class="apps">
-                                        {#each s.applications as a (a.id)}
-                                            {@const st = statusOf(a.status)}
-                                            <div class="app">
-                                                <span class="status-pill" style="--c: {st.color}">{st.emoji} {st.label()}</span>
-                                                <span class="app-main">
-                                                    <span class="company">{a.companyName}</span>{#if a.position}<span class="position"> · {a.position}</span>{/if}
-                                                </span>
-                                                <span class="app-dates">
-                                                    {#if a.appliedAt}<span class="date">{$t('tapp.applied')} {fmtDate(a.appliedAt)}</span>{/if}
-                                                    {#if a.interviewDate}<span class="date">🗓️ {fmtDate(a.interviewDate)}</span>{/if}
-                                                </span>
-                                            </div>
-                                        {/each}
-                                    </div>
-                                {/if}
-                            </article>
-                        {/each}
+                    <div class="table-wrap">
+                        <table class="ov">
+                            <thead>
+                                <tr>
+                                    <th class="th-name">{$t('tapp.thStudent')}</th>
+                                    <th>{$t('tapp.thApplications')}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {#each sharedStudents as s (s.studentId)}
+                                    <tr>
+                                        <td class="name-cell">{s.name}</td>
+                                        <td class="apps-cell">
+                                            {#if !s.applications || s.applications.length === 0}
+                                                <span class="muted">{$t('tapp.noApplications')}</span>
+                                            {:else}
+                                                {#each sortedApps(s.applications) as a (a.id)}
+                                                    {@const st = statusOf(a.status)}
+                                                    <span class="chip" style="--c: {st.color}"
+                                                        title={a.interviewDate ? `${st.label()} · 🗓️ ${fmtDate(a.interviewDate)}` : st.label()}>
+                                                        <span class="chip-em">{st.emoji}</span>
+                                                        <span class="chip-co">{a.companyName}</span>
+                                                        <span class="chip-st">{st.label()}</span>
+                                                    </span>
+                                                {/each}
+                                            {/if}
+                                        </td>
+                                    </tr>
+                                {/each}
+                            </tbody>
+                        </table>
                     </div>
                 {/if}
 
@@ -130,16 +138,26 @@
     .search { flex: 1; min-width: 180px; padding: 0.55rem 0.75rem; border: 1px solid #e8e0f0; border-radius: 0.6rem; background: #faf8fc; font: inherit; }
     .sharecount { font-size: 0.85rem; color: #6b647a; white-space: nowrap; }
 
-    .list { display: flex; flex-direction: column; gap: 0.85rem; }
-    .student { background: #fff; border: 1px solid #ece3f5; border-radius: 0.9rem; padding: 0.9rem 1.1rem; }
-    .student-head { display: flex; align-items: center; gap: 0.6rem; }
-    .s-name { font-weight: 600; color: #2d2141; }
-    .s-badge { font-size: 0.72rem; font-weight: 600; border-radius: 999px; padding: 0.1rem 0.55rem; }
-    .s-badge.shared { background: #f0e7fa; color: #5b2a86; }
-    .s-badge.notshared { background: #f1eff4; color: #6b647a; }
+    .table-wrap { overflow-x: auto; border: 1px solid #ece3f5; border-radius: 0.9rem; }
+    .ov { width: 100%; border-collapse: collapse; min-width: 520px; background: #fff; }
+    .ov th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; color: #9a8b9d; font-weight: 600; padding: 0.55rem 0.9rem; border-bottom: 2px solid #ece3f5; background: #faf8fc; }
+    .th-name { width: 1%; white-space: nowrap; }
+    .ov td { padding: 0.55rem 0.9rem; border-bottom: 1px solid #f3eff8; vertical-align: middle; }
+    .ov tbody tr:last-child td { border-bottom: none; }
+    .ov tbody tr:hover { background: #faf8fc; }
+    .name-cell { font-weight: 600; color: #2d2141; white-space: nowrap; }
+    .apps-cell { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .apps-cell .muted { color: #9a8b9d; font-size: 0.85rem; }
 
-    .none { margin: 0.5rem 0 0; font-size: 0.85rem; color: #6b647a; }
-    .none.muted { color: #9a8b9d; }
+    .chip {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        font-size: 0.8rem; padding: 0.2rem 0.6rem; border-radius: 999px;
+        background: color-mix(in srgb, var(--c) 12%, #fff);
+        border: 1px solid color-mix(in srgb, var(--c) 35%, #fff);
+        color: #2d2141; white-space: nowrap;
+    }
+    .chip-co { font-weight: 600; }
+    .chip-st { color: var(--c); font-weight: 600; }
 
     /* Nicht-freigegebene Schüler:innen kompakt als Chips (statt grosser Leerkarten) */
     .ns-panel { margin-top: 1.25rem; background: #faf8fc; border: 1px solid #ece3f5; border-radius: 0.9rem; padding: 0.9rem 1.1rem; }
@@ -147,25 +165,4 @@
     .ns-count { background: #ece3f5; color: #5b2a86; border-radius: 999px; padding: 0.05rem 0.5rem; font-size: 0.75rem; }
     .ns-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
     .ns-chip { background: #fff; border: 1px solid #e8e0f0; color: #6b647a; border-radius: 999px; padding: 0.2rem 0.7rem; font-size: 0.82rem; }
-
-    .apps { display: flex; flex-direction: column; margin-top: 0.7rem; border: 1px solid #f0ebf5; border-radius: 0.7rem; overflow: hidden; }
-    .app {
-        display: flex; align-items: center; gap: 0.75rem;
-        padding: 0.6rem 0.85rem; font-size: 0.9rem;
-    }
-    .app:not(:last-child) { border-bottom: 1px solid #f3eff8; }
-    .status-pill {
-        flex-shrink: 0; font-size: 0.76rem; font-weight: 600;
-        color: var(--c); background: color-mix(in srgb, var(--c) 12%, #fff);
-        border: 1px solid color-mix(in srgb, var(--c) 30%, #fff);
-        border-radius: 999px; padding: 0.15rem 0.6rem; white-space: nowrap;
-    }
-    .app-main { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .company { font-weight: 600; color: #2d2141; }
-    .position { color: #6b647a; font-weight: 400; }
-    .app-dates { display: flex; gap: 0.7rem; flex-shrink: 0; font-size: 0.78rem; color: #8a7f9a; white-space: nowrap; }
-    @media (max-width: 560px) {
-        .app { flex-wrap: wrap; gap: 0.4rem 0.6rem; }
-        .app-main { flex-basis: 100%; white-space: normal; }
-    }
 </style>
