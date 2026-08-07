@@ -310,8 +310,16 @@
     }
 
     @media (max-width: 700px) {
+        /* Handy: Overlay selbst scrollbar machen und oben anankern, damit die Karte (Branding +
+           Formular gestapelt) nie abgeschnitten wird und der Button immer erreichbar ist. */
+        .login-page {
+            overflow-y: auto;
+            align-items: flex-start;
+            padding: 1rem 1rem 2rem;
+        }
         .login-container {
             flex-direction: column;
+            max-height: none;
         }
 
         .login-branding {

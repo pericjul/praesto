@@ -73,11 +73,17 @@
 <style>
 	.reg-page {
 		min-height: 100vh;
+		min-height: 100dvh;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		padding: 2rem 1rem;
 		background: #F8F3EB;
+	}
+	/* Handy: oben anankern statt zentrieren, damit bei kleinem Screen / offener Tastatur
+	   nichts abgeschnitten wird und der Button immer per Scrollen erreichbar ist. */
+	@media (max-width: 700px) {
+		.reg-page { align-items: flex-start; }
 	}
 	.reg-card {
 		width: 100%;
